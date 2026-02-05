@@ -1,0 +1,35 @@
+<div class="sidebar-container">
+  <div class="logo-section logo-section img">
+    <img src="logo.png" alt="Logo">
+  </div>
+
+  <nav class="menu-nav">
+    <div class="menu-item">
+      <div class="menu-header" (click)="toggleMenu('inventario')">
+        <span>📦 Inventario</span>
+        <span class="arrow" [class.rotated]="menusAbiertos['inventario']">▶</span>
+      </div>
+      
+      @if (menusAbiertos['inventario']) {
+        <div class="sub-menu">
+          <a routerLink="/inventario/consulta" routerLinkActive="active">Consulta Stock</a>
+          <a routerLink="/inventario/entradas" routerLinkActive="active">Entradas</a>
+        </div>
+      }
+    </div>
+
+    <div class="menu-item">
+      <div class="menu-header" (click)="toggleMenu('recibo')">
+        <span>🚚 Recibo</span>
+        <span class="arrow" [class.rotated]="menusAbiertos['recibo']">▶</span>
+      </div>
+
+      @if (menusAbiertos['recibo']) {
+        <div class="sub-menu">
+          <a routerLink="/recibo/ordenes" routerLinkActive="active">Órdenes de Compra</a>
+          <a routerLink="/recibo/historial" routerLinkActive="active">Historial</a>
+        </div>
+      }
+    </div>
+  </nav>
+</div>

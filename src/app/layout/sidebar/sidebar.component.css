@@ -1,0 +1,86 @@
+.logo-container {
+  padding: 3px ;
+  text-align: center; /* Centra la imagen horizontalmente */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+ /* background-color: #1a252f; /* El color de fondo que prefieras */
+}
+/* src/app/layout/sidebar/sidebar.component.css */
+
+.logo-section {
+  display: flex;
+  justify-content: center; /* Centra el logo */
+  align-items: center;
+  padding: 0px;          /* Espacio alrededor del logo */
+  height: 80px;          /* Altura fija para que no se mueva con el menú */
+  width: 100%;
+}
+
+.logo-section img {
+  max-width: 80%;         /* Que no ocupe todo el ancho de la sidebar */
+  max-height: 80px;       /* Limita el alto para que sea sutil */
+  object-fit: contain;    /* Evita que la imagen se deforme */
+}
+
+
+
+/*trabajando con el arbol de opciones*/
+.menu-nav {
+  /* Esto asegura que el menú empiece después del logo y no lo encime */
+  margin-top: 10px;
+  overflow-y: auto;       /* Si el árbol es muy largo, que haga scroll la sidebar */
+  height: calc(100vh - 120px); /* El alto total menos el espacio del logo */
+}
+
+.menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  color: #ecf0f1;
+  transition: background 0.2s;
+}
+
+.menu-header:hover {
+  background-color: #34495e;
+}
+
+.arrow {
+  font-size: 0.7rem;
+  transition: transform 0.3s ease;
+}
+
+.arrow.rotated {
+  transform: rotate(90deg); /* La flecha apunta hacia abajo */
+}
+
+/* Submenú con sangrado tipo árbol */
+.sub-menu {
+  display: flex;
+  flex-direction: column;
+  margin-left: 5px; /* Sangrado a la derecha */
+  border-left: 1px solid #5d6d7e; /* Línea vertical de guía */
+  padding-left: 10px;
+}
+
+.sub-menu a {
+  padding: 2px 15px;
+  color: #bdc3c7;
+  text-decoration: none;
+  font-size: 0.9rem;
+  border-radius: 4px;
+}
+
+.sub-menu a:hover {
+  color: white;
+  background-color: rgba(255,255,255,0.05);
+}
+
+.sub-menu a.active {
+  color: #3498db;
+  font-weight: bold;
+  background-color: rgba(52, 152, 219, 0.1);
+}
