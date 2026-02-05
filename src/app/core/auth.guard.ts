@@ -5,19 +5,16 @@ import { isPlatformBrowser } from '@angular/common';
 import { PermissionService } from './permission.service'; // Ajusta la ruta si es necesario
 
 export const authGuard: CanActivateFn = (route, state) => {
-  // Asegúrate de que PermissionService esté dentro de los paréntesis
-  const service = inject(PermissionService); 
+  const service = inject(PermissionService);
   const router = inject(Router);
-  const platformId = inject(PLATFORM_ID);
 
-  if (!isPlatformBrowser(platformId)) {
+  // No solo preguntamos si hay sesión, sino si el valor es real
+  const token = localStorage.getItem('userToken');
+  
+  if (service.isLogged() && token && token !== 'undefined') {
     return true;
   }
 
-  // Ahora TypeScript ya sabe que 'service' tiene la propiedad 'isLogged'
-  if (service.isLogged()) {
-    return true;
-  }
-
+  console.warn("Guard: Intento de acceso sin token válido");
   return router.parseUrl('/login');
 };

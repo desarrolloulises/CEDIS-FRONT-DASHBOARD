@@ -216,7 +216,7 @@ export class ProcesosCedisService {
     let params = new HttpParams().set('proceso', body.proceso);
     if (body.usuario) params = params.set('usuario', body.usuario);
     if (body.password) params = params.set('password', body.password);
-    return this.http.get<any>(this.apiUrlGetL0G1N, { params });
+    return this.http.post<any>(this.apiUrlGetL0G1N, { params });
     /* const url = `${this.apiUrlGetL0G1N}?tipo=${body.tipo}&Usuario=${body.Usuario}&Password=${body.Password}`;   
      return this.http.get<any>(url, { observe: 'response' });*/
   }

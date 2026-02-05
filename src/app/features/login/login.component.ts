@@ -5,7 +5,7 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ProcesosCedisService } from '../../service/procesos-cedis.service';
 import { DatosService } from '../../service/servicio.service';
-import { PermissionService } from '../../core/permission.service';
+import { PermissionService } from '../../core/permission.service';//importamos el servicio
 export interface IAutoidentifica {
   proceso: number,
   usuario: string;
@@ -22,7 +22,11 @@ export class LoginComponent {
 
   constructor(private service: ProcesosCedisService, private datosService: DatosService) { }
 
-private permissionService = inject(PermissionService);
+  //Inyectar el servicio
+  private authService = inject(PermissionService);
+
+
+  private permissionService = inject(PermissionService);
 
   private fb = inject(FormBuilder);
   private router = inject(Router);
@@ -79,21 +83,34 @@ private permissionService = inject(PermissionService);
   //valida pass
   Validapass(body: IAutoidentifica) {
 
-    this.service.getLogin(body).subscribe((response) => {
+    this.service.getLogin(body).subscribe({
+      next: (response) => {
+        //console.log( response[0].err_id );    
+        if (response && response.length > 0 && !response[0].err_id) {
+          console.log("Acceso concedido");
+          localStorage.setItem('userToken', 'SESION_VALIDA'); // O guarda el ID que venga en la respuesta
+          this.authService.isLogged.set(true); // <--- Ahora sí lo encuentra
+          this.authService.iniciarVigilancia(); // <--- Llamamos a la vigilancia
 
-      //console.log( response[0].err_id );    
-      if (response[0].err_id == "") {
-        this.agregarDato()
-        this.permissionService.login('TOKEN-CEDIS-2026');
-        this.router.navigate(['/inventario']);
+          this.agregarDato()
+          // this.permissionService.login('TOKEN-CEDIS-2026');
+          this.router.navigate(['/inventario']);
 
-      }
-      else {
-        this.errorMsg = response[0].err_msg
+        } else {
+          this.errorMsg = response[0].err_msg
+        }
+      }, error: (err) => {
+        // ESTO PASA SI LA API ESTÁ CAÍDA O NO HAY INTERNET
+        console.error("La API no responde:", err);
+        alert("⚠️ Error crítico: No se pudo conectar con el servidor del CEDIS. Acceso denegado.");
+
+        // Aseguramos que NO se guarde nada
+        localStorage.removeItem('userToken');
+        this.authService.isLogged.set(false);
       }
     });
-
   }
+
 
   agregarDato() {
     const nuevoDato = this.loginForm.value.username ?? '';
