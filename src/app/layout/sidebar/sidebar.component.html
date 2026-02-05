@@ -1,35 +1,53 @@
 <div class="sidebar-container">
-  <div class="logo-section logo-section img">
-    <img src="logo.png" alt="Logo">
+  <div class="sidebar-top-group">
+    <div class="logo-section">
+      <img src="logo.png" alt="Logo">
+    </div>
+
+    <nav class="menu-nav">
+      <div class="menu-item">
+        <div class="menu-header" (click)="toggleMenu('inventario')">
+          <span>📦 Inventario</span>
+          <span class="arrow" [class.rotated]="menusAbiertos['inventario']">▶</span>
+        </div>
+        @if (menusAbiertos['inventario']) {
+          <div class="sub-menu">
+            <a routerLink="/inventario/consulta" routerLinkActive="active">Consulta Stock</a>
+            <a routerLink="/inventario/entradas" routerLinkActive="active">Entradas</a>
+          </div>
+        }
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-header" (click)="toggleMenu('recibo')">
+          <span>🚚 Recibo</span>
+          <span class="arrow" [class.rotated]="menusAbiertos['recibo']">▶</span>
+        </div>
+        @if (menusAbiertos['recibo']) {
+          <div class="sub-menu">
+            <a routerLink="/recibo/ordenes" routerLinkActive="active">Órdenes de Compra</a>
+            <a routerLink="/recibo/historial" routerLinkActive="active">Historial</a>
+          </div>
+        }
+      </div>
+    </nav>
   </div>
 
-  <nav class="menu-nav">
-    <div class="menu-item">
-      <div class="menu-header" (click)="toggleMenu('inventario')">
-        <span>📦 Inventario</span>
-        <span class="arrow" [class.rotated]="menusAbiertos['inventario']">▶</span>
+  <div class="user-section-bottom">
+    @if (menuUsuarioAbierto()) {
+      <div class="user-dropdown-up">
+        <button class="dropdown-item" (click)="logout()">🚪 Cerrar Sesión</button>
+        <button class="dropdown-item">🔑 Cambiar Contraseña</button>
       </div>
-      
-      @if (menusAbiertos['inventario']) {
-        <div class="sub-menu">
-          <a routerLink="/inventario/consulta" routerLinkActive="active">Consulta Stock</a>
-          <a routerLink="/inventario/entradas" routerLinkActive="active">Entradas</a>
-        </div>
-      }
-    </div>
+    }
 
-    <div class="menu-item">
-      <div class="menu-header" (click)="toggleMenu('recibo')">
-        <span>🚚 Recibo</span>
-        <span class="arrow" [class.rotated]="menusAbiertos['recibo']">▶</span>
+    <div class="user-info-compact" (click)="toggleMenuUsuario()">
+      <div class="user-avatar-circle">M</div>
+      <div class="user-data">
+        <span class="user-name">Milano</span>
+        <span class="user-role">Admin CEDIS</span>
       </div>
-
-      @if (menusAbiertos['recibo']) {
-        <div class="sub-menu">
-          <a routerLink="/recibo/ordenes" routerLinkActive="active">Órdenes de Compra</a>
-          <a routerLink="/recibo/historial" routerLinkActive="active">Historial</a>
-        </div>
-      }
+      <span class="user-dots">⋮</span>
     </div>
-  </nav>
+  </div>
 </div>

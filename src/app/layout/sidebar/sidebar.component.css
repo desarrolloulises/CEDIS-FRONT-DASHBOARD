@@ -84,3 +84,97 @@
   font-weight: bold;
   background-color: rgba(52, 152, 219, 0.1);
 }
+
+
+/**************************PARA CONTROLAR EL USUARIO******************/
+.sidebar-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Empuja el contenido a los extremos */
+  height: 100vh;
+  background-color: #2c3e50;
+  color: white;
+}
+
+.sidebar-top-group {
+  flex: 1; /* Esto es la clave: empuja todo lo que esté debajo */
+  overflow-y: auto; /* Si hay muchos menús, solo esta parte tendrá scroll */
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Estilos del Usuario abajo --- */
+.user-section-bottom {
+  position: relative;
+  padding: 5px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: #243342; /* Un tono ligeramente más oscuro para diferenciarlo */
+}
+
+.user-info-compact {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.user-info-compact:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.user-avatar-circle {
+  width: 35px;
+  height: 35px;
+  background-color: #455a64;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+}
+
+.user-data {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.user-role {
+  font-size: 0.75rem;
+  color: #bdc3c7;
+}
+
+/* Menú desplegable que flota hacia arriba */
+.user-dropdown-up {
+  position: absolute;
+  bottom: 70px;
+  left: 10px;
+  right: 10px;
+  background: #34495e;
+  border-radius: 8px;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
+  overflow: hidden;
+  z-index: 100;
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 12px 15px;
+  border: none;
+  background: none;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.dropdown-item:hover {
+  background: #3d566e;
+}

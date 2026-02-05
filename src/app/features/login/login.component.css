@@ -36,6 +36,7 @@
 
 .input-group input {
   width: 100%;
+  font-size: 1.2rem;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -51,4 +52,85 @@
   cursor: pointer;
   font-weight: bold;
   margin-top: 10px;
+}
+.msg_error {
+  color: #e74c3c; 
+  font-size: 1.2rem; 
+  margin-top: 10px;
+}
+/*******CONFIGURACION OJO PARA NAVEGADORES*********/
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 40px; /* Espacio para que el texto no tape el ojo */
+}
+
+.ojo-container {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* El ojo base */
+.ojo-css {
+  width: 18px;
+  height: 12px;
+  border: 2px solid #666;
+  border-radius: 50% 50%;
+  position: relative;
+}
+
+/* La pupila */
+.ojo-css::before {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #666;
+  border-radius: 50%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* La línea que tacha el ojo cuando verPassword() es true */
+.ojo-css.tachado::after {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 20px;
+  background: #e74c3c; /* Color rojo para el tachado */
+  transform: rotate(45deg);
+  left: 8px;
+  top: -6px;
+}
+
+/******PARA QUITAR EL OJO DE LOS NAVEGADORES*/
+/* Ocultar el ojo nativo en Microsoft Edge */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
+/* Ocultar el ojo nativo en Chrome/Safari (versiones que lo soporten) */
+input::-webkit-contacts-auto-fill-button,
+input::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
+/* Para evitar que Chrome encime su icono de 'llave' con tu ojo */
+input {
+  appearance: none;
 }

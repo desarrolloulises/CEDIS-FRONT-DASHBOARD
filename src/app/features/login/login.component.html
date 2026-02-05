@@ -1,22 +1,32 @@
 <div class="login-screen">
   <div class="login-card">
     <img src="logo.png" alt="Logo" class="login-logo">
-    <h2>Sistema de Almacén CEDIS</h2>
-    
-    <form>
+    <h2>Sistema de Almacén </h2>
+
+    <form [formGroup]="loginForm" (ngSubmit)="validarUsuario()">
       <div class="input-group">
         <label>Usuario</label>
-        <input type="text" placeholder="Ej: Milano">
+        <input type="text" placeholder="Ej: Milano" formControlName="username">
       </div>
-      
+
       <div class="input-group">
         <label>Contraseña</label>
-        <input type="password" placeholder="••••••••••••••••">
+        <div class="password-wrapper">
+          <input [type]="verPassword() ? 'text' : 'password'" placeholder="••••••••••••••••" formControlName="password">
+
+          <div class="ojo-container" (click)="togglePassword()">
+            <div class="ojo-css" [class.tachado]="verPassword()"></div>
+          </div>
+        </div>
       </div>
-      
-      <button type="button" class="btn-login" (click)="entrar()">
+
+      <button type="submit" class="btn-login" [disabled]="loginForm.invalid">
         Ingresar
       </button>
+
+      @if (errorMsg) {
+      <p class="msg_error">{{ errorMsg }}</p>
+      }
     </form>
   </div>
 </div>
