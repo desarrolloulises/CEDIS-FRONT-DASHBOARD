@@ -40,6 +40,8 @@ export const APIURL_MOVERPALLET = `${url}/cedis/MOVERPALLET`
 export const APIURL_CONSULTAPALLET = `${url}/cedis/CONSULTAPALLET`
 export const APIURL_CAMBIOPASSWORD = `${url}/cedis/CAMBIOpASSWORD`
 
+export const APIURL_MENUSIDEBAR = `${url}/cedis/PERFIL`
+
 
 //local
 /*export const APIURL_CALIDAD = 'https://localhost:7160/cedis/C4L1D4DC3D1S';

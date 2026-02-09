@@ -34,8 +34,16 @@ export interface IAlmacenPallet {
 }
 
 export interface IContrasenna {
-  Usuario: string,
-  Password: string,
-  PasswordN1: string,
-  PasswordN2: string
+    Usuario: string,
+    Password: string,
+    PasswordN1: string,
+    PasswordN2: string
+}
+
+//---------------INTERFACEZ DE DAHBOART-----------------------------------------
+export interface IMenuSidebar {
+    Usuario: string,
+    Nivel: number,
+    SubNivel: number,
+    SubAcceso: number     // Para controlar si el acordeón está abierto
 }

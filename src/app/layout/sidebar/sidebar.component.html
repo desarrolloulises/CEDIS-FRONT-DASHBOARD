@@ -5,16 +5,46 @@
     </div>
 
     <nav class="menu-nav">
+      @for (modulo of modulos(); track modulo.Opcion) {
+        <div class="menu-item">
+          
+          <div class="menu-header" (click)="obtenerSubmenus(modulo)">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i [class]="modulo.Icono"></i>
+              <span>{{ modulo.Descripcion }}</span>
+            </div>
+
+            @if (modulo.cargando) {
+              <span class="spinner-loader"></span>
+            } @else {
+              <span class="arrow" [class.rotated]="modulo.abierto">▶</span>
+            }
+          </div>
+
+          @if (modulo.abierto && modulo.sub?.length) {
+            <div class="sub-menu">
+              @for (sub of modulo.sub; track sub.Opcion) {
+                <a [routerLink]="[sub.URL]" routerLinkActive="active">
+                  {{ sub.Descripcion }}
+                </a>
+              }
+            </div>
+          }
+        </div>
+      }
+    </nav>
+    <!--
+    <nav class="menu-nav">
       <div class="menu-item">
         <div class="menu-header" (click)="toggleMenu('inventario')">
           <span>📦 Inventario</span>
           <span class="arrow" [class.rotated]="menusAbiertos['inventario']">▶</span>
         </div>
         @if (menusAbiertos['inventario']) {
-          <div class="sub-menu">
-            <a routerLink="/inventario/consulta" routerLinkActive="active">Consulta Stock</a>
-            <a routerLink="/inventario/entradas" routerLinkActive="active">Entradas</a>
-          </div>
+        <div class="sub-menu">
+          <a routerLink="/inventario/consulta" routerLinkActive="active">Consulta Stock</a>
+          <a routerLink="/inventario/entradas" routerLinkActive="active">Entradas</a>
+        </div>
         }
       </div>
 
@@ -24,21 +54,23 @@
           <span class="arrow" [class.rotated]="menusAbiertos['recibo']">▶</span>
         </div>
         @if (menusAbiertos['recibo']) {
-          <div class="sub-menu">
-            <a routerLink="/recibo/ordenes" routerLinkActive="active">Órdenes de Compra</a>
-            <a routerLink="/recibo/historial" routerLinkActive="active">Historial</a>
-          </div>
+        <div class="sub-menu">
+          <a routerLink="/recibo/ordenes" routerLinkActive="active">Órdenes de Compra</a>
+          <a routerLink="/recibo/historial" routerLinkActive="active">Historial</a>
+        </div>
         }
       </div>
     </nav>
+  -->
+
   </div>
 
   <div class="user-section-bottom">
     @if (menuUsuarioAbierto()) {
-      <div class="user-dropdown-up">
-        <button class="dropdown-item" (click)="logout()">🚪 Cerrar Sesión</button>
-        <button class="dropdown-item">🔑 Cambiar Contraseña</button>
-      </div>
+    <div class="user-dropdown-up">
+      <button class="dropdown-item" (click)="logout()">🚪 Cerrar Sesión</button>
+      <button class="dropdown-item">🔑 Cambiar Contraseña</button>
+    </div>
     }
 
     <div class="user-info-compact" (click)="toggleMenuUsuario()">

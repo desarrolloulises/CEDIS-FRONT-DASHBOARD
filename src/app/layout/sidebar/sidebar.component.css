@@ -178,3 +178,29 @@
 .dropdown-item:hover {
   background: #3d566e;
 }
+
+/****************SPINNER******************/
+/* Estilo para el Spinner (Cargador) */
+.spinner-loader {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #3498db; /* Color azul para que resalte */
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Ajuste para la flecha según tu CSS */
+.arrow {
+  display: inline-block;
+  font-size: 0.6rem;
+  transition: transform 0.3s ease;
+}
+
+.arrow.rotated {
+  transform: rotate(90deg); /* Apunta hacia abajo cuando está abierto */
+}
