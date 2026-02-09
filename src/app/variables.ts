@@ -1,3 +1,46 @@
+
+export const url ='http://192.168.101.9:8086' //Para servidar dasboartd
+//export const url ='http://192.168.101.9:8085' //Para servidar WMS-DES
+
+//export const url ='https://localhost:7160' //Para servidar LOCAL
+//export const url ='http://192.168.101.9:8088' //Para servidar DESAROLLO
+//export const url ='http://192.168.101.10:80' //Para servidar PRODUCCION
+
+
+  export const APIURL_CALIDAD = `${url}/cedis/C4L1D4DC3D1S`;
+  export const APIURL_RECIBO = `${url}/cedis/R3C1B0C3D1S`;
+  export const APIURL_CIERREOC = `${url}/cedis/C13RR3C3D1S`;
+  export const APIURL_AVANCEREC = `${url}/cedis/4VANC3R3CCED1S`;
+  export const APIURL_VALPRECIO = `${url}/cedis/V4L1PR3C1OCED1S`;
+  export const APIURL_GETPRIMERCONTEOFOLIO = `${url}/cedis/G3TPR1MRCNT30F0L10CED1S`;
+  export const APIURL_GETPRIMERCONTEOSCANER = `${url}/cedis/G3TPR1MRCNT305C4N3RCED1S`;
+  export const APIURL_GETSEGUNDOCONTEOFOLIO = `${url}/cedis/G3TSGDOCNT30F0L10CED1S`;
+  export const APIURL_GETSEGUNDOCONTEOSCANER = `${url}/cedis/G3TSGDOCNT305C4N3RCED1S`;
+  export const APIRUL_G3TB4I4 = `${url}/cedis/G3TB4I4`;
+  export const APIRUL_PR1M3R5C4N30 = `${url}/cedis/PR1M3R5C4N30`;
+  export const APIRUL_PR1M3R5C4N30F4L74N735 = `${url}/cedis/PR1M3R5C4N30F4L74N735`;
+  export const APIRUL_53GUMD05C4N30 = `${url}/cedis/53GUMD05C4N30`;
+  export const APIRUL_53GUMD05C4N30F4L74N735 = `${url}/cedis/53GUMD05C4N30F4L74N735`;
+
+
+// // URL PARA LAS NUEVAS PANTALLAS DE BAHIAS
+ export const APIRUL_BU5C4RC4J45B4H145MARA1 = `${url}/cedis/BU5C4RC4J45B4H145MARA1`;
+ export const APIRUL_C0N5ULT4G3N3R4LB5H145MARA2 = `${url}/cedis/C0N5ULT4G3N3R4LB5H145MARA2`;
+ export const APIRUL_C0N5ULT4D3T4113B4145MARA3 = `${url}/cedis/C0N5ULT4D3T4113B4145MARA3`;
+ export const APIURL_5CTU5LIZ5RD5T5 = `${url}/cedis/5CTU5LIZ5RD5T5`;
+ export const APIURL_REPORTEGENERALINCIDENCIAS = `${url}/cedis/REPORTEGENERALINCIDENCIAS`;
+ export const APIURL_PRIMERCONTEOVSSEGUNDOCONTEO = `${url}/cedis/PRIMERCONTEOVSSEGUNDOCONTEO`;
+
+export const APIURL_L0G1N = `${url}/cedis/LOGIN/`
+export const APIURL_4LM4C3N = `${url}/cedis/4LM4C3N`
+export const APIURL_MULTITIENDA = `${url}/cedis/MULTITIENDA`
+export const APIURL_EXTRAERCAJAPALLET = `${url}/cedis/EXTRAERCAJAPALLET`
+export const APIURL_DESARMARPALLET = `${url}/cedis/DESARMARPALLET`
+export const APIURL_MOVERPALLET = `${url}/cedis/MOVERPALLET`
+export const APIURL_CONSULTAPALLET = `${url}/cedis/CONSULTAPALLET`
+export const APIURL_CAMBIOPASSWORD = `${url}/cedis/CAMBIOpASSWORD`
+
+
 //local
 /*export const APIURL_CALIDAD = 'https://localhost:7160/cedis/C4L1D4DC3D1S';
 export const APIURL_RECIBO = 'https://localhost:7160/cedis/R3C1B0C3D1S';
@@ -60,7 +103,7 @@ export const APIURL_4LM4C3N = 'http://192.168.101.9:8088/cedis/4LM4C3N'
 export const APIURL_MULTITIENDA = 'http://192.168.101.9:8088/cedis/MULTITIENDA'
 
 */
-
+/*
 //WMS-DES
   export const APIURL_CALIDAD = 'http://192.168.101.9:8085/cedis/C4L1D4DC3D1S';
   export const APIURL_RECIBO = 'http://192.168.101.9:8085/cedis/R3C1B0C3D1S';
@@ -86,7 +129,7 @@ export const APIURL_MULTITIENDA = 'http://192.168.101.9:8088/cedis/MULTITIENDA'
  export const APIURL_REPORTEGENERALINCIDENCIAS = 'http://192.168.101.9:8085/cedis/REPORTEGENERALINCIDENCIAS';
  export const APIURL_PRIMERCONTEOVSSEGUNDOCONTEO = 'http://192.168.101.9:8085/cedis/PRIMERCONTEOVSSEGUNDOCONTEO';
 
-export const APIURL_L0G1N = 'http://192.168.101.9:8085/cedis/LOGINN'
+export const APIURL_L0G1NN = 'http://192.168.101.9:8085/cedis/LOGINN/'
 export const APIURL_4LM4C3N = 'http://192.168.101.9:8085/cedis/4LM4C3N'
 export const APIURL_MULTITIENDA = 'http://192.168.101.9:8085/cedis/MULTITIENDA'
 export const APIURL_EXTRAERCAJAPALLET = 'http://192.168.101.9:8085/cedis/EXTRAERCAJAPALLET'
@@ -94,7 +137,7 @@ export const APIURL_DESARMARPALLET = 'http://192.168.101.9:8085/cedis/DESARMARPA
 export const APIURL_MOVERPALLET = 'http://192.168.101.9:8085/cedis/MOVERPALLET'
 export const APIURL_CONSULTAPALLET = 'http://192.168.101.9:8085/cedis/CONSULTAPALLET'
 export const APIURL_CAMBIOPASSWORD = 'http://192.168.101.9:8085/cedis/CAMBIOpASSWORD'
-
+*/
 
 
 // develop ambiente test cedis   

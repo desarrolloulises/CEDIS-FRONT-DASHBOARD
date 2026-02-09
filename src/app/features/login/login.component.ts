@@ -87,7 +87,7 @@ export class LoginComponent {
       next: (response) => {
         //console.log( response[0].err_id );    
         if (response && response.length > 0 && !response[0].err_id) {
-          console.log("Acceso concedido");
+          //console.log("Acceso concedido");
           localStorage.setItem('userToken', 'SESION_VALIDA'); // O guarda el ID que venga en la respuesta
           this.authService.isLogged.set(true); // <--- Ahora sí lo encuentra
           this.authService.iniciarVigilancia(); // <--- Llamamos a la vigilancia

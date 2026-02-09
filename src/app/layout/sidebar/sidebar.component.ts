@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { PermissionService } from '../../core/permission.service';
+import { DatosService } from '../../service/servicio.service';
 
 
 @Component({
@@ -12,15 +13,25 @@ import { PermissionService } from '../../core/permission.service';
   styleUrls: ['./sidebar.component.css']
 })
 export class SidebarComponent {
+  public userRecivido = signal<string>(''); //recibiendo Usiuario
+
   private router = inject(Router);
   menuUsuarioAbierto = signal(false);
 
   private permissionService = inject(PermissionService); //para manejar login con guard
 
+  constructor(
+    private datosService: DatosService,) {
+      console.log(this.datosService.usuarioSignal());
+  }
+
+
+  
+
   toggleMenuUsuario() {
     this.menuUsuarioAbierto.update(v => !v);
   }
-
+//cierre de sesión, borra el token y redirige a login
   logout() {
     this.permissionService.logout(); // El servicio borra el token
     this.router.navigate(['/login'], { replaceUrl: true });
