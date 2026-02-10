@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 import { LoginComponent } from './features/login/login.component';
 import { authGuard } from './core/auth.guard';
+import { CambioPassComponent } from './features/cambio-pass/cambio-pass.component';
 
 export const routes: Routes = [
   {
@@ -16,6 +17,10 @@ export const routes: Routes = [
       {
         path: 'inventario',
         loadComponent: () => import('./features/inventario/inventario.component').then(m => m.InventarioComponent)
+      },
+      {
+        path: 'CambiaPass',
+        loadComponent: () => import('./features/cambio-pass/cambio-pass.component').then(m => m.CambioPassComponent) // El login va SOLO, sin Layout
       },
       { path: '', redirectTo: 'inventario', pathMatch: 'full' } //indica que pantalla mostrar al inicio de la carga
     ]

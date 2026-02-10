@@ -1,0 +1,53 @@
+<div class="login-screen">
+  <div class="login-card">
+    <h2>🔑Cambiar Contraseña</h2>
+
+    <form [formGroup]="passwordForm" (ngSubmit)="actualizarPassword()">
+      
+      <div class="input-group">
+        <label>Usuario</label>
+        <input type="text" formControlName="user"  placeholder="Milano">
+      </div>
+
+      <div class="input-group">
+        <label>Contraseña Actual</label>
+        <div class="password-wrapper">
+          <input [type]="verOld() ? 'text' : 'password'" placeholder="••••••••••••" formControlName="passOld">
+          <div class="ojo-container" (click)="toggleOld()">
+            <div class="ojo-css" [class.tachado]="verOld()"></div>
+          </div>
+        </div>
+      </div>
+
+      <hr style="margin: 15px 0; border: 0; border-top: 1px dashed #080808;">
+
+      <div class="input-group">
+        <label>Nueva Contraseña</label>
+        <div class="password-wrapper">
+          <input [type]="verNew() ? 'text' : 'password'" placeholder="••••••••••••" formControlName="passN1">
+          <div class="ojo-container" (click)="toggleNew()">
+            <div class="ojo-css" [class.tachado]="verNew()"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Confirmar Nueva Contraseña</label>
+        <div class="password-wrapper">
+          <input [type]="verConfirm() ? 'text' : 'password'" placeholder="••••••••••••" formControlName="passN2">
+          <div class="ojo-container" (click)="toggleConfirm()">
+            <div class="ojo-css" [class.tachado]="verConfirm()"></div>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login" [disabled]="passwordForm.invalid">
+        Actualizar Contraseña
+      </button> 
+
+      @if (errorMsg) {
+        <p class="msg_error">{{ errorMsg }}</p>
+      }
+    </form>
+  </div>
+</div>

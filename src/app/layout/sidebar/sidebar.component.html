@@ -69,7 +69,11 @@
     @if (menuUsuarioAbierto()) {
     <div class="user-dropdown-up">
       <button class="dropdown-item" (click)="logout()">🚪 Cerrar Sesión</button>
-      <button class="dropdown-item">🔑 Cambiar Contraseña</button>
+      <button class="dropdown-item" 
+            routerLink="/CambiaPass" 
+            (click)="menuUsuarioAbierto.set(false)">
+      🔑 Cambiar Contraseña
+    </button>
     </div>
     }
 
