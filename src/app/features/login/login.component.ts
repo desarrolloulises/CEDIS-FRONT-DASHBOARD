@@ -20,7 +20,7 @@ export interface IAutoidentifica {
 })
 export class LoginComponent {
 
-  constructor(private service: ProcesosCedisService, private datosService: DatosService) { }
+  constructor(private service: ProcesosCedisService, private datosService: DatosService,  private router: Router) { }
 
   //Inyectar el servicio
   private authService = inject(PermissionService);
@@ -29,7 +29,6 @@ export class LoginComponent {
   private permissionService = inject(PermissionService);
 
   private fb = inject(FormBuilder);
-  private router = inject(Router);
 
   errorMsg: string | null = null;
 
@@ -88,9 +87,13 @@ export class LoginComponent {
         //console.log( response[0].err_id );    
         if (response && response.length > 0 && !response[0].err_id) {
           //console.log("Acceso concedido");
-          localStorage.setItem('userToken', 'SESION_VALIDA'); // O guarda el ID que venga en la respuesta
-          this.authService.isLogged.set(true); // <--- Ahora sí lo encuentra
-          this.authService.iniciarVigilancia(); // <--- Llamamos a la vigilancia
+          // Cuando el login es correcto:
+          sessionStorage.setItem('userToken', 'SESION_VALIDA');
+
+          // Tienes que usar el alias que le diste al servicio (probablemente 'authService' o 'service')
+          this.authService.isLogged.set(true);
+
+          this.authService.iniciarVigilancia();
 
           this.agregarDato()
           // this.permissionService.login('TOKEN-CEDIS-2026');

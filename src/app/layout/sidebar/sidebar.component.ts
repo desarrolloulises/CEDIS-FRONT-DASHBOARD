@@ -60,11 +60,16 @@ export class SidebarComponent {
   }
 
   obtenerSubmenus(modulo: any) {
-    // 1. Si ya tiene submenús, solo abrimos/cerramos
-    if (modulo.sub && modulo.sub.length > 0) {
-      this.modulos.update(lista => lista.map(m =>
-        m.Opcion === modulo.Opcion ? { ...m, abierto: !m.abierto } : m
-      ));
+    // 1. Si ya tiene submenús O ya intentamos cargarlos y no hubo, solo abrimos/cerramos
+    if ((modulo.sub && modulo.sub.length > 0) || modulo.intentado) {
+      if (modulo.sub && modulo.sub.length > 0) {
+          this.modulos.update(lista => lista.map(m =>
+            m.Opcion === modulo.Opcion ? { ...m, abierto: !m.abierto } : m
+          ));
+      } else {
+          // Si no tiene hijos pero ya se intentó, quizás quieres navegar directamente
+          //this.navegarAModuloDirecto(modulo);
+      }
       return;
     }
 
@@ -87,7 +92,15 @@ export class SidebarComponent {
             : m
         ));
       },
-      error: () => this.actualizarEstado(modulo.Opcion, { cargando: false })
+      error: (err) => {
+        // Si da 404, asumimos que no hay submenús y marcamos como abierto/cargado
+        this.modulos.update(lista => lista.map(m =>
+          m.Opcion === modulo.Opcion
+            ? { ...m, sub: [], abierto: false, cargando: false, intentado: true }
+            : m
+        ));
+        console.log("Módulo sin hijos o error de red:", err.status);
+      }
     });
   }
 

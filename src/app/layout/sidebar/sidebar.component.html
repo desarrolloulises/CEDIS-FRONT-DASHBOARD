@@ -5,35 +5,37 @@
     </div>
 
     <nav class="menu-nav">
-      @for (modulo of modulos(); track modulo.Opcion) {
-        <div class="menu-item">
-          
-          <div class="menu-header" (click)="obtenerSubmenus(modulo)">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <i [class]="modulo.Icono"></i>
-              <span>{{ modulo.Descripcion }}</span>
-            </div>
+  @for (modulo of modulos(); track modulo.Opcion) {
+    <div class="menu-item">
+      
+      <div class="menu-header" (click)="obtenerSubmenus(modulo)">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <i [class]="modulo.Icono"></i>
+          <span>{{ modulo.Descripcion }}</span>
+        </div>
 
-            @if (modulo.cargando) {
-              <span class="spinner-loader"></span>
-            } @else {
-              <span class="arrow" [class.rotated]="modulo.abierto">▶</span>
-            }
-          </div>
+        @if (modulo.cargando) {
+          <span class="spinner-loader"></span>
+        } @else {
+          @if (!modulo.intentado || (modulo.sub && modulo.sub.length > 0)) {
+            <span class="arrow" [class.rotated]="modulo.abierto">▶</span>
+          }
+        }
+      </div>
 
-          @if (modulo.abierto && modulo.sub?.length) {
-            <div class="sub-menu">
-              @for (sub of modulo.sub; track sub.Opcion) {
-                <a [routerLink]="[sub.URL]" routerLinkActive="active">
-                  {{ sub.Descripcion }}
-                </a>
-              }
-            </div>
+      @if (modulo.abierto && modulo.sub?.length) {
+        <div class="sub-menu">
+          @for (sub of modulo.sub; track sub.Opcion) {
+            <a [routerLink]="[sub.URL]" routerLinkActive="active">
+              {{ sub.Descripcion }}
+            </a>
           }
         </div>
       }
-    </nav>
-    <!--
+    </div>
+  }
+</nav>
+<!--
     <nav class="menu-nav">
       <div class="menu-item">
         <div class="menu-header" (click)="toggleMenu('inventario')">

@@ -13,20 +13,30 @@ export class PermissionService {
   private renderer = inject(RendererFactory2).createRenderer(null, null);
 
   private timeoutId: any;
-  private readonly MINUTOS_INACTIVIDAD = 10; // Configura el tiempo aquí
+  private readonly MINUTOS_INACTIVIDAD = 1; // Configura el tiempo aquí
 
   public isLogged = signal<boolean>(false);
 
   constructor() {
-    if (isPlatformBrowser(this.platformId)) {
-      const token = localStorage.getItem('userToken');
-      this.isLogged.set(!!token);
+   if (isPlatformBrowser(this.platformId)) {
+  // 1. Usamos sessionStorage (se borra al cerrar la pestaña/navegador)
+  const token = sessionStorage.getItem('userToken');
+  
+  // 2. Recuperamos también el objeto usuario (si lo guardaste)
+  const userStr = sessionStorage.getItem('userData'); 
 
-      // Si al cargar ya está logueado, empezamos a vigilar
-      if (this.isLogged()) {
-        this.iniciarVigilancia();
-      }
-    }
+  // 3. Solo está logueado si hay token Y hay datos de usuario
+  const validSession = !!token && token !== 'undefined' && !!userStr;
+  
+  this.isLogged.set(validSession);
+
+  if (validSession) {
+    this.iniciarVigilancia();
+  } else {
+    // Si falta algo, limpiamos por si acaso quedaron restos
+    this.logout(); 
+  }
+}
   }
 
   // --- Lógica de Vigilancia ---
@@ -67,14 +77,28 @@ export class PermissionService {
     }
   }
 
-  logout() {
-    if (isPlatformBrowser(this.platformId)) {
-      if (this.timeoutId) clearTimeout(this.timeoutId);
-      localStorage.removeItem('userToken');
-      this.isLogged.set(false);
-      this.router.navigate(['/login']);
-    }
-  }
+ logout() {
+  // 1. Limpiamos el almacenamiento de la pestaña (sessionStorage)
+  // Usamos el nombre exacto de la llave que definimos antes
+  sessionStorage.removeItem('userToken');
+  sessionStorage.removeItem('userData');
+  
+  // Opcional: Limpia todo por si quedó algo de versiones anteriores
+  sessionStorage.clear();
+  localStorage.removeItem('userToken'); 
+
+  // 2. Actualizamos la señal (Signal) para que el Guard bloquee el paso
+  this.isLogged.set(false);
+
+  // 3. Detenemos la vigilancia (si tienes el método creado)
+  // this.detenerVigilancia(); 
+
+  // 4. Redirección inmediata al login
+  this.router.navigate(['/login'] , { replaceUrl: true });
+  //window.location.reload(); //recarga la pagina para perder el token y seccion
+  
+  console.log("Sesión cerrada correctamente");
+}
   // En tu PermissionService, añade esta lógica para mejorar la seguridad
 checkTokenValidity() {
   if (isPlatformBrowser(this.platformId)) {

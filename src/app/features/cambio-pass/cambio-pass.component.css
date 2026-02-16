@@ -4,21 +4,24 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #2c3e50; /* El color de tu sidebar/login */
+  /*background-color: #2c3e50; /* El color de tu sidebar/login */
+  background-color: white;
 }
 
 .login-card {
-  background: white;
+  /* background: white;*/
+  background: #2c3e50;
   padding: 30px;
   border-radius: 10px;
   width: 320px;
   text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 
-h2{
+h2 {
   margin: 5px auto;
+  color: white;
 }
 
 .input-group {
@@ -30,7 +33,7 @@ h2{
   display: block;
   font-weight: bold;
   margin-bottom: 5px;
-  color: #333;
+  color: white;
 }
 
 .input-group input {
@@ -38,7 +41,8 @@ h2{
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 8px;
-  box-sizing: border-box; /* Importante para que no se salga del card */
+  box-sizing: border-box;
+  /* Importante para que no se salga del card */
 }
 
 /* Estilos del OJO CSS que ya tienes */
@@ -69,4 +73,8 @@ h2{
 
 .btn-login:disabled {
   background-color: #95a5a6;
+}
+
+.msg_error {
+  color: red;
 }

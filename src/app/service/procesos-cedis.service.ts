@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { BehaviorSubject, filter, Observable, pairwise } from 'rxjs';
-import { APIURL_AVANCEREC, APIURL_CALIDAD, APIURL_CIERREOC, APIRUL_G3TB4I4, APIURL_GETPRIMERCONTEOFOLIO, APIURL_GETPRIMERCONTEOSCANER, APIURL_GETSEGUNDOCONTEOFOLIO, APIURL_GETSEGUNDOCONTEOSCANER, APIURL_RECIBO, APIURL_VALPRECIO, APIRUL_PR1M3R5C4N30, APIRUL_PR1M3R5C4N30F4L74N735, APIRUL_53GUMD05C4N30, APIRUL_53GUMD05C4N30F4L74N735, APIRUL_BU5C4RC4J45B4H145MARA1, APIRUL_C0N5ULT4G3N3R4LB5H145MARA2, APIRUL_C0N5ULT4D3T4113B4145MARA3, APIURL_5CTU5LIZ5RD5T5, APIURL_REPORTEGENERALINCIDENCIAS, APIURL_PRIMERCONTEOVSSEGUNDOCONTEO, APIURL_4LM4C3N,APIURL_MULTITIENDA, APIURL_EXTRAERCAJAPALLET, APIURL_DESARMARPALLET, APIURL_MOVERPALLET, APIURL_CONSULTAPALLET, APIURL_CAMBIOPASSWORD, APIURL_L0G1N, APIURL_MENUSIDEBAR } from '../variables';
+import { BehaviorSubject, catchError, filter, Observable, of, pairwise, throwError } from 'rxjs';
+import { APIURL_AVANCEREC, APIURL_CALIDAD, APIURL_CIERREOC, APIRUL_G3TB4I4, APIURL_GETPRIMERCONTEOFOLIO, APIURL_GETPRIMERCONTEOSCANER, APIURL_GETSEGUNDOCONTEOFOLIO, APIURL_GETSEGUNDOCONTEOSCANER, APIURL_RECIBO, APIURL_VALPRECIO, APIRUL_PR1M3R5C4N30, APIRUL_PR1M3R5C4N30F4L74N735, APIRUL_53GUMD05C4N30, APIRUL_53GUMD05C4N30F4L74N735, APIRUL_BU5C4RC4J45B4H145MARA1, APIRUL_C0N5ULT4G3N3R4LB5H145MARA2, APIRUL_C0N5ULT4D3T4113B4145MARA3, APIURL_5CTU5LIZ5RD5T5, APIURL_REPORTEGENERALINCIDENCIAS, APIURL_PRIMERCONTEOVSSEGUNDOCONTEO, APIURL_4LM4C3N, APIURL_MULTITIENDA, APIURL_EXTRAERCAJAPALLET, APIURL_DESARMARPALLET, APIURL_MOVERPALLET, APIURL_CONSULTAPALLET, APIURL_CAMBIOPASSWORD, APIURL_L0G1N, APIURL_MENUSIDEBAR } from '../variables';
 import { Iembarqes } from '../interfaces/iembarqes';
 import { IActualizarData, IAlmacen, IAlmacenPallet, Ibahia, IConsultaCaja, IContrasenna, IMenuSidebar, IReporteGeneralIncidencias } from '../interfaces/ibahia';
 import { NavigationEnd, Router } from '@angular/router';
@@ -46,17 +46,17 @@ export class ProcesosCedisService {
   private datosPrimerEscaneo: any = null;
 
   private apiUrlGetL0G1N = APIURL_L0G1N;
-  private apiUrlGetAlmacen = APIURL_4LM4C3N;  
-  private apiUrlGetMultiTienda = APIURL_MULTITIENDA;  
+  private apiUrlGetAlmacen = APIURL_4LM4C3N;
+  private apiUrlGetMultiTienda = APIURL_MULTITIENDA;
   private apiUrlGetExtraeCajaPallet = APIURL_EXTRAERCAJAPALLET;
   private apiUrlGetDesarmarPallet = APIURL_DESARMARPALLET;
   private apiUrlGetMoverPallet = APIURL_MOVERPALLET;
   private apiUrlGetConsultaPallet = APIURL_CONSULTAPALLET;
   private apiUrlGetCambioPassword = APIURL_CAMBIOPASSWORD;
   private apiUrlGetPerfil = APIURL_MENUSIDEBAR;
-  
-  
-  
+
+
+
 
   private previousUrl: string = '';
   private currentUrl: string = '';
@@ -218,7 +218,7 @@ export class ProcesosCedisService {
     if (body.usuario) params = params.set('usuario', body.usuario);
     if (body.password) params = params.set('password', body.password);
     //console.log(this.apiUrlGetL0G1N, { params });
-    
+
     return this.http.get<any>(this.apiUrlGetL0G1N, { params });
     /* const url = `${this.apiUrlGetL0G1N}?tipo=${body.tipo}&Usuario=${body.Usuario}&Password=${body.Password}`;   
      return this.http.get<any>(url, { observe: 'response' });*/
@@ -228,83 +228,92 @@ export class ProcesosCedisService {
   getAlmacen(body: IAlmacen): Observable<any> {
     let params = new HttpParams().set('tipo', body.tipo);
     if (body.Id_Pallet) params = params.set('Id_Pallet', body.Id_Pallet);
-    if (body.Inp_txt8) params = params.set('Inp_txt8', body.Inp_txt8);    
-    if (body.Usuario) params = params.set('Usuario', body.Usuario); 
+    if (body.Inp_txt8) params = params.set('Inp_txt8', body.Inp_txt8);
+    if (body.Usuario) params = params.set('Usuario', body.Usuario);
     return this.http.get<any>(this.apiUrlGetAlmacen, { params });
   }
 
-   //--------------------------------------------------------------------------------------
+  //--------------------------------------------------------------------------------------
   getMultitienda(body: IAlmacen): Observable<any> {
     let params = new HttpParams().set('tipo', body.tipo);
     if (body.Id_Pallet) params = params.set('Id_Pallet', body.Id_Pallet);
-    if (body.Inp_txt8) params = params.set('Inp_txt8', body.Inp_txt8);  
-    if (body.Usuario) params = params.set('Usuario', body.Usuario);  
+    if (body.Inp_txt8) params = params.set('Inp_txt8', body.Inp_txt8);
+    if (body.Usuario) params = params.set('Usuario', body.Usuario);
     return this.http.get<any>(this.apiUrlGetMultiTienda, { params });
   }
 
-   //--------------------------------------------------------------------------------------
+  //--------------------------------------------------------------------------------------
   getMoverCajaPallet(body: IAlmacen): Observable<any> {
     let params = new HttpParams().set('tipo', body.tipo);
     if (body.Id_Pallet) params = params.set('Id_Pallet', body.Id_Pallet);
-    if (body.Inp_txt8) params = params.set('Inp_txt8', body.Inp_txt8);  
-    if (body.Usuario) params = params.set('Usuario', body.Usuario);  
+    if (body.Inp_txt8) params = params.set('Inp_txt8', body.Inp_txt8);
+    if (body.Usuario) params = params.set('Usuario', body.Usuario);
     return this.http.get<any>(this.apiUrlGetMultiTienda, { params });
   }
 
-   //--------------------------------------------------------------------------------------
+  //--------------------------------------------------------------------------------------
   getExtraeCajaPallet(body: IAlmacen): Observable<any> {
     let params = new HttpParams().set('tipo', body.tipo);
     if (body.Id_Pallet) params = params.set('Id_Pallet', body.Id_Pallet);
-    if (body.Inp_txt8) params = params.set('Inp_txt8', body.Inp_txt8);  
-    if (body.Usuario) params = params.set('Usuario', body.Usuario);  
+    if (body.Inp_txt8) params = params.set('Inp_txt8', body.Inp_txt8);
+    if (body.Usuario) params = params.set('Usuario', body.Usuario);
     return this.http.get<any>(this.apiUrlGetExtraeCajaPallet, { params });
   }
 
-   //--------------------------------------------------------------------------------------
+  //--------------------------------------------------------------------------------------
   getDesarmarPallet(body: IAlmacenPallet): Observable<any> {
     let params = new HttpParams().set('tipo', body.tipo);
-    if (body.Inp_txt8) params = params.set('Inp_txt8', body.Inp_txt8);  
-    if (body.Usuario) params = params.set('Usuario', body.Usuario);  
+    if (body.Inp_txt8) params = params.set('Inp_txt8', body.Inp_txt8);
+    if (body.Usuario) params = params.set('Usuario', body.Usuario);
     return this.http.get<any>(this.apiUrlGetDesarmarPallet, { params });
   }
 
-   //--------------------------------------------------------------------------------------
+  //--------------------------------------------------------------------------------------
   getMoverPalletUbicacion(body: IAlmacen): Observable<any> {
     let params = new HttpParams().set('tipo', body.tipo);
     if (body.Id_Pallet) params = params.set('Id_Pallet', body.Id_Pallet);
-    if (body.Inp_txt8) params = params.set('Inp_txt8', body.Inp_txt8);  
-    if (body.Usuario) params = params.set('Usuario', body.Usuario);  
+    if (body.Inp_txt8) params = params.set('Inp_txt8', body.Inp_txt8);
+    if (body.Usuario) params = params.set('Usuario', body.Usuario);
     return this.http.get<any>(this.apiUrlGetMoverPallet, { params });
   }
 
-   //--------------------------------------------------------------------------------------
+  //--------------------------------------------------------------------------------------
   getConsultarPallet(body: IAlmacenPallet): Observable<any> {
     let params = new HttpParams().set('tipo', body.tipo);
-    if (body.Inp_txt8) params = params.set('Inp_txt8', body.Inp_txt8);  
-    if (body.Usuario) params = params.set('Usuario', body.Usuario);  
+    if (body.Inp_txt8) params = params.set('Inp_txt8', body.Inp_txt8);
+    if (body.Usuario) params = params.set('Usuario', body.Usuario);
     return this.http.get<any>(this.apiUrlGetConsultaPallet, { params });
   }
 
-   //--------------------------------------------------------------------------------------
+  //--------------------------------------------------------------------------------------
   getCambioContrasena(body: IContrasenna): Observable<any> {
     let params = new HttpParams().set('Usuario', body.Usuario);
-    if (body.Password) params = params.set('Password', body.Password);  
-    if (body.PasswordN1) params = params.set('PasswordN1', body.PasswordN1);  
-    if (body.PasswordN2) params = params.set('PasswordN2', body.PasswordN2);  
+    if (body.Password) params = params.set('Password', body.Password);
+    if (body.PasswordN1) params = params.set('PasswordN1', body.PasswordN1);
+    if (body.PasswordN2) params = params.set('PasswordN2', body.PasswordN2);
     return this.http.get<any>(this.apiUrlGetCambioPassword, { params });
   }
 
-   //--------------------------------------------------------------------------------------
- getVerMenu(body: IMenuSidebar): Observable<any[]> {
-  const params = new HttpParams()
-    .set('Usuario', body.Usuario)
-    .set('Nivel', body.Nivel.toString())
-    .set('SubNivel', body.SubNivel.toString())
-    .set('SubAcceso', body.SubAcceso.toString());
+  //--------------------------------------------------------------------------------------
+  getVerMenu(body: IMenuSidebar): Observable<any[]> {
+    const params = new HttpParams()
+      .set('Usuario', body.Usuario)
+      .set('Nivel', body.Nivel.toString())
+      .set('SubNivel', body.SubNivel.toString())
+      .set('SubAcceso', body.SubAcceso.toString());
 
-  // El segundo parámetro de GET son las OPCIONES (donde van los params)
-  return this.http.get<any[]>(this.apiUrlGetPerfil, { params });
-}
+    // El segundo parámetro de GET son las OPCIONES (donde van los params)
+    return this.http.get<any[]>(this.apiUrlGetPerfil, { params }).pipe(
+      catchError(error => {
+        // Si es 404, devolvemos un array vacío y "matamos" el error
+        if (error.status === 404) {
+          return of([]);
+        }
+        // Si es otro error (500, 403), lo dejamos pasar para manejarlo como falla real
+        return throwError(() => error);
+      })
+    );
+  }
 
 
 
@@ -314,14 +323,15 @@ export class ProcesosCedisService {
 
 
 
-  
-  
+
+
+
 /******** PASAMOS PALLET***** */
 
 // Creamos la señal para el folio. Inicializa en null o cadena vacía.
   public palletEnviado = signal<string>('');
 
- 
+
 
 
   ///---------------------------------
@@ -329,13 +339,13 @@ export class ProcesosCedisService {
 
   // Definimos un BehaviorSubject con un valor inicial (puede ser null o un objeto vacío)
   private dataSource = new BehaviorSubject<any>(null);
-  // Este observable es el que escucharán los componentes
-  data$ = this.dataSource.asObservable();
+// Este observable es el que escucharán los componentes
+data$ = this.dataSource.asObservable();
 
-  // Método para actualizar los datos
-  enviarDatos(datos: any) {
-    this.dataSource.next(datos);
-  }
+// Método para actualizar los datos
+enviarDatos(datos: any) {
+  this.dataSource.next(datos);
+}
 
 
   //**********  Enviar mediante signal *************/
@@ -345,10 +355,10 @@ export class ProcesosCedisService {
   // Exponemos la signal como de solo lectura para proteger el estado
   public data = this.dataSignal.asReadonly();
 
-  // Método para actualizar el valor desde cualquier componente
-  updateData(newValue: string) {
-    this.dataSignal.set(newValue);
-  }
+// Método para actualizar el valor desde cualquier componente
+updateData(newValue: string) {
+  this.dataSignal.set(newValue);
+}
 
 
 //**********************PARA DASBOART******************** */

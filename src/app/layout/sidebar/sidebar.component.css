@@ -204,3 +204,13 @@
 .arrow.rotated {
   transform: rotate(90deg); /* Apunta hacia abajo cuando está abierto */
 }
+
+.menu-header {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+/* Si quieres diferenciar visualmente los que no tienen hijos */
+.menu-item:not(:has(.arrow)) .menu-header {
+  border-left: 3px solid transparent; /* O algún detalle sutil */
+}
