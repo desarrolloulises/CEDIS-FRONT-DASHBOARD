@@ -4,6 +4,14 @@ import { LoginComponent } from './features/login/login.component';
 import { authGuard } from './core/auth.guard';
 import { CambioPassComponent } from './features/cambio-pass/cambio-pass.component';
 
+/**********LISTA O DICCIONARIO QUE INDICA EL CODIGO DE LA api Y LO ASOCIA A miComponente */
+export const MAPEO_RUTAS: { [key: number]: string } = {
+  1: 'inventario',
+  2: 'inventario-por-tienda',
+  3: 'programacion-embarque'
+};
+
+
 export const routes: Routes = [
   {
     path: 'login',
@@ -15,14 +23,22 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       {
-        path: 'inventario',
+        path: MAPEO_RUTAS[1],
         loadComponent: () => import('./features/inventario/inventario.component').then(m => m.InventarioComponent)
       },
       {
         path: 'CambiaPass',
         loadComponent: () => import('./features/cambio-pass/cambio-pass.component').then(m => m.CambioPassComponent) // El login va SOLO, sin Layout
       },
-      { path: '', redirectTo: 'inventario', pathMatch: 'full' } //indica que pantalla mostrar al inicio de la carga
+      {
+        path: 'inicio',
+        loadComponent: () => import('./components/summary-cards/summary-cards.component').then(m => m.SummaryCardsComponent) // El login va SOLO, sin Layout
+      },
+      {
+        path: 'inventario',
+        loadComponent: () => import('./features/inventario/inventario.component').then(m => m.InventarioComponent) // El login va SOLO, sin Layout
+      },
+      { path: '', redirectTo: 'inicio', pathMatch: 'full' } //indica que pantalla mostrar al inicio de la carga
     ]
   },
   { path: '**', redirectTo: 'login' } // Si no existe la ruta, al login

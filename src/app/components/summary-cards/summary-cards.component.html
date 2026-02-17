@@ -1,1 +1,15 @@
-<p>summary-cards works!</p>
+<div class="cards-container">
+  @for (card of cards(); track card.titulo) {
+    <div class="summary-card" [style.border-left-color]="card.color">
+      <div class="card-body">
+        <div class="text-section">
+          <div class="card-title" [style.color]="card.color">{{ card.titulo }}</div>
+          <div class="card-value">{{ card.valor }}</div>
+        </div>
+        <div class="icon-section">
+          <i [class]="card.icono"></i>
+        </div>
+      </div>
+    </div>
+  }
+</div>

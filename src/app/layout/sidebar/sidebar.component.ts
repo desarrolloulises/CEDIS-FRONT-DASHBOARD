@@ -5,6 +5,7 @@ import { PermissionService } from '../../core/permission.service';
 import { DatosService } from '../../service/servicio.service';
 import { ProcesosCedisService } from '../../service/procesos-cedis.service';
 import { IMenuSidebar } from '../../interfaces/ibahia';
+import { MAPEO_RUTAS } from '../../app.routes';
 
 
 @Component({
@@ -30,13 +31,13 @@ export class SidebarComponent {
   constructor(
     private datosService: DatosService,
     private service: ProcesosCedisService,) {
-    console.log(this.datosService.usuarioSignal());
+    // console.log(this.datosService.usuarioSignal());
   }
 
   //**************************************************************** */
 
   ngOnInit() {
-    console.log('Valor del usuario:', this.datosService.usuarioSignal()); // ¿Sale algo aquí?
+    // console.log('Valor del usuario:', this.datosService.usuarioSignal()); // ¿Sale algo aquí?
 
     const body: IMenuSidebar = {
       Usuario: this.datosService.usuarioSignal(), // Pon uno fijo para probar
@@ -45,14 +46,14 @@ export class SidebarComponent {
       SubAcceso: 0
     };
 
-    console.log('Llamando a cargarMenu con body:', body);
+    //console.log('Llamando a cargarMenu con body:', body);
     this.cargarMenu(body);
   }
   cargarMenu(body: any) {
-    console.log('Entró a la función cargarMenu');
+    //console.log('Entró a la función cargarMenu');
     this.service.getVerMenu(body).subscribe({
       next: (res) => {
-        console.log('Respuesta:', res);
+        //console.log('Respuesta:', res);
         // Importante: si la API manda el objeto dentro de otra propiedad (ej. res.data), úsala.
         this.modulos.set(res);
       }
@@ -63,12 +64,12 @@ export class SidebarComponent {
     // 1. Si ya tiene submenús O ya intentamos cargarlos y no hubo, solo abrimos/cerramos
     if ((modulo.sub && modulo.sub.length > 0) || modulo.intentado) {
       if (modulo.sub && modulo.sub.length > 0) {
-          this.modulos.update(lista => lista.map(m =>
-            m.Opcion === modulo.Opcion ? { ...m, abierto: !m.abierto } : m
-          ));
+        this.modulos.update(lista => lista.map(m =>
+          m.Opcion === modulo.Opcion ? { ...m, abierto: !m.abierto } : m
+        ));
       } else {
-          // Si no tiene hijos pero ya se intentó, quizás quieres navegar directamente
-          //this.navegarAModuloDirecto(modulo);
+        // Si no tiene hijos pero ya se intentó, quizás quieres navegar directamente
+        //this.navegarAModuloDirecto(modulo);
       }
       return;
     }
@@ -86,20 +87,29 @@ export class SidebarComponent {
     // 3. Llamamos a la MISMA API
     this.service.getVerMenu(body).subscribe({
       next: (dataHijos) => {
+        // --- CLAVE: MAPEO DE RUTAS ---
+        // Transformamos lo que viene de la API agregándole la propiedad URL
+        const subProcesados = dataHijos.map(sub => ({
+          ...sub,
+          // Buscamos en el diccionario usando el ID que manda la API (sub.Opcion)
+          // El resultado será algo como: "/main/inventario-por-ruta"
+          URL: MAPEO_RUTAS[sub.Opcion] || 'inicio'
+        }));
+
         this.modulos.update(lista => lista.map(m =>
           m.Opcion === modulo.Opcion
-            ? { ...m, sub: dataHijos, abierto: true, cargando: false }
+            ? { ...m, sub: subProcesados, abierto: true, cargando: false, intentado: true }
             : m
         ));
       },
       error: (err) => {
         // Si da 404, asumimos que no hay submenús y marcamos como abierto/cargado
-        this.modulos.update(lista => lista.map(m =>
-          m.Opcion === modulo.Opcion
-            ? { ...m, sub: [], abierto: false, cargando: false, intentado: true }
-            : m
-        ));
-        console.log("Módulo sin hijos o error de red:", err.status);
+        console.error('Error al traer submenús', err);
+        this.actualizarEstado(modulo.Opcion, {
+          cargando: false,
+          intentado: true,
+          abierto: false
+        });
       }
     });
   }

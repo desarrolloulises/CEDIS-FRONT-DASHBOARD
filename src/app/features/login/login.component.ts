@@ -97,7 +97,7 @@ export class LoginComponent {
 
           this.agregarDato()
           // this.permissionService.login('TOKEN-CEDIS-2026');
-          this.router.navigate(['/inventario']);
+          this.router.navigate(['/inicio']);
 
         } else {
           this.errorMsg = response[0].err_msg

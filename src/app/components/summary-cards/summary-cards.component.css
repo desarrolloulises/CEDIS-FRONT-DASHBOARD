@@ -1,0 +1,43 @@
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.summary-card {
+  background: #fff;
+  border-radius: 0.5rem;
+  border-left: 0.25rem solid; /* El color se inyecta por el HTML */
+  box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+  padding: 1.25rem;
+  transition: transform 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-5px);
+}
+
+.card-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.card-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #5a5c69;
+}
+
+.icon-section i {
+  font-size: 2rem;
+  color: #dddfeb;
+}

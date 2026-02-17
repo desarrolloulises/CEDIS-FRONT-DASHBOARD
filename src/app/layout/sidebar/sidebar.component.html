@@ -1,9 +1,10 @@
 <div class="sidebar-container">
   <div class="sidebar-top-group">
     <div class="logo-section">
-      <img src="logo.png" alt="Logo">
+      <img src="logo.png" alt="Logo" [routerLink]="['/inicio']">
     </div>
 
+    <!-------------AQUI VA EL CODIGO QUE CARGA LOS MODULOS Y SUBMODULOS------------------------>
     <nav class="menu-nav">
   @for (modulo of modulos(); track modulo.Opcion) {
     <div class="menu-item">
@@ -22,7 +23,7 @@
           }
         }
       </div>
-
+<!---------------AQUI VA EL CODIGO QUE CARGA LOS SUBMENUS------------------------>
       @if (modulo.abierto && modulo.sub?.length) {
         <div class="sub-menu">
           @for (sub of modulo.sub; track sub.Opcion) {
