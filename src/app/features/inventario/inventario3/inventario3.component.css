@@ -1,0 +1,11 @@
+.test-container {
+  padding: 10px;
+}
+
+.tarjeta-prueba {
+  background: #f1f1f1;
+  border-left: 5px solid #2c3e50;
+  margin-bottom: 20px;
+  padding: 40px; /* Mucho padding para que sea alta */
+  border-radius: 4px;
+}

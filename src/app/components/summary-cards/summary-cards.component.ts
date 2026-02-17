@@ -25,7 +25,7 @@ export class SummaryCardsComponent {
   // Se actualizará automáticamente si la signal del usuario cambia
   public cards = computed<ICardData[]>(() => {
     const usuario = this.authService.usuarioSignal(); // Tu signal actual
-    console.log("user " + usuario);
+    //console.log("user " + usuario);
     
     
     return [

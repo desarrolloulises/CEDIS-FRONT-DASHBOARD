@@ -24,7 +24,15 @@ export const routes: Routes = [
     children: [
       {
         path: MAPEO_RUTAS[1],
-        loadComponent: () => import('./features/inventario/inventario.component').then(m => m.InventarioComponent)
+        loadComponent: () => import('./features/inventario/inventario1/inventario.component').then(m => m.InventarioComponent)
+      },
+      {
+        path: MAPEO_RUTAS[2],
+        loadComponent: () => import('./features/inventario/inventario2/inventario2.component').then(m => m.Inventario2Component)
+      },      
+      {
+        path: MAPEO_RUTAS[3],
+        loadComponent: () => import('./features/inventario/inventario3/inventario3.component').then(m => m.Inventario3Component)
       },
       {
         path: 'CambiaPass',
@@ -36,7 +44,7 @@ export const routes: Routes = [
       },
       {
         path: 'inventario',
-        loadComponent: () => import('./features/inventario/inventario.component').then(m => m.InventarioComponent) // El login va SOLO, sin Layout
+        loadComponent: () => import('./features/inventario/inventario1/inventario.component').then(m => m.InventarioComponent) // El login va SOLO, sin Layout
       },
       { path: '', redirectTo: 'inicio', pathMatch: 'full' } //indica que pantalla mostrar al inicio de la carga
     ]
