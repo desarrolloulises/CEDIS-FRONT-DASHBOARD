@@ -32,7 +32,7 @@ export const routes: Routes = [
       },      
       {
         path: MAPEO_RUTAS[3],
-        loadComponent: () => import('./features/inventario/inventario3/inventario3.component').then(m => m.Inventario3Component)
+        loadComponent: () => import('./features/recibo/recibo/recibo.component').then(m => m.ReciboComponent)
       },
       {
         path: 'CambiaPass',

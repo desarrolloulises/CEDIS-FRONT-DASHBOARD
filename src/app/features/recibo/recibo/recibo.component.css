@@ -1,0 +1,189 @@
+/* CONTENEDOR PRINCIPAL */
+.dashboard-wrapper {
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+/* SECCIONES COMPACTAS */
+.glass-card {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 5px 10px;
+  margin-bottom: 12px; /* Espaciado reducido para mayor cercanía */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+
+
+/* FILA DE CABECERA */
+.header-row-inline {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.label-formal { font-size: 13px; font-weight: 600; color: #374151; }
+
+/* INPUTS Y BOTÓN CONSULTAR */
+.input-formal-22px {
+  height: 22px;
+  border: 1px solid #9ca3af;
+  border-radius: 3px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.btn-consultar {
+  background: #003366;
+  color: #ffffff;
+  border: none;
+  padding: 0 15px;
+  height: 26px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* SECCIÓN 2: GRID DE OPERACIÓN */
+.grid-operation {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 0.6fr;
+  gap: 15px;
+  align-items: flex-end;
+}
+
+.mt-10 { margin-top: 10px; }
+
+.label-mini {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #4b5563;
+  margin-bottom: 3px;
+}
+
+.input-filter-notable {
+  height: 24px;
+  border: 2px solid #003366;
+  border-radius: 4px;
+  padding: 0 10px;
+  width: 100%;
+  font-size: 12px;
+  outline: none;
+}
+
+.value-box-22px {
+  height: 22px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 8px;
+  font-size: 12px;
+  color: #000000; /* Texto negro para claridad */
+}
+
+/* BOTONES DE ACCIÓN REALES */
+.btn-action-real {
+  width: 100%;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+  transition: all 0.1s;
+}
+
+.btn-action-real:active { transform: translateY(1px); box-shadow: none; }
+.btn-action-real.blue { background: #003366; }
+.btn-action-real.gray { background: #003366; }
+
+/* SECCIÓN 3: TABLA DE ALTO CONTRASTE CORREGIDA */
+.table-frame {
+  border: 1px solid #003366;
+  background: white;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.table-approved {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table-approved th {
+  background: #003366;
+  color: #ffffff;
+  padding: 10px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.table-approved td {
+  padding: 10px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #000000; /* Texto Negro Puro para evitar el dato que no se veía */
+}
+
+.table-approved tr:nth-child(even) {
+  background: #f3f6f9; /* Zebra más claro para mayor legibilidad */
+}
+
+.table-approved tr:hover { background: #e9eff5; }
+
+.bold-dark { font-weight: 700; color: #000000; }
+.text-total { font-weight: 800; color: #000000; }
+
+/* ESTADOS (Pills con contraste alto) */
+.pill-status {
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  font-size: 11px;
+  display: inline-block;
+  min-width: 85px;
+  text-align: center;
+}
+
+.entregado { background: #059669; }
+.en-ruta { background: #d97706; }
+.cancelado { background: #dc2626; }
+.pendiente { background: #6b7280; } /* Corregido para que se vea sobre el gris */
+
+.link-detail {
+  color: #0056b3;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.text-center { text-align: center; }
+
+/* Espaciado entre la etiqueta y el input de fecha */
+.label-spacing {
+  margin-right: 15px; /* Ajusta según prefieras el espacio */
+}
+
+/* --- Resto del CSS se mantiene igual para conservar el diseño perfecto --- */
+.dashboard-wrapper { padding: 10px; background-color: #f1f4f7; }
+.glass-card { background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; padding: 6px 20px; margin-bottom: 5px; }
+.input-formal-22px { height: 22px; border: 1px solid #9ca3af; border-radius: 3px; padding: 0 8px; font-size: 12px; }
+.btn-consultar { background: #003366; color: #ffffff; border: none; padding: 0 15px; height: 26px; border-radius: 4px; cursor: pointer; }
+
+/* Tabla y Contraste */
+.table-approved { width: 100%; border-collapse: collapse; font-size: 13px; border: 1px solid #003366; }
+.table-approved th { background: #003366; color: #ffffff; padding: 10px; text-align: left; }
+.table-approved td { padding: 1px; border-bottom: 1px solid #e5e7eb; color: #000000; }
+.table-approved tr:nth-child(even) { background: #f3f6f9; }
+.pill-status { padding: 3px 8px; border-radius: 4px; color: white; font-weight: bold; font-size: 11px; display: inline-block; min-width: 85px; text-align: center; }
+.entregado { background: #059669; }
+.en-ruta { background: #d97706; }
+.cancelado { background: #dc2626; }
+.pendiente { background: #6b7280; }

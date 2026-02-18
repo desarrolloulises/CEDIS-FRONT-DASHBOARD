@@ -13,7 +13,7 @@ export class PermissionService {
   private renderer = inject(RendererFactory2).createRenderer(null, null);
 
   private timeoutId: any;
-  private readonly MINUTOS_INACTIVIDAD = 1; // Configura el tiempo aquí
+  private readonly MINUTOS_INACTIVIDAD = 10; // Configura el tiempo aquí
 
   public isLogged = signal<boolean>(false);
 

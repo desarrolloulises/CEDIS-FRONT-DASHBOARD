@@ -1,0 +1,85 @@
+<div class="dashboard-wrapper">
+  
+  <header class="glass-card section-compact">
+    <div class="header-row-inline">
+      <div class="field-inline">
+        <label class="label-formal label-spacing">Seleccionar Fecha:</label>
+        <input type="date" [(ngModel)]="fechaSeleccionada" class="input-formal-22px">
+      </div>
+      <button class="btn-consultar" (click)="consultarPorFecha()">Consultar Tabla</button>
+    </div>
+  </header>
+
+  <section class="glass-card section-compact">
+    <div class="grid-operation">
+      <div class="grid-item">
+        <label class="label-mini">Filtro Específico</label>
+        <input type="search" (input)="onSearchChange($event)" placeholder="ID o Folio..." class="input-filter-notable">
+      </div>
+      
+      <div class="grid-item" *ngFor="let campo of camposInfo.slice(0, 2)">
+        <label class="label-mini">{{campo.label}}</label>
+        <div class="value-box-22px">
+          <span>{{ campo.valor || '' }}</span>
+        </div>
+      </div>
+
+      <div class="grid-item">
+        <button class="btn-action-real blue">Acción A</button>
+      </div>
+    </div>
+
+    <div class="grid-operation mt-10">
+      <div class="grid-item">
+        <label class="label-mini">Referencia</label>
+        <div class="value-box-22px">Dato Fijo</div>
+      </div>
+
+      <div class="grid-item" *ngFor="let campo of camposInfo.slice(2, 4)">
+        <label class="label-mini">{{campo.label}}</label>
+        <div class="value-box-22px">
+          <span>{{ campo.valor || '' }}</span>
+        </div>
+      </div>
+
+      <div class="grid-item">
+        <button class="btn-action-real gray">Acción B</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="table-frame">
+    <table class="table-approved">
+      <thead>
+        <tr>
+          <th>Folio</th>
+          <th>Cliente</th>
+          <th>Fecha</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th>Chofer</th>
+          <th>Unidad</th>
+          <th>Destino</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of tablaDatos">
+          <td class="bold-dark">{{row.folio}}</td>
+          <td>{{row.cliente}}</td>
+          <td>{{row.fecha}}</td>
+          <td class="text-total">{{row.total}}</td>
+          <td>
+            <span class="pill-status" [ngClass]="getClaseEstado(row.estado)">
+              {{row.estado}}
+            </span>
+          </td>
+          <td>{{row.chofer}}</td>
+          <td>{{row.unidad}}</td>
+          <td>{{row.destino}}</td>
+          <td class="text-center link-detail">Ver detalles</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>
