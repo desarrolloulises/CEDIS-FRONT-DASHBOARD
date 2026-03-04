@@ -1,12 +1,14 @@
 <div class="dashboard-wrapper">
-  
+
   <header class="glass-card section-compact">
     <div class="header-row-inline">
       <div class="field-inline">
         <label class="label-formal label-spacing">Seleccionar Fecha:</label>
         <input type="date" [(ngModel)]="fechaSeleccionada" class="input-formal-22px">
       </div>
-      <button class="btn-consultar" (click)="consultarPorFecha()">Consultar Tabla</button>
+      <button class="btn-consultar" (click)="consultarPorFecha()" [disabled]="isWaiting()">
+        {{ isWaiting() ? 'Cargando...' : 'Consultar Tabla' }}
+      </button>
     </div>
   </header>
 
@@ -16,7 +18,7 @@
         <label class="label-mini">Filtro Específico</label>
         <input type="search" (input)="onSearchChange($event)" placeholder="ID o Folio..." class="input-filter-notable">
       </div>
-      
+
       <div class="grid-item" *ngFor="let campo of camposInfo.slice(0, 2)">
         <label class="label-mini">{{campo.label}}</label>
         <div class="value-box-22px">
@@ -29,7 +31,7 @@
       </div>
     </div>
 
-    <div class="grid-operation mt-10">
+    <div class="grid-operation">
       <div class="grid-item">
         <label class="label-mini">Referencia</label>
         <div class="value-box-22px">Dato Fijo</div>
@@ -48,38 +50,76 @@
     </div>
   </section>
 
-  <section class="table-frame">
-    <table class="table-approved">
-      <thead>
-        <tr>
-          <th>Folio</th>
-          <th>Cliente</th>
-          <th>Fecha</th>
-          <th>Total</th>
-          <th>Estado</th>
-          <th>Chofer</th>
-          <th>Unidad</th>
-          <th>Destino</th>
-          <th class="text-center">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let row of tablaDatos">
-          <td class="bold-dark">{{row.folio}}</td>
-          <td>{{row.cliente}}</td>
-          <td>{{row.fecha}}</td>
-          <td class="text-total">{{row.total}}</td>
-          <td>
-            <span class="pill-status" [ngClass]="getClaseEstado(row.estado)">
-              {{row.estado}}
-            </span>
-          </td>
-          <td>{{row.chofer}}</td>
-          <td>{{row.unidad}}</td>
-          <td>{{row.destino}}</td>
-          <td class="text-center link-detail">Ver detalles</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+  <div class="tabla-scroll-container" style="position: relative; min-height: 300px;">
+
+    <div *ngIf="isWaiting()" class="loading-overlay">
+      <div class="spinner-formal"></div>
+      <p>Consultando al Xeon...</p>
+    </div>
+
+    <section class="table-frame">
+      <table class="table-approved">
+        <thead>
+          <tr>
+            <th *ngFor="let col of cabeceras(); let i = index" [class.columna-fija]="i < columnasAFijar()"
+              [style.left]="i < columnasAFijar() ? calcularPosicion(i) : null" [style.min-width.px]="col.width">
+              {{ col.nombre }}
+            </th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let fila of tablaDatos(); let i = index">
+            <td *ngFor="let col of cabeceras(); let j = index" [class.columna-fija]="j < columnasAFijar()"
+              [style.left]="j < columnasAFijar() ? calcularPosicion(j) : null" [ngClass]="{
+              'bold-dark': col.key === 'folio', 
+              'text-total': col.key === 'total',
+              'text-center': col.key === 'estado'
+            }">
+
+              <ng-container [ngSwitch]="col.key">
+                <span *ngSwitchCase="'estado'" class="pill-status" [ngClass]="getClaseEstado(fila.estado)">
+                  {{ fila.estado }}
+                </span>
+
+                <span *ngSwitchDefault>{{ fila[col.key] }}</span>
+              </ng-container>
+            </td>
+
+            <td class="text-center link-detail">"Ver detalle"</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <div class="table-footer">
+    <div class="info-stats">
+
+      <div class="stat-group filtro-group">
+        <label for="filtro-pie">Filtro Rápido:</label>
+        <input id="filtro-pie" type="text" placeholder="Buscar en resultados..." (input)="aplicarFiltro($event)">
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="stat-group">
+        <span class="label">Registros:</span>
+        <span class="value">{{ tablaDatos().length }}</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="stat-group">
+        <span class="label">Actualizado:</span>
+        <span class="value">{{ fechaActualizacion() | date:'HH:mm:ss' }}</span>
+      </div>
+    </div>
+
+    <button class="btn-excel" (click)="descargarReporte()" [disabled]="tablaDatos().length === 0">
+      <span class="icon">📊</span> Exportar a Excel
+    </button>
+  </div>
+
 </div>
