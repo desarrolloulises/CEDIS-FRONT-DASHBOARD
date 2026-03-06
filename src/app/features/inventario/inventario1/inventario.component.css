@@ -1,11 +1,440 @@
-.test-container {
-  padding: 10px;
+/* CONTENEDOR PRINCIPAL */
+.dashboard-wrapper {
+ 
+  display: flex;
+  flex-direction: column;
+  height: 98vh;
+  padding: 5px;
+  gap: 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+  background-color: #f1f4f7;
 }
 
-.tarjeta-prueba {
-  background: #f1f1f1;
-  border-left: 5px solid #2c3e50;
-  margin-bottom: 20px;
-  padding: 40px; /* Mucho padding para que sea alta */
+/* SECCIONES COMPACTAS */
+.glass-card {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* GRID DE OPERACIÓN (NUEVA SECCIÓN 1) */
+.grid-operation {
+  display: flex;
+  align-items: flex-end; /* Alinea todo al fondo (labels y inputs) */
+  width: 100%;
+  padding: 3px 3px;       /* Por si la pantalla se hace pequeña */
+  gap : 30px
+}
+
+/* Ajustamos el ancho de los contenedores para que no bailen */
+.filtro-group, .field-info {
+  display: flex;
+  flex-direction: column;
+  margin: 3px 0px;            /* Espacio entre Label e Input */
+}
+/* Anchos fijos para que no se peguen ni se deformen */
+.w-small { width: 110px; }
+.w-medium { width: 200px; }
+.w-large { flex: 1; min-width: 100px; max-width: 800px; }
+
+.label-mini {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #4b5563;
+  margin-bottom: 3px;
+  margin: 0 10px;
+}
+
+.input-filter-notable {
+ height: 28px;
+  border: 2px solid #003366;
   border-radius: 4px;
+  gap: 0 15px;
+  font-size: 12px;
+  outline: none;
+  width: 100%; /* Ocupa el ancho de su contenedor (w-small, etc) */
+}
+
+/* El input de descripción suele ser más largo */
+.input-descripcion {
+  width: 350px; 
+}
+
+.value-box-22px {
+  height: 26px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 12px;
+  color: #000;
+}
+
+.field-info{
+  /*margin: 0 3px;*/
+  display: flex;
+  flex-direction: column;
+}
+
+.field-short {
+  width: 100px; /* Ancho fijo para las dos pequeñas (ajusta a tu gusto) */
+  flex-shrink: 0; /* Evita que se encojan si la pantalla es chica */
+}
+
+.field-grow {
+  flex-grow: 1; /* Esta columna "come" todo el espacio que sobra en la pantalla */
+}
+
+/* BOTONES */
+.btn-group {
+  margin-left: 10px; 
+  display: flex;
+  align-items: flex-end;
+}
+
+.btn-action-real {
+  width: 100%;
+  height: 30px;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
+}
+
+.btn-action-real.blue {
+  background: #003366;
+  color: white;
+  height: 32px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+}
+
+/* TABLA Y SCROLL (SECCIÓN 2) */
+.tabla-scroll-container {
+  flex: 1;
+  overflow: auto;
+  background: white;
+  border: 1px solid #dee2e6;
+  position: relative;
+  padding: 0px 5px;
+}
+
+.table-approved {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+.table-approved thead th {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: #003366;
+  color: #ffffff;
+  padding: 8px;
+  text-align: left;
+  box-shadow: inset 0 -1px 0 #ccc;
+}
+
+.table-approved td {
+  padding: 5px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table-approved tr:nth-child(even) {
+  background: #f3f6f9;
+}
+
+/* COLUMNAS FIJAS */
+.columna-fija {
+  position: sticky !important;
+  z-index: 5;
+  background-color: white !important;
+  border-right: 1px solid #dee2e6 !important;
+}
+
+thead th.columna-fija {
+  z-index: 25;
+}
+
+/* ESTADOS Y ACCIONES */
+.pill-status {
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  font-size: 11px;
+  display: inline-block;
+}
+
+.link-detail {
+  color: #0056b3;
+  font-weight: 600;
+  cursor: pointer;
+ /* background-color: #000;
+  border-radius: 3px;
+  padding: 3px; */
+}
+
+/* FOOTER */
+.table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding:  5px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+}
+
+.divider {
+  width: 1px;
+  height: 5px;
+  background: #cbd5e1;
+  margin: 0 10px;
+}
+
+/* SPINNER */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.spinner-formal {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #003366;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+
+/*************MOVER EL BOTON DE EXPORTAR EXEL********************************/
+.table-footer {
+  margin-top: auto;
+  /* Refuerza que siempre se vaya al final */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 3px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+}
+
+.info-stats {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  /* Despegar un poco de la izquierda como pediste */
+  margin-left: 10px;
+}
+
+/* Estilo específico para la etiqueta y el input del filtro en el pie */
+.filtro-group label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #003366;
+  margin-right: 8px;
+}
+
+.filtro-group input {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  width: 150px;
+}
+
+.stat-group {
+  display: flex;
+  align-items: center;
+  
+  white-space: nowrap;
+  /* Evita que los textos se amontonen en dos líneas */
+}
+
+.stat-group .label {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.stat-group .value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #003366;
+}
+
+/* El separador vertical | */
+.divider {
+  width: 1px;
+  height: 20px;
+  background-color: #cbd5e1;
+  margin: 0 5px;
+}
+
+.btn-excel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/*****************************************************************************/
+/*****SPINNER PARA CARGA DE DATOS**********/
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  backdrop-filter: blur(2px);
+}
+
+.spinner-formal {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #003366;
+  /* Tu color azul formal */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/*   PARA  FIJR SCOLUMNAS (STICKY) */
+/* Ajuste para que el contenedor permita el scroll correctamente */
+.tabla-scroll-container {
+  flex: 1;
+  overflow: auto;
+  /* Permite scroll vertical y horizontal */
+  background: white;
+  border: 1px solid #dee2e6;
+  position: relative;
+}
+
+.table-approved {
+  width: max-content;
+  /* Importante: obliga a la tabla a expandirse para activar el scroll */
+  min-width: 100%;
+  border-collapse: separate;
+  /* Necesario para que el sticky funcione bien */
+  border-spacing: 0;
+}
+
+/* CLASE DE COLUMNAS FIJAS */
+.columna-fija {
+  position: sticky !important;
+  z-index: 5;
+  background-color: white !important;
+  /* Evita que las letras se encimen al scrollear */
+  border-right: 1px solid #dee2e6 !important;
+}
+
+/* El Header azul siempre debe estar arriba de todo */
+thead th.columna-fija {
+  z-index: 25;
+  background-color: #003366 !important;
+}
+
+/* Mantener el efecto Zebra en las columnas fijas */
+tr:nth-child(even) td.columna-fija {
+  background-color: #f3f6f9 !important;
+}
+
+
+/****PAra ver botones las acciones**/
+.btn-edit {
+    background-color: #003366; /* Azul de tu cabecera */
+    color: white;
+    border: none;
+    padding: 3px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 5px;
+    font-weight: bold;
+}
+
+.btn-delete {
+    background-color: #dc2626; /* Rojo para eliminar */
+    color: white;
+    border: none;
+    padding: 3px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-edit {
+    background-color: #16a34a; /* Verde para guardar */
+    color: white;
+    border: none;
+    padding: 3px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 5px;
+    font-weight: bold;
+}
+
+.btn-cancel {
+    background-color: #6b7280; /* Gris para cancelar */
+    color: white;
+    border: none;
+    padding: 3px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
 }

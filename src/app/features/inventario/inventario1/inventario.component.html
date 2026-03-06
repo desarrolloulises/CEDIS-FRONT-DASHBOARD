@@ -1,14 +1,116 @@
+<div class="dashboard-wrapper">
 
-<div class="test-container">
-  <h2>📦 Inventario por ruta</h2>
-  <p>El botón de usuario de arriba debería subir cuando hagas scroll hacia abajo.</p>
+  <section class="glass-card">
+    <div class="grid-operation">
 
-  <div class="espacio-largo">
-    @for (item of [1,2,3,4,5,6,7,8,9,10]; track $index) {
-      <div class="tarjeta-prueba">
-        <h3>Producto Ejemplo #{{item}}</h3>
-        <p>Esta es una tarjeta de relleno para ocupar espacio vertical en tu layout de almacén.</p>
+      <div class="field-info w-small">
+        <label class="label-mini">RANGO INICIAL</label>
+        <input #escanearcajaInput type="text" name="folio" class="input-filter-notable "
+          [(ngModel)]="camposInfo[0].valor" (keydown.enter)="agregarItem()" placeholder="Rango inicial...">
       </div>
+
+      <div class="field-info w-small">
+        <label class="label-mini">RANGO FINAL</label>
+        <input type="text" name="referencia" class="input-filter-notable" [(ngModel)]="camposInfo[1].valor"
+          placeholder="Rango final...">
+      </div>
+
+      <div class="field-info w-large">
+        <label class="label-mini">DESCRIPCION</label>
+        <input type="text" name="ubicacion" class="input-filter-notable" [(ngModel)]="camposInfo[2].valor"
+          placeholder="Ingrese la descripción...">
+      </div>
+
+      <div class="btn-group ">
+        <button class="btn-action-real blue" [disabled]="isWaiting()" (click)="agregarItem()"> @if (isWaiting()) {
+          <span class="spinner-mini"></span> Cargando...
+          } @else {
+          Agregar
+          }
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- inicia seccion 2 Tabla central-->
+  <section class="tabla-scroll-container">
+
+    @if (isWaiting()) {
+    <div class="loading-overlay">
+      <div class="spinner-formal"></div>
+      <span class="bold-dark">Cargando datos...</span>
+    </div>
     }
+
+    <table class="table-approved custom-table">
+      <thead>
+        <tr>
+          @for (head of cabeceras(); track $index) {
+          <th [style.left]="$index < columnasAFijar() ? calcularPosicion($index) : null">
+            {{ head.nombre }}
+          </th>
+          }
+          <th class="text-center" style="position: sticky; right: 0; background: #003366; z-index: 30;">Acciones</th>
+        </tr>
+      </thead>
+      <!-- Inicia seccion 2 tabla central-->
+
+      <tbody>
+        @for (fila of tablaDatos(); track $index) {
+        <tr>
+          @for (head of cabeceras(); track $index) {
+          <td>
+            @if (filaEditando === fila && head.key === 'lbl_txt3') {
+            <input type="text" [(ngModel)]="fila[head.key]" class="input-filter-notable"
+              style="width: 100%; ">
+            } @else {
+            {{ fila[head.key] }}
+            }
+          </td>
+          }
+
+        <td class="text-center">
+      @if (filaEditando === fila) {
+        <button class="btn-save" (click)="guardarCambios(fila)">Guardar</button>
+        <button class="btn-cancel" (click)="cancelarEdicion()">Cancelar</button>
+      } @else {
+        <button class="btn-edit" (click)="activarEdicion(fila)">Editar</button>
+        <button class="btn-delete" (click)="eliminarFila($index)">Eliminar</button>
+      }
+    </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+  <!-- Termina seccion 2 tabla central-->
+
+  <div class="table-footer">
+    <div class="info-stats">
+
+      <div class="stat-group filtro-group">
+        <label for="filtro-pie">Filtro Rápido:</label>
+        <input id="filtro-pie" type="text" placeholder="Buscar en resultados..." (input)="aplicarFiltro($event)">
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="stat-group">
+        <span class="label">Registros: </span>
+        <span class="value">{{ tablaDatos().length }}</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="stat-group">
+        <span class="label">Actualizado: </span>
+        <span class="value">{{ fechaActualizacion() | date:'HH:mm:ss' }}</span>
+      </div>
+    </div>
+
+    <button class="btn-excel" (click)="descargarReporte()" [disabled]="tablaDatos().length === 0">
+      <span class="icon">📊</span> Exportar a Excel
+    </button>
   </div>
 </div>

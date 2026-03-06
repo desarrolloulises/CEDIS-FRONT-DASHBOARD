@@ -47,3 +47,10 @@ export interface IMenuSidebar {
     SubNivel: number,
     SubAcceso: number     // Para controlar si el acordeón está abierto
 }
+export interface IDInventario {
+    tipo: number,
+    RangoIni: string,
+    RangoFin: string,
+    Ubica: string     // Para controlar si el acordeón está abierto
+    Usuario: string 
+}

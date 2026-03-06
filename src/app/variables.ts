@@ -41,6 +41,8 @@ export const APIURL_CONSULTAPALLET = `${url}/cedis/CONSULTAPALLET`
 export const APIURL_CAMBIOPASSWORD = `${url}/cedis/CAMBIOpASSWORD`
 
 export const APIURL_MENUSIDEBAR = `${url}/cedis/PERFIL`
+export const APIURL_DINVENTARIO = `${url}/cedis/DINVENTARIO`
+
 
 
 //local

@@ -1,9 +1,9 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { BehaviorSubject, catchError, filter, Observable, of, pairwise, throwError } from 'rxjs';
-import { APIURL_AVANCEREC, APIURL_CALIDAD, APIURL_CIERREOC, APIRUL_G3TB4I4, APIURL_GETPRIMERCONTEOFOLIO, APIURL_GETPRIMERCONTEOSCANER, APIURL_GETSEGUNDOCONTEOFOLIO, APIURL_GETSEGUNDOCONTEOSCANER, APIURL_RECIBO, APIURL_VALPRECIO, APIRUL_PR1M3R5C4N30, APIRUL_PR1M3R5C4N30F4L74N735, APIRUL_53GUMD05C4N30, APIRUL_53GUMD05C4N30F4L74N735, APIRUL_BU5C4RC4J45B4H145MARA1, APIRUL_C0N5ULT4G3N3R4LB5H145MARA2, APIRUL_C0N5ULT4D3T4113B4145MARA3, APIURL_5CTU5LIZ5RD5T5, APIURL_REPORTEGENERALINCIDENCIAS, APIURL_PRIMERCONTEOVSSEGUNDOCONTEO, APIURL_4LM4C3N, APIURL_MULTITIENDA, APIURL_EXTRAERCAJAPALLET, APIURL_DESARMARPALLET, APIURL_MOVERPALLET, APIURL_CONSULTAPALLET, APIURL_CAMBIOPASSWORD, APIURL_L0G1N, APIURL_MENUSIDEBAR } from '../variables';
+import { APIURL_AVANCEREC, APIURL_CALIDAD, APIURL_CIERREOC, APIRUL_G3TB4I4, APIURL_GETPRIMERCONTEOFOLIO, APIURL_GETPRIMERCONTEOSCANER, APIURL_GETSEGUNDOCONTEOFOLIO, APIURL_GETSEGUNDOCONTEOSCANER, APIURL_RECIBO, APIURL_VALPRECIO, APIRUL_PR1M3R5C4N30, APIRUL_PR1M3R5C4N30F4L74N735, APIRUL_53GUMD05C4N30, APIRUL_53GUMD05C4N30F4L74N735, APIRUL_BU5C4RC4J45B4H145MARA1, APIRUL_C0N5ULT4G3N3R4LB5H145MARA2, APIRUL_C0N5ULT4D3T4113B4145MARA3, APIURL_5CTU5LIZ5RD5T5, APIURL_REPORTEGENERALINCIDENCIAS, APIURL_PRIMERCONTEOVSSEGUNDOCONTEO, APIURL_4LM4C3N, APIURL_MULTITIENDA, APIURL_EXTRAERCAJAPALLET, APIURL_DESARMARPALLET, APIURL_MOVERPALLET, APIURL_CONSULTAPALLET, APIURL_CAMBIOPASSWORD, APIURL_L0G1N, APIURL_MENUSIDEBAR, APIURL_DINVENTARIO } from '../variables';
 import { Iembarqes } from '../interfaces/iembarqes';
-import { IActualizarData, IAlmacen, IAlmacenPallet, Ibahia, IConsultaCaja, IContrasenna, IMenuSidebar, IReporteGeneralIncidencias } from '../interfaces/ibahia';
+import { IActualizarData, IAlmacen, IAlmacenPallet, Ibahia, IConsultaCaja, IContrasenna, IDInventario, IMenuSidebar, IReporteGeneralIncidencias } from '../interfaces/ibahia';
 import { NavigationEnd, Router } from '@angular/router';
 import { IAutoidentifica } from '../interfaces/ilogin';
 export interface MiData {
@@ -53,7 +53,10 @@ export class ProcesosCedisService {
   private apiUrlGetMoverPallet = APIURL_MOVERPALLET;
   private apiUrlGetConsultaPallet = APIURL_CONSULTAPALLET;
   private apiUrlGetCambioPassword = APIURL_CAMBIOPASSWORD;
+
   private apiUrlGetPerfil = APIURL_MENUSIDEBAR;
+  private apiUrlGetDInventario = APIURL_DINVENTARIO;
+
 
 
 
@@ -294,6 +297,10 @@ export class ProcesosCedisService {
     return this.http.get<any>(this.apiUrlGetCambioPassword, { params });
   }
 
+
+
+
+
   //--------------------------------------------------------------------------------------
   getVerMenu(body: IMenuSidebar): Observable<any[]> {
     const params = new HttpParams()
@@ -315,6 +322,15 @@ export class ProcesosCedisService {
     );
   }
 
+  //--------------------------------------------------------------------------------------
+  getDInventario(body: IDInventario): Observable<any> {
+    let params = new HttpParams().set('tipo', body.tipo);
+    if (body.RangoIni) params = params.set('RangoIni', body.RangoIni);
+    if (body.RangoFin) params = params.set('RangoFin', body.RangoFin);
+    if (body.Ubica) params = params.set('Ubica', body.Ubica);
+    if (body.Usuario) params = params.set('Usuario', body.Usuario);
+    return this.http.get<any>(this.apiUrlGetDInventario, { params });
+  }
 
 
 
@@ -326,9 +342,10 @@ export class ProcesosCedisService {
 
 
 
-/******** PASAMOS PALLET***** */
 
-// Creamos la señal para el folio. Inicializa en null o cadena vacía.
+  /******** PASAMOS PALLET***** */
+
+  // Creamos la señal para el folio. Inicializa en null o cadena vacía.
   public palletEnviado = signal<string>('');
 
 
@@ -339,13 +356,13 @@ export class ProcesosCedisService {
 
   // Definimos un BehaviorSubject con un valor inicial (puede ser null o un objeto vacío)
   private dataSource = new BehaviorSubject<any>(null);
-// Este observable es el que escucharán los componentes
-data$ = this.dataSource.asObservable();
+  // Este observable es el que escucharán los componentes
+  data$ = this.dataSource.asObservable();
 
-// Método para actualizar los datos
-enviarDatos(datos: any) {
-  this.dataSource.next(datos);
-}
+  // Método para actualizar los datos
+  enviarDatos(datos: any) {
+    this.dataSource.next(datos);
+  }
 
 
   //**********  Enviar mediante signal *************/
@@ -355,13 +372,13 @@ enviarDatos(datos: any) {
   // Exponemos la signal como de solo lectura para proteger el estado
   public data = this.dataSignal.asReadonly();
 
-// Método para actualizar el valor desde cualquier componente
-updateData(newValue: string) {
-  this.dataSignal.set(newValue);
-}
+  // Método para actualizar el valor desde cualquier componente
+  updateData(newValue: string) {
+    this.dataSignal.set(newValue);
+  }
 
 
-//**********************PARA DASBOART******************** */
+  //**********************PARA DASBOART******************** */
 
 
 }
