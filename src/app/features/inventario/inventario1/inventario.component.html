@@ -6,18 +6,19 @@
       <div class="field-info w-small">
         <label class="label-mini">RANGO INICIAL</label>
         <input #escanearcajaInput type="text" name="folio" class="input-filter-notable "
-          [(ngModel)]="camposInfo[0].valor" (keydown.enter)="agregarItem()" placeholder="Rango inicial...">
+          [(ngModel)]="camposInfo[0].valor" (keydown.enter)="agregarItem()" (keydown)="soloNumeros($event)"
+          placeholder="Rango inicial...">
       </div>
 
       <div class="field-info w-small">
         <label class="label-mini">RANGO FINAL</label>
-        <input type="text" name="referencia" class="input-filter-notable" [(ngModel)]="camposInfo[1].valor"
-          placeholder="Rango final...">
+        <input type="text" name="referencia" class="input-filter-notable" (keydown)="soloNumeros($event)"
+          [(ngModel)]="camposInfo[1].valor" placeholder="Rango final...">
       </div>
 
       <div class="field-info w-large">
         <label class="label-mini">DESCRIPCION</label>
-        <input type="text" name="ubicacion" class="input-filter-notable" [(ngModel)]="camposInfo[2].valor"
+        <input type="text" name="ubicacion" class="input-filter-notable" (keyup.enter)="agregarItem()" [(ngModel)]="camposInfo[2].valor"
           placeholder="Ingrese la descripción...">
       </div>
 
@@ -46,6 +47,7 @@
     <table class="table-approved custom-table">
       <thead>
         <tr>
+          <th class="text-center" style="position: sticky; right: 0; background: #003366; z-index: 9;">*</th>
           @for (head of cabeceras(); track $index) {
           <th [style.left]="$index < columnasAFijar() ? calcularPosicion($index) : null">
             {{ head.nombre }}
@@ -54,15 +56,19 @@
           <th class="text-center" style="position: sticky; right: 0; background: #003366; z-index: 30;">Acciones</th>
         </tr>
       </thead>
-      <!-- Inicia seccion 2 tabla central-->
+      <!-- Inicia cuerpo seccion 2 tabla central-->
 
       <tbody>
-        @for (fila of tablaDatos(); track $index) {
-        <tr>
+        @for (fila of tablaDatos(); track $index; let i = $index) {
+        <tr (dblclick)="activarEdicion(fila)" style="cursor: pointer;">
+          <td style="font-weight: bold; color: #888;">
+            {{i + 1}}
+          </td>
           @for (head of cabeceras(); track $index) {
           <td>
             @if (filaEditando === fila && head.key === 'lbl_txt3') {
-            <input type="text" [(ngModel)]="fila[head.key]" class="input-filter-notable"
+            <input #inputFocus (blur)="cancelarEdicion()" (keyup.escape)="cancelarEdicion()"
+              (keyup.enter)="guardarCambios(fila)" type="text" [(ngModel)]="fila[head.key]" class="input-filter-notable"
               style="width: 100%; ">
             } @else {
             {{ fila[head.key] }}
@@ -70,15 +76,15 @@
           </td>
           }
 
-        <td class="text-center">
-      @if (filaEditando === fila) {
-        <button class="btn-save" (click)="guardarCambios(fila)">Guardar</button>
-        <button class="btn-cancel" (click)="cancelarEdicion()">Cancelar</button>
-      } @else {
-        <button class="btn-edit" (click)="activarEdicion(fila)">Editar</button>
-        <button class="btn-delete" (click)="eliminarFila($index)">Eliminar</button>
-      }
-    </td>
+          <td class="text-center">
+            @if (filaEditando === fila) {
+            <button class="btn-save" (click)="guardarCambios(fila)">Guardar</button>
+            <button class="btn-cancel" (click)="cancelarEdicion()">Cancelar</button>
+            } @else {
+            <a class="btn-edit" (click)="activarEdicion(fila)">Editar</a>
+            <a class="btn-delete" (click)="eliminarFila($index)">Eliminar</a>
+            }
+          </td>
         </tr>
         }
       </tbody>

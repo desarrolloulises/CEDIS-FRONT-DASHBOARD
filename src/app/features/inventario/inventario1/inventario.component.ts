@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, inject, OnInit, QueryList, signal, ViewChild, ViewChildren } from '@angular/core';
 import { catchError, concatMap, finalize, map, of, ReplaySubject, tap, throwError, timeout } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
@@ -38,6 +38,8 @@ export class InventarioComponent implements OnInit {
   private _datosBase: any[] = [];
   fechaSeleccionada: string = new Date().toISOString().split('T')[0];
 
+  @ViewChildren('inputFocus') inputs!: QueryList<ElementRef>; ///para el foco de la celda es la refernecia o el nombre deñ input
+
   public camposInfo = [
     { label: 'RangoIni', valor: '' },
     { label: 'RangoFin', valor: '' },
@@ -54,6 +56,8 @@ export class InventarioComponent implements OnInit {
   }
 
   ngOnInit() {
+
+
     this.setupWorkfloww();
 
     const body = {
@@ -64,8 +68,13 @@ export class InventarioComponent implements OnInit {
     };
 
     this.interaction$.next(body);
+
   }
 
+  ngAfterViewInit() {
+    this.escanearcajaInput.nativeElement.focus()
+
+  }
   private setupWorkfloww() {
     const user = this.datosService.usuarioSignal();
     if (user) this.userRecivido.set(user);
@@ -127,14 +136,27 @@ export class InventarioComponent implements OnInit {
 
             // CASO A: Pasó la validación (Tipo 2), ahora mandamos a Guardar (Tipo 3)
             if (body.tipo === 2) {
+              console.log("Error " + resp[0].err_id);
+              /*let dato1 = Number(body.RangoIni)              
+              let dato2 = Number(body.RangoFin)
+              console.log( dato1 + " " + typeof(dato1) + " > " + dato2 + " " + typeof(dato2)) ;
+              */
+
+              if (Number(body.RangoIni) > Number(body.RangoFin)) {
+                //console.log("Mayor " + body.RangoIni );
+                alert( "Rango inicial  " + body.RangoIni + " es mayor que rango final " + body.RangoFin)
+                return
+                
+              }
+              
               this.interaction$.next({ ...body, tipo: 3 });
-              console.log("✅ Validación exitosa (2). Mandando a guardar (3)...");
+              // console.log("✅ Validación exitosa (2). Mandando a guardar (3)...");
               return; // IMPORTANTE: Salir para esperar la respuesta del Tipo 3
             }
 
             // CASO B: Guardado exitoso (Tipo 3) o Edición/Eliminación (4, 5)
             if (body.tipo === 3 || body.tipo === 4 || body.tipo === 5) {
-              console.log(`✅ Acción ${body.tipo} completada. Refrescando tabla...`);
+              // console.log(`✅ Acción ${body.tipo} completada. Refrescando tabla...`);
 
               // Limpiamos los inputs solo si fue un guardado exitoso
               if (body.tipo === 3) this.camposInfo.forEach(c => c.valor = '');
@@ -153,6 +175,7 @@ export class InventarioComponent implements OnInit {
             // Manejo de errores del servidor (err_id != 0)
             alert("Error: " + resp[0].err_msg);
             console.warn("⚠️ Error del servidor:", resp[0].err_msg);
+            this.limpiar()
           }
         }
 
@@ -191,7 +214,7 @@ export class InventarioComponent implements OnInit {
       tipo: 2,
       RangoIni: this.camposInfo[0].valor || " ",
       RangoFin: this.camposInfo[1].valor || " ",
-      Ubica: this.camposInfo[2].valor || " ",
+      Ubica: this.camposInfo[2].valor.trim() || " ",
     };
 
     this.interaction$.next(dataParaEnviar);
@@ -214,15 +237,23 @@ export class InventarioComponent implements OnInit {
 
   /**************EDICION POR FILA************* */
   activarEdicion(fila: any) {
-    // Guardamos una copia por si cancela
-    this.filaEditando = { ...fila };
-    this.filaEditando = fila;
+    this.filaEditando = { ...fila }; // Copia de lista por si cancela operacion
+
+    this.filaEditando = fila; //Edita la fila (lbl_txt3)
+    setTimeout(() => {
+      // Tomamos el primer elemento que encuentre (que será el que se acaba de activar)
+      const inputParaEnfocar = this.inputs.first;
+
+      if (inputParaEnfocar) {
+        inputParaEnfocar.nativeElement.focus(); // coloco el foco
+        // inputParaEnfocar.nativeElement.select(); // Sombrea el texto para editar rápido
+      }
+    }, 50); // 50ms son suficientes para el renderizado
   }
 
   /**********************CANCELA PETICION DE EDICION************************** */
   cancelarEdicion() {
     this.filaEditando = null;
-    // Opcional: Recargar desde _datosBase si quieres revertir cambios visuales
   }
 
   /************************PARA GUARDAR**************************** */
@@ -274,6 +305,29 @@ export class InventarioComponent implements OnInit {
     this._datosBase = [...this.tablaDatos()];
   }
 
+/*************FILTRO PARA SOLO RECIONOCER LOS NUMEROS *** */
+  soloNumeros(event: KeyboardEvent) {
+    // Teclas permitidas: Backspace, Delete, Tab, Escape, Enter, y flechas
+    const teclasPermitidas = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'];
+
+    if (teclasPermitidas.includes(event.key)) {
+      return; // Permitir estas teclas
+    }
+
+    // Si no es un número (0-9), bloqueamos la acción
+    if (event.key < '0' || event.key > '9') {
+      event.preventDefault();
+    }
+  }
+
+  limpiar() {
+    this.camposInfo[0].valor = "",
+      this.camposInfo[1].valor = "",
+      this.camposInfo[2].valor = ""
+
+    this.escanearcajaInput.nativeElement.focus()
+  }
+
   /********************************************************* */
 
 
@@ -298,4 +352,6 @@ export class InventarioComponent implements OnInit {
   descargarReporte() {
     this.ExcelInventario.exportToExcelCustom(this.tablaDatos(), 'Reporte');
   }
+
+  
 }

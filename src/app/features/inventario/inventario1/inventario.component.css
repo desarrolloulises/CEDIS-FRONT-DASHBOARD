@@ -397,7 +397,45 @@ tr:nth-child(even) td.columna-fija {
 
 
 /****PAra ver botones las acciones**/
-.btn-edit {
+.btn-save {
+    background-color: #16a34a; /* Azul de tu cabecera */
+    color: white;
+    border: none;
+    padding: 3px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 5px;
+    font-weight: bold;
+}
+
+.btn-delete { 
+    color: #dc2626;
+    border: none;
+    padding: 3px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-edit { 
+    color: #16a34a;
+    
+    padding: 3px;
+     cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-cancel {
+    background-color: #6b7280; /* Gris para cancelar */
+    color: white;
+    border: none;
+    padding: 3px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-edit:hover {
     background-color: #003366; /* Azul de tu cabecera */
     color: white;
     border: none;
@@ -408,29 +446,8 @@ tr:nth-child(even) td.columna-fija {
     font-weight: bold;
 }
 
-.btn-delete {
+.btn-delete:hover {
     background-color: #dc2626; /* Rojo para eliminar */
-    color: white;
-    border: none;
-    padding: 3px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.btn-edit {
-    background-color: #16a34a; /* Verde para guardar */
-    color: white;
-    border: none;
-    padding: 3px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-right: 5px;
-    font-weight: bold;
-}
-
-.btn-cancel {
-    background-color: #6b7280; /* Gris para cancelar */
     color: white;
     border: none;
     padding: 3px;
