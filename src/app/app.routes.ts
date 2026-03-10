@@ -5,14 +5,14 @@ import { authGuard } from './core/auth.guard';
 import { CambioPassComponent } from './features/cambio-pass/cambio-pass.component';
 
 /**********LISTA O DICCIONARIO QUE INDICA EL CODIGO DE LA api Y LO ASOCIA A miComponente */
-export const MAPEO_RUTAS: { [key: number]: string } = {
+/*export const MAPEO_RUTAS: { [key: number]: string } = {
   1: 'marbetes-mantenimiento',
   2: 'inventario-por-tienda',
   3: 'programacion-embarque',
   4: 'inventario',
   5: 'marbetes-mantenimiento'
 
-};
+};*/
 
 
 export const routes: Routes = [
@@ -26,38 +26,68 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       {
-        path: MAPEO_RUTAS[4],
+      path: 'inicio',
+      loadComponent: () => import('./components/summary-cards/summary-cards.component').then(m => m.SummaryCardsComponent) // El login va SOLO, sin Layout
+    },
+      // --- NIVEL 1 (Módulos Principales) ---
+      
+
+      // --- NIVEL 1 (Módulos Principales) ---
+      
+      {
+        path: 'menu-embarque/inventario-por-ruta',
         loadComponent: () => import('./features/inventario/inventario2/inventario2.component').then(m => m.Inventario2Component)
       },
       {
-        path: MAPEO_RUTAS[2],
-        loadComponent: () => import('./features/inventario/inventario2/inventario2.component').then(m => m.Inventario2Component)
-      },
-      {
-        path: MAPEO_RUTAS[3],
+        path: 'menu-embarque/inventario-por-tienda',
         loadComponent: () => import('./features/recibo/recibo/recibo.component').then(m => m.ReciboComponent)
       },
+      {
+        path: 'menu-embarque/programacion-embarque',
+        loadComponent: () => import('./features/inventario/inventario2/inventario2.component').then(m => m.Inventario2Component)
+      },
+      {
+        path: 'menu-embarque/marbetes-mantenimiento',
+        loadComponent: () => import('./features/inventario/inventario1/inventario.component').then(m => m.InventarioComponent)
+      },
 
-      {
-        path: MAPEO_RUTAS[5],
-        loadComponent: () => import('./features/inventario/inventario1/inventario.component').then(m => m.InventarioComponent), 
-          pathMatch: 'full'
-        
-      },
-      {
-        path: 'CambiaPass',
-        loadComponent: () => import('./features/cambio-pass/cambio-pass.component').then(m => m.CambioPassComponent) // El login va SOLO, sin Layout
-      },
-      {
-        path: 'inicio',
-        loadComponent: () => import('./components/summary-cards/summary-cards.component').then(m => m.SummaryCardsComponent) // El login va SOLO, sin Layout
-      },
-      {
-        path: 'inventario',
-        loadComponent: () => import('./features/inventario/inventario1/inventario.component').then(m => m.InventarioComponent) // El login va SOLO, sin Layout
-      },
-      { path: '', redirectTo: 'inicio', pathMatch: 'full' } //indica que pantalla mostrar al inicio de la carga
     ]
   },
   { path: '**', redirectTo: 'login' } // Si no existe la ruta, al login
-];
+]
+
+/*{
+      path: MAPEO_RUTAS[4],
+      loadComponent: () => import('./features/inventario/inventario2/inventario2.component').then(m => m.Inventario2Component)
+    },
+    {
+      path: MAPEO_RUTAS[2],
+      loadComponent: () => import('./features/inventario/inventario2/inventario2.component').then(m => m.Inventario2Component)
+    },
+    {
+      path: MAPEO_RUTAS[3],
+      loadComponent: () => import('./features/recibo/recibo/recibo.component').then(m => m.ReciboComponent)
+    },
+
+    {
+      path: MAPEO_RUTAS[5],
+      loadComponent: () => import('./features/inventario/inventario1/inventario.component').then(m => m.InventarioComponent), 
+        pathMatch: 'full'
+      
+    },
+    {
+      path: 'CambiaPass',
+      loadComponent: () => import('./features/cambio-pass/cambio-pass.component').then(m => m.CambioPassComponent) // El login va SOLO, sin Layout
+    },
+    {
+      path: 'inicio',
+      loadComponent: () => import('./components/summary-cards/summary-cards.component').then(m => m.SummaryCardsComponent) // El login va SOLO, sin Layout
+    },
+    {
+      path: 'inventario',
+      loadComponent: () => import('./features/inventario/inventario1/inventario.component').then(m => m.InventarioComponent) // El login va SOLO, sin Layout
+    },
+    { path: '', redirectTo: 'inicio', pathMatch: 'full' } //indica que pantalla mostrar al inicio de la carga
+  ]
+},
+{ path: '**', redirectTo: 'login' } // Si no existe la ruta, al login */

@@ -198,6 +198,15 @@ export class InventarioComponent implements OnInit {
     // Verificación de seguridad para evitar clics dobles durante el delay de red
     if (this.isWaiting()) return;
 
+    const v1 = (this.camposInfo[0].valor || '').trim().length;
+    const v2 = (this.camposInfo[1].valor || '').trim().length;
+
+    if (v1 > 9 || v2 > 9) {
+      alert('No puedes exeder los 10 caracteres')
+      this.limpiar()
+      return;
+    }
+
     const dataParaEnviar = {
       // Mapeamos los camposInfo a lo que tu API espera
       tipo: 2,
@@ -205,6 +214,7 @@ export class InventarioComponent implements OnInit {
       RangoFin: this.camposInfo[1].valor || " ",
       Ubica: this.camposInfo[2].valor.trim() || " ",
     };
+
 
     this.interaction$.next(dataParaEnviar);
 
@@ -216,8 +226,8 @@ export class InventarioComponent implements OnInit {
    * Habilita la edicion de una fila
    * @param fila es la referncia de una fila dentro de la tabla local
    */
-  activarEdicion(fila: any, head : any) {
-   // this.filaEditando = { ...fila }; // Copia de lista por si cancela operacion
+  activarEdicion(fila: any, head: any) {
+    // this.filaEditando = { ...fila }; // Copia de lista por si cancela operacion
     this.filaEditando = fila; //Edita la fila (lbl_txt3)
     this.valorTemporal = fila[head.key];
 
@@ -225,12 +235,12 @@ export class InventarioComponent implements OnInit {
     window.getSelection()?.removeAllRanges();
 
     setTimeout(() => {
-    const inputParaEnfocar = this.inputs.first;
-    if (inputParaEnfocar) {
-      inputParaEnfocar.nativeElement.focus();
-      // inputParaEnfocar.nativeElement.select(); 
-    }
-  }, 50); // 50ms son suficientes para el renderizado
+      const inputParaEnfocar = this.inputs.first;
+      if (inputParaEnfocar) {
+        inputParaEnfocar.nativeElement.focus();
+        // inputParaEnfocar.nativeElement.select(); 
+      }
+    }, 50); // 50ms son suficientes para el renderizado
   }
 
   /**********************CANCELA PETICION DE EDICION************************** */
@@ -248,12 +258,17 @@ export class InventarioComponent implements OnInit {
    * @param fila referencia a donde se va a editar
    * @returns los datos a pintar
    */
-  guardarCambios(fila: any, key:string) {
+  guardarCambios(fila: any, key: string) {
     // 1. Validar (usando el .trim() que vimos antes)
-    if (!fila.lbl_txt3?.toString().trim()) {
-      //alert("Los rangos no pueden estar vacíos");
+    if (!this.valorTemporal?.toString().trim()) {
+      // alert("El campo no puede estar vacío");
       return;
     }
+
+    // 2. Pasamos el valor del buffer a la fila real ANTES de mandarlo a la API
+    fila[key] = this.valorTemporal;
+
+
 
     // 2. Preparar objeto para la API (Mapeando lbl_txt de vuelta a RangoI/F)
     const dataActualizada = {
@@ -315,11 +330,27 @@ export class InventarioComponent implements OnInit {
       return; // Permitir estas teclas
     }
 
-    // Si no es un número (0-9), bloqueamos la acción
-    if (event.key < '0' || event.key > '9') {
+    // Usamos una expresión regular que solo permite dígitos del 0 al 9
+    const esNumero = /^[0-9]$/.test(event.key);
+
+    if (!esNumero) {
       event.preventDefault();
     }
   }
+ 
+  limpiarEntrada(event: any, index: number) {
+  // 1. Obtenemos el valor directamente desde el input del HTML (no del ngModel)
+  const input = event.target as HTMLInputElement;
+  let valor = input.value;
+
+  // 2. Limpiamos: Solo permitimos números (0-9)
+  // El regex /[^0-9]/g busca CUALQUIER COSA que no sea un número y la borra
+  const valorLimpio = valor.replace(/[^0-9]/g, '');
+
+  // 3. Forzamos el valor de vuelta tanto al HTML como al objeto de datos
+  input.value = valorLimpio;
+  this.camposInfo[index].valor = valorLimpio;
+}
 
   /**
    * Encarga de limpiar las cajas de texto

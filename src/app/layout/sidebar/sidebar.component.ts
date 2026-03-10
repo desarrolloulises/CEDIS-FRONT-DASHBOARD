@@ -5,7 +5,7 @@ import { PermissionService } from '../../core/permission.service';
 import { DatosService } from '../../service/servicio.service';
 import { ProcesosCedisService } from '../../service/procesos-cedis.service';
 import { IMenuSidebar } from '../../interfaces/ibahia';
-import { MAPEO_RUTAS } from '../../app.routes';
+//import { MAPEO_RUTAS } from '../../app.routes';
 
 
 @Component({
@@ -60,6 +60,30 @@ export class SidebarComponent {
     });
   }
 
+  /**** */
+  // Dentro de export class SidebarComponent { ...
+
+  // Diccionario para el Nivel 1 (Padres)
+  public readonly MAPEO_RUTAS = {
+    1: 'menu-calidad',
+    2: 'menu-recibo',
+    3: 'menu-embarque',
+    4: 'menu',
+    5: 'menu-toma-inventario'
+  };
+
+  // Diccionario para el Nivel 2 (Hijos) - ESTO ES LO QUE TE FALTA
+  public readonly MAPEO_RUTAS_HIJOS: Record<string, string> = {
+    '3-1': 'menu-embarque/inventario-por-ruta',
+    '3-2': 'menu-embarque/inventario-por-tienda',
+    '3-3': 'menu-embarque/programacion-embarque',
+    '5-1': 'menu-embarque/marbetes-mantenimiento',
+  };
+  /**
+   * 
+   * @param modulo 
+   * @returns 
+   */
   obtenerSubmenus(modulo: any) {
     // 1. Si ya tiene submenús O ya intentamos cargarlos y no hubo, solo abrimos/cerramos
     if ((modulo.sub && modulo.sub.length > 0) || modulo.intentado) {
@@ -87,14 +111,13 @@ export class SidebarComponent {
     // 3. Llamamos a la MISMA API
     this.service.getVerMenu(body).subscribe({
       next: (dataHijos) => {
-        // --- CLAVE: MAPEO DE RUTAS ---
-        // Transformamos lo que viene de la API agregándole la propiedad URL
-        const subProcesados = dataHijos.map(sub => ({
-          ...sub,
-          // Buscamos en el diccionario usando el ID que manda la API (sub.Opcion)
-          // El resultado será algo como: "/main/inventario-por-ruta"
-          URL: MAPEO_RUTAS[sub.Opcion] || 'inicio'
-        }));
+        const subProcesados = dataHijos.map(sub => {
+          // Creamos la llave combinada: "5-1"
+          const llaveUnica = `${modulo.Opcion}-${sub.Opcion}`;
+          const ruta = this.MAPEO_RUTAS_HIJOS[llaveUnica] || 'inicio';
+
+          return { ...sub, URL: ruta };
+        });
 
         this.modulos.update(lista => lista.map(m =>
           m.Opcion === modulo.Opcion
