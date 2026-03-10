@@ -29,11 +29,11 @@ export class InventarioComponent implements OnInit {
   public fechaActualizacion = signal<Date>(new Date());
   public isWaiting = signal<boolean>(false);
   public tablaDatos = signal<any[]>([]);
-  public cabeceras = signal<any[]>([]);
+  public cabeceras = signal<any[]>([]); //signal que almacena las cabeceras
   public columnasAFijar = signal<number>(0);
 
   public filaEditando: any = null; //Fila identificada para editar
-  public celdaEditando: string | null = null; //Columna identificada para editar
+  valorTemporal: string = ''; //valor temporal de la fila editada
 
   private _datosBase: any[] = [];
   fechaSeleccionada: string = new Date().toISOString().split('T')[0];
@@ -56,25 +56,23 @@ export class InventarioComponent implements OnInit {
   }
 
   ngOnInit() {
-
-
     this.setupWorkfloww();
-
     const body = {
       tipo: 1,
       RangoIni: " ",
       RangoFin: " ",
       Ubica: " "
     };
-
     this.interaction$.next(body);
-
   }
 
+  /**
+   * Coloca el foco en base a la referncia antes obtenida
+   */
   ngAfterViewInit() {
     this.escanearcajaInput.nativeElement.focus()
-
   }
+
   private setupWorkfloww() {
     const user = this.datosService.usuarioSignal();
     if (user) this.userRecivido.set(user);
@@ -82,10 +80,17 @@ export class InventarioComponent implements OnInit {
     this.cabeceras.set([
       { nombre: 'Rango Inicial', key: 'lbl_txt1', width: 50 },
       { nombre: 'Rango Final', key: 'lbl_txt2', width: 50 },
-      { nombre: 'Descripcion', key: 'lbl_txt3', width: 150 }
+      //{ nombre: 'Descripcion', key: 'lbl_txt3', width: 150 },
+      { nombre: 'Descripcion', key: 'lbl_txt3', width: 90 }
     ]);
   }
-
+  /**
+   * core del aplicativo tiene conexion con API, el flujo de trabajo y contro de errores con la API
+   * @param body contiene el payload del aplicativo
+   *  @param Usuario es el usuario fresco 
+   * @param resp son la data que debuelve la API
+   * @param cargando Indica el flujo del aplicativo (espera de respuesta o ya recibio esta)
+   */
   private setupWorkflow() {
     this.interaction$.pipe(
       tap(() => this.cargando.set(true)),
@@ -121,8 +126,8 @@ export class InventarioComponent implements OnInit {
         // --- TIPO 1: PINTAR TABLA COMPLETA ---
         if (body.tipo === 1) {
           if (Array.isArray(resp)) {
-            this.tablaDatos.set([...resp]);
-            this._datosBase = [...resp];
+            this.tablaDatos.set([...resp]); //Sobreescribe la señal para pintar
+            this._datosBase = [...resp];  //copia para el filtro
             this.fechaActualizacion.set(new Date());
           }
           return; // Siempre salir después de pintar
@@ -137,26 +142,19 @@ export class InventarioComponent implements OnInit {
             // CASO A: Pasó la validación (Tipo 2), ahora mandamos a Guardar (Tipo 3)
             if (body.tipo === 2) {
               console.log("Error " + resp[0].err_id);
-              /*let dato1 = Number(body.RangoIni)              
-              let dato2 = Number(body.RangoFin)
-              console.log( dato1 + " " + typeof(dato1) + " > " + dato2 + " " + typeof(dato2)) ;
-              */
 
-              if (Number(body.RangoIni) > Number(body.RangoFin)) {
+              /*if (Number(body.RangoIni) > Number(body.RangoFin)) {
                 //console.log("Mayor " + body.RangoIni );
-                alert( "Rango inicial  " + body.RangoIni + " es mayor que rango final " + body.RangoFin)
+                alert("Rango inicial  " + body.RangoIni + " es mayor que rango final " + body.RangoFin)
                 return
-                
-              }
-              
+              }*/
+
               this.interaction$.next({ ...body, tipo: 3 });
-              // console.log("✅ Validación exitosa (2). Mandando a guardar (3)...");
               return; // IMPORTANTE: Salir para esperar la respuesta del Tipo 3
             }
 
             // CASO B: Guardado exitoso (Tipo 3) o Edición/Eliminación (4, 5)
             if (body.tipo === 3 || body.tipo === 4 || body.tipo === 5) {
-              // console.log(`✅ Acción ${body.tipo} completada. Refrescando tabla...`);
 
               // Limpiamos los inputs solo si fue un guardado exitoso
               if (body.tipo === 3) this.camposInfo.forEach(c => c.valor = '');
@@ -193,21 +191,12 @@ export class InventarioComponent implements OnInit {
   }
 
   /**
-   * 
-   * @param fila 
+   * Agrega 1 fila al final del resto
+   * @param {Event} [event] metodo que atravez de 3 valores que agrega la informacion al sp y se pinta en la tabla principal
    */
   agregarItem() {
     // Verificación de seguridad para evitar clics dobles durante el delay de red
     if (this.isWaiting()) return;
-    //para pintar la tabla local
-    /* const dataParaTabla = {
-       err_id: 0,
-       err_msg: "",
-       lbl_txt1: this.camposInfo[0].valor, // Rango Inicial
-       lbl_txt2: this.camposInfo[1].valor, // Rango Final
-       lbl_txt3: this.camposInfo[2].valor, // Ubicación
-       tipo: 2
-     };*/
 
     const dataParaEnviar = {
       // Mapeamos los camposInfo a lo que tu API espera
@@ -219,45 +208,47 @@ export class InventarioComponent implements OnInit {
 
     this.interaction$.next(dataParaEnviar);
 
-    // Validamos que no envíen campos vacíos para la TABLA LOCAL
-    /*  if (!dataParaEnviar.RangoIni.trim() || !dataParaEnviar.RangoFin.trim() || !dataParaEnviar.Ubica.trim()) {
-        
-        return;
-      } else {
-        console.log("Data ", dataParaTabla);
-        this.tablaDatos.update(nuevo => [...nuevo, dataParaTabla]) //agrega a la tabla
-        console.log("update ", this.tablaDatos());
-  
-        this._datosBase = [...this.tablaDatos()]; // agrega al filtro la data nueva   
-  
-        this.camposInfo.forEach(c => c.valor = ''); //Limpia los campos
-      }*/
-
+    this.limpiar();
   }
 
   /**************EDICION POR FILA************* */
-  activarEdicion(fila: any) {
-    this.filaEditando = { ...fila }; // Copia de lista por si cancela operacion
-
+  /**
+   * Habilita la edicion de una fila
+   * @param fila es la referncia de una fila dentro de la tabla local
+   */
+  activarEdicion(fila: any, head : any) {
+   // this.filaEditando = { ...fila }; // Copia de lista por si cancela operacion
     this.filaEditando = fila; //Edita la fila (lbl_txt3)
-    setTimeout(() => {
-      // Tomamos el primer elemento que encuentre (que será el que se acaba de activar)
-      const inputParaEnfocar = this.inputs.first;
+    this.valorTemporal = fila[head.key];
 
-      if (inputParaEnfocar) {
-        inputParaEnfocar.nativeElement.focus(); // coloco el foco
-        // inputParaEnfocar.nativeElement.select(); // Sombrea el texto para editar rápido
-      }
-    }, 50); // 50ms son suficientes para el renderizado
+    // Limpia selecciones de texto previas que disparan menús contextuales
+    window.getSelection()?.removeAllRanges();
+
+    setTimeout(() => {
+    const inputParaEnfocar = this.inputs.first;
+    if (inputParaEnfocar) {
+      inputParaEnfocar.nativeElement.focus();
+      // inputParaEnfocar.nativeElement.select(); 
+    }
+  }, 50); // 50ms son suficientes para el renderizado
   }
 
   /**********************CANCELA PETICION DE EDICION************************** */
+  /**
+   * Cancela la edicion de la fila
+   */
   cancelarEdicion() {
     this.filaEditando = null;
+    this.valorTemporal = ''; // Limpiamos el buffer
   }
 
   /************************PARA GUARDAR**************************** */
-  guardarCambios(fila: any) {
+  /**
+   * Guarda los cambios de la tabla local en el sp
+   * @param fila referencia a donde se va a editar
+   * @returns los datos a pintar
+   */
+  guardarCambios(fila: any, key:string) {
     // 1. Validar (usando el .trim() que vimos antes)
     if (!fila.lbl_txt3?.toString().trim()) {
       //alert("Los rangos no pueden estar vacíos");
@@ -275,13 +266,18 @@ export class InventarioComponent implements OnInit {
     // 3. Enviar a la API
     this.interaction$.next(dataActualizada);
 
-
     // 4. Salir del modo edición y actualizar respaldo
     this.filaEditando = null;
     this._datosBase = [...this.tablaDatos()];
+    this.limpiar()
   }
 
   /********************PARA ELIMINAR*********************************/
+  /**
+   * Elimina un registro de la tabla de inventario mediante el sp .
+   * Remueve la fila del arreglo local y vuelve apintar la data.
+   * @param {number} index - La posición (índice) de la fila en el arreglo.
+   */
   eliminarFila(index: number) {
     // 1. Confirmación de seguridad
     if (!confirm('¿Estás seguro de que deseas eliminar este registro?')) return;
@@ -305,7 +301,12 @@ export class InventarioComponent implements OnInit {
     this._datosBase = [...this.tablaDatos()];
   }
 
-/*************FILTRO PARA SOLO RECIONOCER LOS NUMEROS *** */
+  /*************FILTRO PARA SOLO RECIONOCER LOS NUMEROS *** */
+  /**
+   * Filtro paar solo tomar los numero introcucido en tiempo real
+   * @param event que ayuda a identificar y pintar en el input solo numeros
+   * @returns solo los datos que son numero
+   */
   soloNumeros(event: KeyboardEvent) {
     // Teclas permitidas: Backspace, Delete, Tab, Escape, Enter, y flechas
     const teclasPermitidas = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'];
@@ -320,26 +321,41 @@ export class InventarioComponent implements OnInit {
     }
   }
 
+  /**
+   * Encarga de limpiar las cajas de texto
+   * coloca el foco en la primer cahja de texto para que el usuario siga trabajanado
+   */
   limpiar() {
-    this.camposInfo[0].valor = "",
-      this.camposInfo[1].valor = "",
-      this.camposInfo[2].valor = ""
+    // Limpiamos los campos
+    this.camposInfo.forEach(c => c.valor = "");
 
-    this.escanearcajaInput.nativeElement.focus()
+    // El truco final: un tiempo un poquito más largo para asegurar 
+    // que el navegador terminó de procesar el 'Enter'
+    setTimeout(() => {
+      if (this.escanearcajaInput) {
+        this.escanearcajaInput.nativeElement.focus();
+      }
+    }, 150); // Subimos a 150ms para asegurar la estabilidad
   }
 
   /********************************************************* */
-
-
-
+  /**
+   * filtra y visualmente muestra la informacion en la tabla local
+   * @param event 
+   */
   aplicarFiltro(event: Event) {
-    const filtro = (event.target as HTMLInputElement).value.toLowerCase();
+    const filtro = (event.target as HTMLInputElement).value.toLowerCase();//el texto de input a mayuscula
     const filtrados = this._datosBase.filter(item =>
       Object.values(item).some(v => String(v).toLowerCase().includes(filtro))
-    );
-    this.tablaDatos.set(filtrados);
+    );// busca los datos similares en la copia local del sp
+    this.tablaDatos.set(filtrados); //repinta tabla local
   }
-
+  /**
+   * Calcula la posición horizontal (left) de una columna sumando los anchos de las columnas previas.
+   * Útil para posicionamiento dinámico de elementos o columnas fijas (sticky).
+   * * @param {number} index - El índice de la columna actual de la cual se desea conocer su posición inicial.
+   * @returns {string} La distancia acumulada en píxeles (ej. "450px").
+   */
   calcularPosicion(index: number): string {
     const previo = this.cabeceras().slice(0, index).reduce((acc, col) => acc + (col.width || 100), 0);
     return `${previo}px`;
@@ -349,9 +365,12 @@ export class InventarioComponent implements OnInit {
     return estado?.toLowerCase().includes('entregado') ? 'entregado' : 'pendiente';
   }
 
+  /**
+   * Carga los datos a la tabla a descargar en el archivo asi como un nombre de archivo (libro)
+   */
   descargarReporte() {
-    this.ExcelInventario.exportToExcelCustom(this.tablaDatos(), 'Reporte');
+    this.ExcelInventario.exportToExcelCustom(this.tablaDatos(), 'Reporte Inventario');
   }
 
-  
+
 }

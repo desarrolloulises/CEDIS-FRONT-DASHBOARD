@@ -6,20 +6,19 @@
       <div class="field-info w-small">
         <label class="label-mini">RANGO INICIAL</label>
         <input #escanearcajaInput type="text" name="folio" class="input-filter-notable "
-          [(ngModel)]="camposInfo[0].valor" (keydown.enter)="agregarItem()" (keydown)="soloNumeros($event)"
-          placeholder="Rango inicial...">
+          [(ngModel)]="camposInfo[0].valor" (keydown.enter)="agregarItem()" (keydown)="soloNumeros($event)">
       </div>
 
       <div class="field-info w-small">
         <label class="label-mini">RANGO FINAL</label>
         <input type="text" name="referencia" class="input-filter-notable" (keydown)="soloNumeros($event)"
-          [(ngModel)]="camposInfo[1].valor" placeholder="Rango final...">
+          [(ngModel)]="camposInfo[1].valor">
       </div>
 
       <div class="field-info w-large">
         <label class="label-mini">DESCRIPCION</label>
-        <input type="text" name="ubicacion" class="input-filter-notable" (keyup.enter)="agregarItem()" [(ngModel)]="camposInfo[2].valor"
-          placeholder="Ingrese la descripción...">
+        <input type="text" name="ubicacion" class="input-filter-notable" (keyup.enter)="agregarItem()"
+          [(ngModel)]="camposInfo[2].valor">
       </div>
 
       <div class="btn-group ">
@@ -60,28 +59,29 @@
 
       <tbody>
         @for (fila of tablaDatos(); track $index; let i = $index) {
-        <tr (dblclick)="activarEdicion(fila)" style="cursor: pointer;">
-          <td style="font-weight: bold; color: #888;">
-            {{i + 1}}
-          </td>
+        <tr (dblclick)="activarEdicion(fila, {key: 'lbl_txt3'})" style="cursor: pointer;">
+          <td style="font-weight: bold; color: #888;">{{i + 1}}</td>
+
           @for (head of cabeceras(); track $index) {
           <td>
             @if (filaEditando === fila && head.key === 'lbl_txt3') {
-            <input #inputFocus (blur)="cancelarEdicion()" (keyup.escape)="cancelarEdicion()"
-              (keyup.enter)="guardarCambios(fila)" type="text" [(ngModel)]="fila[head.key]" class="input-filter-notable"
-              style="width: 100%; ">
+            <input #inputFocus type="text" [(ngModel)]="valorTemporal" (contextmenu)="$event.preventDefault()"
+              (blur)="cancelarEdicion()" (keyup.escape)="cancelarEdicion()"
+              (keyup.enter)="guardarCambios(fila, head.key)" class="input-filter-notable">
             } @else {
-            {{ fila[head.key] }}
+            <span (click)="activarEdicion(fila, head)">
+              {{ fila[head.key] }}
+            </span>
             }
           </td>
           }
 
           <td class="text-center">
             @if (filaEditando === fila) {
-            <button class="btn-save" (click)="guardarCambios(fila)">Guardar</button>
+            <button class="btn-save" (click)="guardarCambios(fila, 'lbl_txt3')">Guardar</button>
             <button class="btn-cancel" (click)="cancelarEdicion()">Cancelar</button>
             } @else {
-            <a class="btn-edit" (click)="activarEdicion(fila)">Editar</a>
+            <a class="btn-edit" (click)="activarEdicion(fila, {key: 'lbl_txt3'})">Editar</a>
             <a class="btn-delete" (click)="eliminarFila($index)">Eliminar</a>
             }
           </td>

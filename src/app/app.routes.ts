@@ -6,9 +6,12 @@ import { CambioPassComponent } from './features/cambio-pass/cambio-pass.componen
 
 /**********LISTA O DICCIONARIO QUE INDICA EL CODIGO DE LA api Y LO ASOCIA A miComponente */
 export const MAPEO_RUTAS: { [key: number]: string } = {
-  1: 'inventario',
+  1: 'marbetes-mantenimiento',
   2: 'inventario-por-tienda',
-  3: 'programacion-embarque'
+  3: 'programacion-embarque',
+  4: 'inventario',
+  5: 'marbetes-mantenimiento'
+
 };
 
 
@@ -23,16 +26,23 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       {
-        path: MAPEO_RUTAS[1],
-        loadComponent: () => import('./features/inventario/inventario1/inventario.component').then(m => m.InventarioComponent)
+        path: MAPEO_RUTAS[4],
+        loadComponent: () => import('./features/inventario/inventario2/inventario2.component').then(m => m.Inventario2Component)
       },
       {
         path: MAPEO_RUTAS[2],
         loadComponent: () => import('./features/inventario/inventario2/inventario2.component').then(m => m.Inventario2Component)
-      },      
+      },
       {
         path: MAPEO_RUTAS[3],
         loadComponent: () => import('./features/recibo/recibo/recibo.component').then(m => m.ReciboComponent)
+      },
+
+      {
+        path: MAPEO_RUTAS[5],
+        loadComponent: () => import('./features/inventario/inventario1/inventario.component').then(m => m.InventarioComponent), 
+          pathMatch: 'full'
+        
       },
       {
         path: 'CambiaPass',
