@@ -7,7 +7,7 @@ export const url ='http://192.168.101.9:8086' //Para servidar dasboartd
 //export const url ='http://192.168.101.10:80' //Para servidar PRODUCCION
 
 
-  export const APIURL_CALIDAD = `${url}/cedis/C4L1D4DC3D1S`;
+ /* export const APIURL_CALIDAD = `${url}/cedis/C4L1D4DC3D1S`;
   export const APIURL_RECIBO = `${url}/cedis/R3C1B0C3D1S`;
   export const APIURL_CIERREOC = `${url}/cedis/C13RR3C3D1S`;
   export const APIURL_AVANCEREC = `${url}/cedis/4VANC3R3CCED1S`;
@@ -30,14 +30,15 @@ export const url ='http://192.168.101.9:8086' //Para servidar dasboartd
  export const APIURL_5CTU5LIZ5RD5T5 = `${url}/cedis/5CTU5LIZ5RD5T5`;
  export const APIURL_REPORTEGENERALINCIDENCIAS = `${url}/cedis/REPORTEGENERALINCIDENCIAS`;
  export const APIURL_PRIMERCONTEOVSSEGUNDOCONTEO = `${url}/cedis/PRIMERCONTEOVSSEGUNDOCONTEO`;
-
+*/
 export const APIURL_L0G1N = `${url}/cedis/LOGIN/`
-export const APIURL_4LM4C3N = `${url}/cedis/4LM4C3N`
+/*export const APIURL_4LM4C3N = `${url}/cedis/4LM4C3N`
 export const APIURL_MULTITIENDA = `${url}/cedis/MULTITIENDA`
 export const APIURL_EXTRAERCAJAPALLET = `${url}/cedis/EXTRAERCAJAPALLET`
 export const APIURL_DESARMARPALLET = `${url}/cedis/DESARMARPALLET`
 export const APIURL_MOVERPALLET = `${url}/cedis/MOVERPALLET`
 export const APIURL_CONSULTAPALLET = `${url}/cedis/CONSULTAPALLET`
+*/
 export const APIURL_CAMBIOPASSWORD = `${url}/cedis/CAMBIOpASSWORD`
 
 export const APIURL_MENUSIDEBAR = `${url}/cedis/PERFIL`

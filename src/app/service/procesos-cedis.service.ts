@@ -1,11 +1,12 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { BehaviorSubject, catchError, filter, Observable, of, pairwise, throwError } from 'rxjs';
-import { APIURL_AVANCEREC, APIURL_CALIDAD, APIURL_CIERREOC, APIRUL_G3TB4I4, APIURL_GETPRIMERCONTEOFOLIO, APIURL_GETPRIMERCONTEOSCANER, APIURL_GETSEGUNDOCONTEOFOLIO, APIURL_GETSEGUNDOCONTEOSCANER, APIURL_RECIBO, APIURL_VALPRECIO, APIRUL_PR1M3R5C4N30, APIRUL_PR1M3R5C4N30F4L74N735, APIRUL_53GUMD05C4N30, APIRUL_53GUMD05C4N30F4L74N735, APIRUL_BU5C4RC4J45B4H145MARA1, APIRUL_C0N5ULT4G3N3R4LB5H145MARA2, APIRUL_C0N5ULT4D3T4113B4145MARA3, APIURL_5CTU5LIZ5RD5T5, APIURL_REPORTEGENERALINCIDENCIAS, APIURL_PRIMERCONTEOVSSEGUNDOCONTEO, APIURL_4LM4C3N, APIURL_MULTITIENDA, APIURL_EXTRAERCAJAPALLET, APIURL_DESARMARPALLET, APIURL_MOVERPALLET, APIURL_CONSULTAPALLET, APIURL_CAMBIOPASSWORD, APIURL_L0G1N, APIURL_MENUSIDEBAR, APIURL_DINVENTARIO } from '../variables';
+//import { APIURL_AVANCEREC, APIURL_CALIDAD, APIURL_CIERREOC, APIRUL_G3TB4I4, APIURL_GETPRIMERCONTEOFOLIO, APIURL_GETPRIMERCONTEOSCANER, APIURL_GETSEGUNDOCONTEOFOLIO, APIURL_GETSEGUNDOCONTEOSCANER, APIURL_RECIBO, APIURL_VALPRECIO, APIRUL_PR1M3R5C4N30, APIRUL_PR1M3R5C4N30F4L74N735, APIRUL_53GUMD05C4N30, APIRUL_53GUMD05C4N30F4L74N735, APIRUL_BU5C4RC4J45B4H145MARA1, APIRUL_C0N5ULT4G3N3R4LB5H145MARA2, APIRUL_C0N5ULT4D3T4113B4145MARA3, APIURL_5CTU5LIZ5RD5T5, APIURL_REPORTEGENERALINCIDENCIAS, APIURL_PRIMERCONTEOVSSEGUNDOCONTEO, APIURL_4LM4C3N, APIURL_MULTITIENDA, APIURL_EXTRAERCAJAPALLET, APIURL_DESARMARPALLET, APIURL_MOVERPALLET, APIURL_CONSULTAPALLET, APIURL_CAMBIOPASSWORD, APIURL_L0G1N, APIURL_MENUSIDEBAR, APIURL_DINVENTARIO } from '../variables';
 import { Iembarqes } from '../interfaces/iembarqes';
 import { IActualizarData, IAlmacen, IAlmacenPallet, Ibahia, IConsultaCaja, IContrasenna, IDInventario, IMenuSidebar, IReporteGeneralIncidencias } from '../interfaces/ibahia';
 import { NavigationEnd, Router } from '@angular/router';
 import { IAutoidentifica } from '../interfaces/ilogin';
+import { APIURL_CAMBIOPASSWORD, APIURL_DINVENTARIO, APIURL_L0G1N, APIURL_MENUSIDEBAR } from '../variables';
 export interface MiData {
   info1: string;
   info2: string;
@@ -22,7 +23,7 @@ export interface MiData {
 
 })
 export class ProcesosCedisService {
-  private perfil: string = '';
+ /* private perfil: string = '';
   private apiUrlCalidad = APIURL_CALIDAD;
   private apiUrlRecibo = APIURL_RECIBO;
   private apiUrlCierreOC = APIURL_CIERREOC;
@@ -44,14 +45,14 @@ export class ProcesosCedisService {
   private apiUrlREPORTEGENERALINCIDENCIAS = APIURL_REPORTEGENERALINCIDENCIAS
   private apiUrlPRIMERCONTEOVSSEGUNDOCONTEO = APIURL_PRIMERCONTEOVSSEGUNDOCONTEO
   private datosPrimerEscaneo: any = null;
-
+*/
   private apiUrlGetL0G1N = APIURL_L0G1N;
-  private apiUrlGetAlmacen = APIURL_4LM4C3N;
+ /* private apiUrlGetAlmacen = APIURL_4LM4C3N;
   private apiUrlGetMultiTienda = APIURL_MULTITIENDA;
   private apiUrlGetExtraeCajaPallet = APIURL_EXTRAERCAJAPALLET;
   private apiUrlGetDesarmarPallet = APIURL_DESARMARPALLET;
   private apiUrlGetMoverPallet = APIURL_MOVERPALLET;
-  private apiUrlGetConsultaPallet = APIURL_CONSULTAPALLET;
+  private apiUrlGetConsultaPallet = APIURL_CONSULTAPALLET;*/
   private apiUrlGetCambioPassword = APIURL_CAMBIOPASSWORD;
 
   private apiUrlGetPerfil = APIURL_MENUSIDEBAR;
@@ -81,7 +82,7 @@ export class ProcesosCedisService {
   public getCurrentUrl(): string {
     return this.currentUrl;
   }
-
+/*
   guardarDatosPrimerEscaneo(data: any): void {
     this.datosPrimerEscaneo = data;
   }
@@ -214,7 +215,7 @@ export class ProcesosCedisService {
     if (body.caja) params = params.set('caja', body.caja);
     return this.http.get<any>(this.apiUrlPRIMERCONTEOVSSEGUNDOCONTEO, { params });
   }
-
+*/
   //--------------------------------------------------------------------------------------
   getLogin(body: IAutoidentifica): Observable<any> {
     let params = new HttpParams().set('proceso', body.proceso);
@@ -228,7 +229,7 @@ export class ProcesosCedisService {
   }
 
   //--------------------------------------------------------------------------------------
-  getAlmacen(body: IAlmacen): Observable<any> {
+ /* getAlmacen(body: IAlmacen): Observable<any> {
     let params = new HttpParams().set('tipo', body.tipo);
     if (body.Id_Pallet) params = params.set('Id_Pallet', body.Id_Pallet);
     if (body.Inp_txt8) params = params.set('Inp_txt8', body.Inp_txt8);
@@ -287,7 +288,7 @@ export class ProcesosCedisService {
     if (body.Usuario) params = params.set('Usuario', body.Usuario);
     return this.http.get<any>(this.apiUrlGetConsultaPallet, { params });
   }
-
+*/
   //--------------------------------------------------------------------------------------
   getCambioContrasena(body: IContrasenna): Observable<any> {
     let params = new HttpParams().set('Usuario', body.Usuario);

@@ -13,7 +13,7 @@ export class ExcelInventario {
      */
     async exportToExcelCustom(data: any[], fileName: string) {
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Reporte de inventario'); //nombre que se le da a la hoja de exel
+        const worksheet = workbook.addWorksheet('Datos'); //nombre que se le da a la hoja de exel
 
         /**
          * CONFIGURACIÓN DE COLUMNAS para la tabla

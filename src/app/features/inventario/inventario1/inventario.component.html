@@ -4,20 +4,20 @@
     <div class="grid-operation">
 
       <div class="field-info w-small">
-        <label class="label-mini">RANGO INICIAL</label>
+        <label class="label-mini">Rango Inicial</label>
         <input #escanearcajaInput type="text" name="folio" class="input-filter-notable "
           [(ngModel)]="camposInfo[0].valor" (keydown.enter)="agregarItem()" (keydown)="soloNumeros($event)"
           (input)="limpiarEntrada($event, 0)" maxlength="10">
       </div>
 
       <div class="field-info w-small">
-        <label class="label-mini">RANGO FINAL</label>
+        <label class="label-mini">Rango Final</label>
         <input type="text" name="referencia" class="input-filter-notable" (keydown)="soloNumeros($event)"
           [(ngModel)]="camposInfo[1].valor" (input)="limpiarEntrada($event, 1)" maxlength="10">
       </div>
 
       <div class="field-info w-large">
-        <label class="label-mini">DESCRIPCION</label>
+        <label class="label-mini">Descripción</label>
         <input type="text" name="ubicacion" class="input-filter-notable" (keyup.enter)="agregarItem()"
           [(ngModel)]="camposInfo[2].valor">
       </div>
@@ -98,7 +98,7 @@
 
       <div class="stat-group filtro-group">
         <label for="filtro-pie">Filtro Rápido:</label>
-        <input id="filtro-pie" type="text" placeholder="Buscar en resultados..." (input)="aplicarFiltro($event)">
+        <input #filtroInput id="filtro-pie" type="text" placeholder="Buscar en resultados..." (input)="aplicarFiltro($event)">
       </div>
 
       <div class="divider"></div>

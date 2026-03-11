@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, inject, OnInit, QueryList, signal, ViewChild, ViewChildren } from '@angular/core';
+import { Component, DestroyRef, ElementRef, HostListener, inject, OnInit, QueryList, signal, ViewChild, ViewChildren } from '@angular/core';
 import { catchError, concatMap, finalize, map, of, ReplaySubject, tap, throwError, timeout } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
@@ -17,7 +17,9 @@ import { ExcelInventario } from '../../../services/InventarioExel';
   styleUrl: './inventario.component.css'
 })
 export class InventarioComponent implements OnInit {
-  @ViewChild('escanearcajaInput') escanearcajaInput!: ElementRef;
+
+  @ViewChild('escanearcajaInput') escanearcajaInput!: ElementRef; //Referencia a el input RangoIni
+  @ViewChild('filtroInput') filtroInput!: ElementRef<HTMLInputElement>; //referncia a el filtro
 
   // para trabajar peticiones 
   private destroyRef = inject(DestroyRef);
@@ -130,7 +132,7 @@ export class InventarioComponent implements OnInit {
             this._datosBase = [...resp];  //copia para el filtro
             this.fechaActualizacion.set(new Date());
           }
-          return; // Siempre salir después de pintar
+          return; // salir después de pintar
         }
 
         // --- VALIDACIÓN DE RESPUESTAS DE ACCIÓN (2, 3, 4, 5) ---
@@ -139,7 +141,7 @@ export class InventarioComponent implements OnInit {
           // Si la operación fue exitosa
           if (resp[0].err_id === 0) {
 
-            // CASO A: Pasó la validación (Tipo 2), ahora mandamos a Guardar (Tipo 3)
+            // CASO A: Pasó la validación (Tipo 2), ahora mandamos a (Tipo 3) Guardar (Tipo 3)
             if (body.tipo === 2) {
               console.log("Error " + resp[0].err_id);
 
@@ -158,6 +160,13 @@ export class InventarioComponent implements OnInit {
 
               // Limpiamos los inputs solo si fue un guardado exitoso
               if (body.tipo === 3) this.camposInfo.forEach(c => c.valor = '');
+
+              /**
+               * Corta la actualizacion y pintado de la tabla principal
+               */
+              if (body.tipo === 4 || body.tipo === 5) {
+                return; // Cortamos aquí para evitar el refresco total
+              }
 
               // MANDAMOS A REFRESCAR CON TIPO 1
               this.interaction$.next({
@@ -268,8 +277,6 @@ export class InventarioComponent implements OnInit {
     // 2. Pasamos el valor del buffer a la fila real ANTES de mandarlo a la API
     fila[key] = this.valorTemporal;
 
-
-
     // 2. Preparar objeto para la API (Mapeando lbl_txt de vuelta a RangoI/F)
     const dataActualizada = {
       tipo: 4,
@@ -282,8 +289,8 @@ export class InventarioComponent implements OnInit {
     this.interaction$.next(dataActualizada);
 
     // 4. Salir del modo edición y actualizar respaldo
-    this.filaEditando = null;
-    this._datosBase = [...this.tablaDatos()];
+    //this.filaEditando = null;
+    // this._datosBase = [...this.tablaDatos()];
     this.limpiar()
   }
 
@@ -337,20 +344,20 @@ export class InventarioComponent implements OnInit {
       event.preventDefault();
     }
   }
- 
+
   limpiarEntrada(event: any, index: number) {
-  // 1. Obtenemos el valor directamente desde el input del HTML (no del ngModel)
-  const input = event.target as HTMLInputElement;
-  let valor = input.value;
+    // 1. Obtenemos el valor directamente desde el input del HTML (no del ngModel)
+    const input = event.target as HTMLInputElement;
+    let valor = input.value;
 
-  // 2. Limpiamos: Solo permitimos números (0-9)
-  // El regex /[^0-9]/g busca CUALQUIER COSA que no sea un número y la borra
-  const valorLimpio = valor.replace(/[^0-9]/g, '');
+    // 2. Limpiamos: Solo permitimos números (0-9)
+    // El regex /[^0-9]/g busca CUALQUIER COSA que no sea un número y la borra
+    const valorLimpio = valor.replace(/[^0-9]/g, '');
 
-  // 3. Forzamos el valor de vuelta tanto al HTML como al objeto de datos
-  input.value = valorLimpio;
-  this.camposInfo[index].valor = valorLimpio;
-}
+    // 3. Forzamos el valor de vuelta tanto al HTML como al objeto de datos
+    input.value = valorLimpio;
+    this.camposInfo[index].valor = valorLimpio;
+  }
 
   /**
    * Encarga de limpiar las cajas de texto
@@ -400,8 +407,24 @@ export class InventarioComponent implements OnInit {
    * Carga los datos a la tabla a descargar en el archivo asi como un nombre de archivo (libro)
    */
   descargarReporte() {
-    this.ExcelInventario.exportToExcelCustom(this.tablaDatos(), 'Reporte Inventario');
+    this.ExcelInventario.exportToExcelCustom(this.tablaDatos(), 'Catalogo de marbete');
   }
 
+  /**
+   * Detecta los eventos del teclado
+   */
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    // Detectamos Ctrl + F o Cmd + F (Mac)
+    if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
+      event.preventDefault(); // IMPORTANTE: Evita que se abra el buscador del navegador
+      this.enfocarFiltro();
+    }
+  }
+
+  enfocarFiltro() {
+    this.filtroInput.nativeElement.focus();
+    this.filtroInput.nativeElement.select(); // Selecciona el texto para borrarlo rápido o editar
+  }
 
 }

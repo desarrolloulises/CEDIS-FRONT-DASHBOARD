@@ -51,6 +51,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/inventario/inventario1/inventario.component').then(m => m.InventarioComponent)
       },
 
+      
+    {
+      path: 'CambiaPass',
+      loadComponent: () => import('./features/cambio-pass/cambio-pass.component').then(m => m.CambioPassComponent) // El login va SOLO, sin Layout
+    },
+
     ]
   },
   { path: '**', redirectTo: 'login' } // Si no existe la ruta, al login

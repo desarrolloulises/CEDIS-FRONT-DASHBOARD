@@ -62,6 +62,7 @@ export class CambioPassComponent {
         // console.log("user");     
         this.errorMsg = response[0].err_msg
         this.passwordForm.reset();
+        alert("Contraseña cambiada con exito")
       }
       else {
         this.errorMsg = response[0].err_msg
