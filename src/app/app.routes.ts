@@ -52,10 +52,28 @@ export const routes: Routes = [
       },
 
       
+      {
+        path: 'accesos/Accesos',
+        loadComponent: () => import('./features/Accesos/catalogo-acessos/catalogo-acessos.component').then(m => m.CatalogoAcessosComponent)
+      },
+      {
+        path: 'accesos/Perfiles',
+        loadComponent: () => import('./features/Accesos/catalogo-perfiles/catalogo-perfiles.component').then(m => m.CatalogoPerfilesComponent)
+      },
+      {
+        path: 'accesos/Accesos-perfil',
+        loadComponent: () => import('./features/Accesos/acceso-perfil/acceso-perfil.component').then(m => m.AccesoPerfilComponent)
+      },
+      {
+        path: 'accesos/Accesos-Usuarios',
+        loadComponent: () => import('./features/Accesos/catalogo-usuario/catalogo-usuario.component').then(m => m.CatalogoUsuarioComponent)
+      },
+
+      
     {
       path: 'CambiaPass',
       loadComponent: () => import('./features/cambio-pass/cambio-pass.component').then(m => m.CambioPassComponent) // El login va SOLO, sin Layout
-    },
+    }
 
     ]
   },

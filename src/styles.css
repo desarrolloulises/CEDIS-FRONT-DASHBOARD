@@ -1,6 +1,33 @@
-/* You can add global styles to this file, and also import other style files */
-/* Reinicio básico */
-html, body { height: 100%; margin: 0; font-family: sans-serif; }
+/* 1. VARIABLES GLOBALES (El cerebro del diseño) */
+:root {
+  /* Colores que ya usas */
+  --bg-sidebar: #2c3e50;
+  --bg-header: #ecf0f1;
+  --gris-borde: #bdc3c7;
+  --texto-blanco: #ffffff;
+  
+  /* Colores de acción (Estándar para tus botones/inputs) */
+  --primario: #3498db;    /* Azul acción */
+  --exito: #00adb5;      /* Tu turquesa */
+  --error: #ff5252;      /* Rojo alertas */
+  --advertencia: #ffc107; /* Ámbar edición */
+  
+  /* Colores de tabla y todo eso */
+  --blue-header: #003366;
+  --blue-hover: #0056b3;
+  --success-green: #16a34a;
+  --danger-red: #dc2626;
+  --bg-zebra: #f3f6f9;
+  --border-color: #dee2e6;
+}
+
+/* 2. REINICIO Y ESTRUCTURA (Lo que ya tenías, pero limpio) */
+html, body { 
+  height: 100%; 
+  margin: 0; 
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Más moderno para PC */
+  background-color: #f4f7f6; /* Un fondo gris muy tenue para no cansar la vista */
+}
 
 .contenedor-principal {
   display: flex;
@@ -10,27 +37,335 @@ html, body { height: 100%; margin: 0; font-family: sans-serif; }
 
 .sidebar-izquierda {
   width: 250px;
-  background-color: #2c3e50;
-  color: white;
-  flex-shrink: 0; /* No se encoge */
+  background-color: var(--bg-sidebar);
+  color: var(--texto-blanco);
+  flex-shrink: 0;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* Sutil sombra para profundidad */
 }
 
 .cuerpo-derecha {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: auto; /* Aquí es donde ocurre el scroll */
+  overflow: hidden; /* Evita scroll doble */
 }
 
 .header-superior {
-  background: #ecf0f1;
-  padding: 15px;
+  background: var(--bg-header);
+  padding: 0 20px;
+  height: 60px; /* Altura fija para control en PC/Tablet */
   display: flex;
-  justify-content: flex-end; /* Mueve el usuario a la derecha */
-  border-bottom: 1px solid #bdc3c7;
+  align-items: center;
+  justify-content: flex-end;
+  border-bottom: 1px solid var(--gris-borde);
 }
 
 .contenido-dinamico {
   padding: 20px;
   flex-grow: 1;
+  overflow-y: auto; /* El scroll solo ocurre aquí adentro */
+  background-color: #ffffff;
+}
+
+/* 3. CLASES DE UTILIDAD (Para evitar duplicados en componentes) */
+.text-error { color: var(--error); font-size: 0.85rem; }
+.text-success { color: var(--exito); }
+.btn-vibrante { transition: transform 0.1s; }
+.btn-vibrante:active { transform: scale(0.95); } /* Efecto click para Tablet */
+
+/*********************ESTILO PARA ENCABEZADO O SECCION 1*****************************/
+/* CONTENEDOR DE TODO EL MÓDULO */
+.dashboard-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Que ocupe todo el espacio disponible */
+  gap: 10px;
+}
+
+/* SECCIÓN SUPERIOR DE INPUTS */
+.grid-operation {
+  display: flex;
+  align-items: flex-end; /* Esto alinea la base del input con el botón */
+  gap: 12px;
+  padding: 5px 0;
+}
+
+.field-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.label-mini {
+  font-size: 11px;
+  font-weight: 700;
+  color: #003366; /* Azul formal */
+  margin-bottom: 2px;
+}
+
+/* INPUTS COMPACTOS */
+.input-filter-notable {
+  height: 24px;
+  border: 1px solid #003366;
+  border-radius: 4px;
+  padding: 0 8px;
+  font-size: 12px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+/* ANCHOS FIJOS PARA QUE NO SE VEAN LARGOS */
+.w-small { width: 100px; }
+.w-medium { width: 250px; }
+.w-large { width: 450px; } /* Ajusta este valor si quieres la descripción más o menos larga */
+
+/* ANCHOS FIJOS PARA BOTONES */
+.b-small { width: 100px; }
+.b-medium { width: 120px; }
+.b-large { width: 200px; } /* Ajusta este valor si quieres la descripción más o menos larga */
+
+/* BOTÓN AGREGAR */
+.btn-action-real.blue {
+  background: #003366;
+  color: white;
+  height: 24px; /* Misma altura que el input */
+  padding: 0 15px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* TABLA (Para que no se vea pegada a los bordes) */
+.tabla-scroll-container {
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  overflow: auto;
+}
+
+
+/**Estilos para la tablas*/
+/* --- ESTÁNDAR DE TABLAS PROFESIONALES (Sticky & Scroll) --- */
+.tabla-scroll-container {
+  flex: 1;
+  overflow: auto;
+  background: white;
+  border: 1px solid var(--border-color);
+  position: relative;
+}
+
+.table-approved {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+.table-approved thead th {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: var(--blue-header);
+  color: #ffffff;
+  padding: 8px;
+  text-align: left;
+}
+
+.table-approved tr:nth-child(even) { background: var(--bg-zebra); }
+.table-approved td { padding: 5px; border-bottom: 1px solid #e5e7eb; }
+
+/* --- COMPONENTES DE INTERFAZ (Botones y Cards) --- */
+.glass-card {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.btn-action-standard {
+  height: 32px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+/* --- SPINNER GLOBAL --- */
+.loading-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  backdrop-filter: blur(2px);
+}
+
+.spinner-formal {
+  width: 40px; height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--blue-header);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/***botones de accion ***/
+/* --- ACCIONES ESTÁNDAR EN TABLAS --- */
+
+/* Enlaces simples (Estado reposo) */
+.link-edit {
+  color: #16a34a;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 12px;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.link-delete {
+  color: #dc2626;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.link-edit:hover, .link-delete:hover {
+  text-decoration: underline;
+}
+
+/* Botones de acción (Estado Edición o Confirmación) */
+.btn-save-mini {
+  background-color: #16a34a;
+  color: white;
+  border: none;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 11px;
+  margin-right: 5px;
+  transition: background 0.2s;
+}
+
+.btn-cancel-mini {
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 11px;
+  transition: background 0.2s;
+}
+
+.btn-save-mini:hover { background-color: #15803d; }
+.btn-cancel-mini:hover { background-color: #4b5563; }
+
+/* Input especial para edición dentro de celdas */
+.input-table-edit {
+  height: 22px;
+  width: 95%;
+  font-size: 12px;
+  border: 1px solid #16a34a;
+  border-radius: 3px;
+  padding: 0 5px;
+  outline: none;
+}
+
+/**foter de tabla**/
+/* CONTENEDOR PRINCIPAL DEL PIE */
+.table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px; /* Bordes más redondeados como la imagen */
+  margin-top: 8px;
+}
+
+/* SECCIÓN IZQUIERDA (Filtro + Stats) */
+.info-stats {
+  display: flex;
+  align-items: center;
+}
+
+/* EL FILTRO (Label arriba, Input abajo) */
+.filtro-group {
+  display: flex;
+  flex-direction: column; /* Regresamos al estilo original arriba/abajo */
+  align-items: flex-start; /* Alineado a la izquierda */
+}
+
+.filtro-group label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #003366;
+  text-transform: none;
+  margin-bottom: 2px;
+}
+
+.filtro-group input {
+  height: 22px;
+  width: 150px;
+  padding: 0 8px;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* DIVISOR VERTICAL TENUE */
+.divider {
+  width: 1px;
+  height: 25px;
+  background-color: #dee2e6;
+  margin: 0 15px;
+}
+
+/* STATS (Registros y Actualizado) */
+.stat-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: sans-serif;
+}
+
+.stat-group .label {
+  font-size: 11px;
+  color: #666;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+.stat-group .value {
+  font-size: 13px;
+  font-weight: 800;
+  color: #003366;
+}
+
+/* BOTÓN EXCEL */
+.btn-excel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: #ffffff;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
 }

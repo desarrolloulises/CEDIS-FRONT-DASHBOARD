@@ -54,3 +54,20 @@ export interface IDInventario {
     Ubica: string     // Para controlar si el acordeón está abierto
     Usuario: string 
 }
+export interface IAcessoNiveles {
+    tipo: number,
+    ClaveA: string,
+    Niv: string,
+    SNiv: string,
+    SubA: string,
+    Descripcion: string,
+    Usuario: string 
+}
+
+export interface IAccesoPerfiles {
+    tipo: number,
+    ClaveP: string,
+    Descripcion: string,
+    Usuario: string   
+}
+

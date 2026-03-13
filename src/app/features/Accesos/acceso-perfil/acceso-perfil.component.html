@@ -1,0 +1,132 @@
+<div class="dashboard-wrapper">
+
+   <section class="glass-card">
+    <div class="grid-operation">
+        <div class="field-info" style="width: 100%;"> <label class="label-mini">Clave Perfil</label>
+
+            <div class="main-flex-container">
+                <select class="input-filter-notable" [(ngModel)]="camposInfo[0].valor" [disabled]="isWaiting()">
+                    <option value="" disabled selected>Seleccione un nivel...</option>
+                </select>
+
+                @if (isWaiting()) {
+                    <div class="spinner-mini-blue"></div>
+                    <span class="loading-text">Cargando...</span>
+                }
+
+                <div class="spacer"></div>
+
+                <div class="btn-group-right">
+                    <button class="btn-action-real blue" (click)="seleccionarTodo()">Seleccionar todo</button>
+                    <button class="btn-action-real blue" (click)="invertirSeleccion()">Invertir selección</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+                    <!--
+
+ (change)="ver()"
+
+ <option *ngFor="let opcion of listaOpciones" [value]="opcion.id">
+                            {{ opcion.nombre }}
+                        </option>
+                    -->
+
+
+
+    <!-- inicia seccion 2 Tabla central-->
+    <section class="tabla-scroll-container">
+
+        @if (isWaiting()) {
+        <div class="loading-overlay">
+            <div class="spinner-formal"></div>
+            <span class="bold-dark">Cargando datos...</span>
+        </div>
+        }
+
+        <table class="table-approved custom-table">
+            <thead>
+                <tr>
+                    <th class="text-center" style="position: sticky; right: 0; background: #003366; z-index: 9;">*</th>
+                    @for (head of cabeceras(); track $index) {
+                    <th [style.left]="$index < columnasAFijar() ? calcularPosicion($index) : null">
+                        {{ head.nombre }}
+                    </th>
+                    }
+                    <th class="text-center" style="position: sticky; right: 0; background: #003366; z-index: 30;">
+                        Acceso</th>
+                </tr>
+            </thead>
+            <!-- Inicia cuerpo seccion 2 tabla central-->
+
+            <tbody>
+                @for (fila of tablaDatos(); track $index; let i = $index) {
+
+                <tr style="cursor: pointer;">
+                    <td style="font-weight: bold; color: #888;">{{i + 1}}</td>
+
+                    @for (head of cabeceras(); track $index) {
+                    <td>
+                        @if (filaEditando === fila && head.key === 'lbl_txt5') {
+                        <input #inputFocus type="text" [(ngModel)]="valorTemporal"
+                            (contextmenu)="$event.preventDefault()" (blur)="cancelarEdicion()"
+                            (keyup.escape)="cancelarEdicion()" (keyup.enter)="guardarCambios(fila, head.key)"
+                            class="input-filter-notable">
+                        } @else {
+                        <span>
+                            {{ fila[head.key] }}
+                        </span>
+                        }
+                    </td>
+                    }
+                    <!--INICIA EL CHECK -->
+                    <td class="text-center cell-selection" [class.selected-row]="fila.seleccionado"
+                        (click)="toggleSeleccion(fila)">
+
+                        <div class="check-wrapper">
+                            <input type="checkbox" [checked]="fila.seleccionado" (click)="$event.stopPropagation()"
+                                (change)="toggleSeleccion(fila)" class="check-custom">
+
+                        </div>
+                    </td>
+                    <!--TERMINA EL CHECK-->
+
+
+                </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+    <!-- Termina seccion 2 tabla central-->
+
+    <!--<div class="table-footer">
+    <div class="info-stats">
+
+      <div class="stat-group filtro-group">
+        <label for="filtro-pie">Filtro Rápido:</label>
+        <input #filtroInput id="filtro-pie" type="text" placeholder="Buscar en resultados..."
+          (input)="aplicarFiltro($event)">
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="stat-group">
+        <span class="label">Registros: </span>
+        <span class="value">{{ tablaDatos().length }}</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="stat-group">
+        <span class="label">Actualizado: </span>
+        <span class="value">{{ fechaActualizacion() | date:'HH:mm:ss' }}</span>
+      </div>
+    </div>
+
+    <button class="btn-excel" (click)="descargarReporte()" [disabled]="tablaDatos().length === 0">
+      <span class="icon">📊</span> Exportar a Excel
+    </button>
+  </div> -->
+</div>
