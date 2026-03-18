@@ -68,7 +68,7 @@ export class CatalogoAcessosComponent implements OnInit {
       SubA: " ",
       Descripcion: " "
     };
-    console.log(body);
+    //console.log(body);
 
     this.interaction$.next(body);
   }
@@ -87,9 +87,9 @@ export class CatalogoAcessosComponent implements OnInit {
     this.cabeceras.set([
       { nombre: 'Clave de Acceso', key: 'lbl_txt1', width: 50 },
       { nombre: 'Nivel', key: 'lbl_txt2', width: 50 },
-      { nombre: 'SubNivel', key: 'lbl_txt3', width: 150 },
-      { nombre: 'SubAcceso', key: 'lbl_txt4', width: 150 },
-      { nombre: 'Descripcion', key: 'lbl_txt5', width: 90 }
+      { nombre: 'SubNivel', key: 'lbl_txt3', width: 50 },
+      { nombre: 'SubAcceso', key: 'lbl_txt4', width: 50 },
+      { nombre: 'Descripcion', key: 'lbl_txt5', width: 250 }
     ]);
   }
   /**
@@ -170,9 +170,9 @@ export class CatalogoAcessosComponent implements OnInit {
               /**
                * Corta la actualizacion y pintado de la tabla principal
                */
-            /*  if (body.tipo === 4 || body.tipo === 5) {
-                return; // Cortamos aquí para evitar el refresco total
-              }*/
+              /*  if (body.tipo === 4 || body.tipo === 5) {
+                  return; // Cortamos aquí para evitar el refresco total
+                }*/
 
               // MANDAMOS A REFRESCAR CON TIPO 1
               this.interaction$.next({
@@ -277,7 +277,12 @@ export class CatalogoAcessosComponent implements OnInit {
    * @param fila referencia a donde se va a editar
    * @returns los datos a pintar
    */
-  guardarCambios(fila: any, key: string) {
+  guardarCambios(fila: any, key: string, event?: MouseEvent) {
+    // 1. Tomamos el control del navegador
+    if (event) {
+      event.preventDefault();    // Detiene acciones automáticas
+      event.stopPropagation();   // Detiene el "burbujeo" hacia la fila/tabla
+    }
     // 1. Validar (usando el .trim() que vimos antes)
     if (!this.valorTemporal?.toString().trim()) {
       // alert("El campo no puede estar vacío");
@@ -288,8 +293,8 @@ export class CatalogoAcessosComponent implements OnInit {
     fila[key] = this.valorTemporal;
 
     // 2. Preparar objeto para la API (Mapeando lbl_txt de vuelta a RangoI/F)
-    console.log(fila.lbl_txt4 + " Valor 4");
-    
+   // console.log(fila.lbl_txt5 + " Valor 4");
+
     const dataActualizada = {
       tipo: 4,
       ClaveA: fila.lbl_txt1,
@@ -298,8 +303,8 @@ export class CatalogoAcessosComponent implements OnInit {
       SubA: fila.lbl_txt4,
       Descripcion: fila.lbl_txt5
     };
-    console.table(dataActualizada);
-    
+    //console.table(dataActualizada);
+
 
     // 3. Enviar a la API
     this.interaction$.next(dataActualizada);
@@ -337,7 +342,7 @@ export class CatalogoAcessosComponent implements OnInit {
     this.interaction$.next(body);
 
     // 5. Opcional: Borrado visual inmediato (aunque el Workflow refrescará al terminar)
-   // this.tablaDatos.update(lista => lista.filter((_, i) => i !== index));
+    // this.tablaDatos.update(lista => lista.filter((_, i) => i !== index));
     //this._datosBase = [...this.tablaDatos()];
   }
 
@@ -364,39 +369,39 @@ export class CatalogoAcessosComponent implements OnInit {
   }
 
   soloLetrasYNumeros(event: any) {
-  // 1. Permitir teclas de control (Retroceso, flechas, etc.) para que la edición sea fluida
-  const teclasEspeciales = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Delete', 'Tab', 'Enter'];
-  if (teclasEspeciales.includes(event.key)) {
-    return;
-  }
-
-  // 2. Patrón actualizado: 
-  // \s permite espacios en blanco
-  // ñÑ permite la letra eñe
-  // á-ú permite tildes
-  const pattern = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s]$/;
-
-  if (event.type === 'keypress') {
-    const inputChar = String.fromCharCode(event.charCode || event.keyCode);
-    
-    // Si es un espacio (código 32) o coincide con el patrón, lo dejamos pasar
-    if (!pattern.test(inputChar) && event.charCode !== 32) {
-      event.preventDefault();
+    // 1. Permitir teclas de control (Retroceso, flechas, etc.) para que la edición sea fluida
+    const teclasEspeciales = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Delete', 'Tab', 'Enter'];
+    if (teclasEspeciales.includes(event.key)) {
       return;
     }
-  }
 
-  // 3. Limpieza profunda
-  setTimeout(() => {
-    const input = event.target;
-    // La regex del replace DEBE coincidir con la del pattern
-    const cleanValue = input.value.replace(/[^a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s]/g, '');
-    
-    if (input.value !== cleanValue) {
-      input.value = cleanValue;
+    // 2. Patrón actualizado: 
+    // \s permite espacios en blanco
+    // ñÑ permite la letra eñe
+    // á-ú permite tildes
+    const pattern = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s]$/;
+
+    if (event.type === 'keypress') {
+      const inputChar = String.fromCharCode(event.charCode || event.keyCode);
+
+      // Si es un espacio (código 32) o coincide con el patrón, lo dejamos pasar
+      if (!pattern.test(inputChar) && event.charCode !== 32) {
+        event.preventDefault();
+        return;
+      }
     }
-  }, 0);
-}
+
+    // 3. Limpieza profunda
+    setTimeout(() => {
+      const input = event.target;
+      // La regex del replace DEBE coincidir con la del pattern
+      const cleanValue = input.value.replace(/[^a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s]/g, '');
+
+      if (input.value !== cleanValue) {
+        input.value = cleanValue;
+      }
+    }, 0);
+  }
 
   limpiarEntrada(event: any, index: number) {
     // 1. Obtenemos el valor directamente desde el input del HTML (no del ngModel)

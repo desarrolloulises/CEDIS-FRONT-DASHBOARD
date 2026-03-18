@@ -77,8 +77,8 @@ export class CatalogoPerfilesComponent implements OnInit {
     if (user) this.userRecivido.set(user);
 
     this.cabeceras.set([
-      { nombre: 'Clave de Acceso', key: 'lbl_txt1', width: 50 },
-      { nombre: 'Descripcion', key: 'lbl_txt2', width: 90 }
+      { nombre: 'Clave de Acceso', key: 'lbl_txt1', width: 100 },
+      { nombre: 'Descripcion', key: 'lbl_txt2', width: 200 }
     ]);
   }
   /**
@@ -119,7 +119,7 @@ export class CatalogoPerfilesComponent implements OnInit {
     ).subscribe({
       next: ({ resp, body }) => {
         this.cargando.set(false);
-        console.log(resp);
+        //console.log(resp);
 
 
         // --- TIPO 1: PINTAR TABLA COMPLETA ---
@@ -140,7 +140,7 @@ export class CatalogoPerfilesComponent implements OnInit {
 
             // CASO A: Pasó la validación (Tipo 2), ahora mandamos a (Tipo 3) Guardar (Tipo 3)
             if (body.tipo === 2) {
-              console.log("Error " + resp[0].err_id);
+               
 
               /*if (Number(body.RangoIni) > Number(body.RangoFin)) {
                 //console.log("Mayor " + body.RangoIni );
@@ -261,7 +261,12 @@ export class CatalogoPerfilesComponent implements OnInit {
    * @param fila referencia a donde se va a editar
    * @returns los datos a pintar
    */
-  guardarCambios(fila: any, key: string) {
+  guardarCambios(fila: any, key: string, event?: MouseEvent) {
+  // 1. Tomamos el control del navegador
+  if (event) {
+    event.preventDefault();    // Detiene acciones automáticas
+    event.stopPropagation();   // Detiene el "burbujeo" hacia la fila/tabla
+  }
     // 1. Validar (usando el .trim() que vimos antes)
     if (!this.valorTemporal?.toString().trim()) {
       // alert("El campo no puede estar vacío");

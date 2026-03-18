@@ -19,7 +19,7 @@
       <div class="field-info w-large">
         <label class="label-mini">Descripción</label>
         <input type="text" name="ubicacion" class="input-filter-notable" (keyup.enter)="agregarItem()"
-          [(ngModel)]="camposInfo[2].valor">
+          [(ngModel)]="camposInfo[2].valor"  (input)="soloLetrasYNumeros($event)">
       </div>
 
       <div class="btn-group ">
@@ -47,13 +47,16 @@
     <table class="table-approved custom-table">
       <thead>
         <tr>
-          <th class="text-center" style="position: sticky; right: 0; background: #003366; z-index: 9;">*</th>
+          <th class="text-center" style=" width:10px; position: sticky; right: 0; background: #003366; z-index: 9;">*
+          </th>
           @for (head of cabeceras(); track $index) {
-          <th [style.left]="$index < columnasAFijar() ? calcularPosicion($index) : null">
+          <th [style.left]="$index < columnasAFijar() ? calcularPosicion($index) : null" [style.width.px]="head.width"
+            [class.sticky-column]="$index < columnasAFijar()">
             {{ head.nombre }}
           </th>
           }
-          <th class="text-center" style="position: sticky; right: 0; background: #003366; z-index: 30;">Acciones</th>
+          <th class="text-center" style=" width:120px; position: sticky; right: 0; background: #003366; z-index: 30;">
+            Acciones</th>
         </tr>
       </thead>
       <!-- Inicia cuerpo seccion 2 tabla central-->
@@ -79,7 +82,7 @@
 
           <td class="text-center">
             @if (filaEditando === fila) {
-            <button class="btn-save-mini" (click)="guardarCambios(fila, 'lbl_txt3')">Guardar</button>
+            <button class="btn-save-mini" (mousedown)="guardarCambios(fila, 'lbl_txt3')">Guardar</button>
             <button class="btn-cancel-mini" (click)="cancelarEdicion()">Cancelar</button>
             } @else {
             <a class="link-edit" (click)="activarEdicion(fila, {key: 'lbl_txt3'})">Editar</a>

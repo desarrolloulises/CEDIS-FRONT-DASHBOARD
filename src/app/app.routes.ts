@@ -34,6 +34,7 @@ export const routes: Routes = [
 
       // --- NIVEL 1 (Módulos Principales) ---
       
+      //simulacion de embarque
       {
         path: 'menu-embarque/inventario-por-ruta',
         loadComponent: () => import('./features/inventario/inventario2/inventario2.component').then(m => m.Inventario2Component)
@@ -46,12 +47,13 @@ export const routes: Routes = [
         path: 'menu-embarque/programacion-embarque',
         loadComponent: () => import('./features/inventario/inventario2/inventario2.component').then(m => m.Inventario2Component)
       },
+      //toma inventario
       {
         path: 'menu-embarque/marbetes-mantenimiento',
         loadComponent: () => import('./features/inventario/inventario1/inventario.component').then(m => m.InventarioComponent)
       },
 
-      
+      //ACCESOS
       {
         path: 'accesos/Accesos',
         loadComponent: () => import('./features/Accesos/catalogo-acessos/catalogo-acessos.component').then(m => m.CatalogoAcessosComponent)

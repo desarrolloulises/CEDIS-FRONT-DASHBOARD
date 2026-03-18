@@ -350,6 +350,41 @@ export class CatalogoUsuarioComponent implements OnInit {
     }
   }
 
+  soloLetrasYNumeros(event: any) {
+  // 1. Permitir teclas de control (Retroceso, flechas, etc.) para que la edición sea fluida
+  const teclasEspeciales = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Delete', 'Tab', 'Enter'];
+  if (teclasEspeciales.includes(event.key)) {
+    return;
+  }
+
+  // 2. Patrón actualizado: 
+  // \s permite espacios en blanco
+  // ñÑ permite la letra eñe
+  // á-ú permite tildes
+  const pattern = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s]$/;
+
+  if (event.type === 'keypress') {
+    const inputChar = String.fromCharCode(event.charCode || event.keyCode);
+    
+    // Si es un espacio (código 32) o coincide con el patrón, lo dejamos pasar
+    if (!pattern.test(inputChar) && event.charCode !== 32) {
+      event.preventDefault();
+      return;
+    }
+  }
+
+  // 3. Limpieza profunda
+  setTimeout(() => {
+    const input = event.target;
+    // La regex del replace DEBE coincidir con la del pattern
+    const cleanValue = input.value.replace(/[^a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s]/g, '');
+    
+    if (input.value !== cleanValue) {
+      input.value = cleanValue;
+    }
+  }, 0);
+}
+
   // Función para obtener el texto de lista desplegable cuando NO se está editando
   obtenerEtiqueta(id: number): string {
     const opcion = this.listaOpciones().find(opt => opt.id === id);

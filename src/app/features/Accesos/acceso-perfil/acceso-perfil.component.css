@@ -1,128 +1,27 @@
-/* Celda de selección */
-.cell-selection {
-  width: 60px;
-  cursor: pointer;
-  user-select: none;
-  transition: background-color 0.2s ease;
-}
-
-/* El fondo azul tenue cuando está seleccionado */
-.selected-row {
-  background-color: #f0f7ff !important;
-  /* Azul muy claro */
-  color: #003366;
-}
-
-/**ALINEACION DEL BOTON A LA DERECHA*/
-/* Contenedor principal de la sección del header */
-.header-action-container {
-  display: flex;
-  justify-content: space-between;
-  /* Mueve el select a la izq y el botón a la der */
-  align-items: center;
-  /* Los alinea verticalmente */
-  padding: 10px 15px;
-  gap: 10px;
-}
-
-.operation-header-flex {
-  display: flex !important;
-  /* El !important es para ganar al diseño global */
-  align-items: center;
-  width: 100%;
-  gap: 15px;
-  padding: 10px 0;
-}
-
-.spacer {
-  flex-grow: 1;
-  /* Este elemento ocupa todo el espacio sobrante, mandando lo que sigue al final */
-}
-
-/* El estilo de tus botones (Corporate Style) */
-.btn-action-real {
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-}
-
-/* Variante azul marino (lo que querías) */
-.btn-action-real.blue {
-  background-color: #003366;
-  /* Tu azul corporativo */
-  color: #ffffff;
-  white-space: nowrap;
-  /* Evita que el texto se parta en dos líneas */
-  min-width: 110px;
-  margin-left: auto;
-  /* Refuerzo para mover a la derecha */
-}
-
-/* Efecto hover profesional */
-.btn-action-real.blue:hover {
-  background-color: #004488;
-  transform: translateY(-1px);
-  /* Sutil efecto de elevación */
-}
-
-/* Asegura que el contenedor use todo el espacio del glass-card */
-.w-100 {
-    width: 100% !important;
-}
-
-/* Grupo de botones alineados */
-.btn-group-right {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-}
-
-/* Tus botones con estilo corregido */
-.btn-action-real.blue {
-    background-color: #003366 !important;
-    color: white !important;
-    padding: 6px 12px;
-    border-radius: 4px;
-    border: none;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap; /* Evita que el texto se encime */
-    transition: background 0.3s;
-}
-
-.btn-action-real.blue:hover {
-    background-color: #004a92 !important;
-}
-
-/* Contenedor principal del renglón */
+/* 1. El contenedor ya no debe intentar separar los elementos a los extremos */
 .main-flex-container {
     display: flex !important;
+    flex-direction: row; /* Asegura que estén en línea */
     align-items: center;
-    width: 100% !important; /* Obligatorio para que haya espacio que repartir */
-    gap: 15px;
+    justify-content: flex-start; /* IMPORTANTE: Los alinea al inicio (izquierda) */
+    gap: 12px; /* Este es el pequeño espacio que separa el combo del botón */
+    width: 100%;
 }
 
-/* El "resorte" que empuja los botones */
-.spacer {
-    flex-grow: 1; /* Esto le dice: "ocupa todo el espacio que sobre" */
+/* 2. Controlamos el ancho del combo para que no sea gigante */
+.input-filter-notable {
+    flex: none !important; /* QUITAMOS el flex: 1 para que no se estire solo */
+    width: 250px !important; /* Ajusta este número (px) hasta que se vea del tamaño que quieres */
+    height: 24px; 
+    border: 1px solid #003366;
+    border-radius: 4px;
+    padding: 0 8px;
+    font-size: 12px;
+    box-sizing: border-box;
 }
 
-/* Contenedor de botones */
+/* 3. El botón se mantendrá justo después del combo gracias al gap */
 .btn-group-right {
     display: flex;
-    gap: 10px;
-    justify-content: flex-end; /* Refuerzo para alinear a la derecha */
-}
-
-/* Ajuste de texto cargando */
-.loading-text {
-    font-size: 11px; 
-    color: #003366; 
-    font-weight: bold;
-    white-space: nowrap;
+    flex-shrink: 0;
 }

@@ -45,6 +45,7 @@ export const APIURL_MENUSIDEBAR = `${url}/cedis/PERFIL`
 export const APIURL_DINVENTARIO = `${url}/cedis/DINVENTARIO`
 export const APIURL_ACCESONIVELES = `${url}/cedis/ACCESONIVELES`
 export const APIURL_ACCESOPERFILES = `${url}/cedis/ACCESOPERFILES`
+export const APIURL_ACCESOPERFILESASIGNADOS = `${url}/cedis/ACCESOPERFILESAsignados`
 
 
 

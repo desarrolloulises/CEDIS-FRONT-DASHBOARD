@@ -1,31 +1,42 @@
 <div class="dashboard-wrapper">
 
-   <section class="glass-card">
-    <div class="grid-operation">
-        <div class="field-info" style="width: 100%;"> <label class="label-mini">Clave Perfil</label>
+    <section class="glass-card">
+        <div class="grid-operation">
+            <div class="field-info" style="width: 100%;"> <label class="label-mini">Clave Perfil</label>
 
-            <div class="main-flex-container">
-                <select class="input-filter-notable" [(ngModel)]="camposInfo[0].valor" [disabled]="isWaiting()">
-                    <option value="" disabled selected>Seleccione un nivel...</option>
-                </select>
+                <div class="main-flex-container">
+                    <select #comboPerfil class="input-filter-notable " [(ngModel)]="camposInfo[0].valor"
+                        [disabled]="isWaiting()" (change)="capturarValue(comboPerfil.value)">
+                        <option value="" disabled selected>Seleccione un nivel...</option>
+                        @for (opcion of opcionesCombo(); track opcion.value) {
+                        <option [value]="opcion.value">{{ opcion.label }}</option>
+                        }
+                    </select>
 
-                @if (isWaiting()) {
+                    @if (isWaiting()) {
                     <div class="spinner-mini-blue"></div>
                     <span class="loading-text">Cargando...</span>
-                }
+                    }
 
-                <div class="spacer"></div>
+                    <div class="spacer"></div>
 
-                <div class="btn-group-right">
-                    <button class="btn-action-real blue" (click)="seleccionarTodo()">Seleccionar todo</button>
-                    <button class="btn-action-real blue" (click)="invertirSeleccion()">Invertir selección</button>
+                    <div class="btn-group-right">
+                        @if (!todosSeleccionados()) {
+                        <button class="btn-action-real blue" [disabled]="cargandoTodo" (click)="seleccionarTodo()">
+                            {{ cargandoTodo ? 'Procesando...' : 'Asignar todos' }}
+                        </button>
+                        } @else {
+                        <button class="btn-action-real blue" [disabled]="cargandoTodo" (click)="deSeleccionar()">
+                            {{ cargandoTodo ? 'Procesando...' : 'Desasignar todos' }}
+                        </button>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-                    <!--
+    <!--
 
  (change)="ver()"
 
@@ -51,11 +62,13 @@
                 <tr>
                     <th class="text-center" style="position: sticky; right: 0; background: #003366; z-index: 9;">*</th>
                     @for (head of cabeceras(); track $index) {
-                    <th [style.left]="$index < columnasAFijar() ? calcularPosicion($index) : null">
+                    <th [style.left]="$index < columnasAFijar() ? calcularPosicion($index) : null"
+                        [style.width.px]="head.width" [class.sticky-column]="$index < columnasAFijar()">
                         {{ head.nombre }}
                     </th>
                     }
-                    <th class="text-center" style="position: sticky; right: 0; background: #003366; z-index: 30;">
+                    <th class="text-center"
+                        style="width: 120px; position: sticky; right: 0; background: #003366; z-index: 30;">
                         Acceso</th>
                 </tr>
             </thead>
@@ -71,8 +84,7 @@
                     <td>
                         @if (filaEditando === fila && head.key === 'lbl_txt5') {
                         <input #inputFocus type="text" [(ngModel)]="valorTemporal"
-                            (contextmenu)="$event.preventDefault()" (blur)="cancelarEdicion()"
-                            (keyup.escape)="cancelarEdicion()" (keyup.enter)="guardarCambios(fila, head.key)"
+                            (contextmenu)="$event.preventDefault()"   
                             class="input-filter-notable">
                         } @else {
                         <span>

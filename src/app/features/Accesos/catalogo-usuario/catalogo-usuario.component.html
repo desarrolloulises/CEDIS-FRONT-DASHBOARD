@@ -1,139 +1,39 @@
-<div class="dashboard-wrapper">
+<section class="glass-card">
+    <div class="form-container-perfil">
+        <h3   >Información del Usuario</h3>
 
-  <section class="glass-card">
-    <div class="grid-operation">
+        <div class="form-grid">
+            <div class="form-row">
+                <label class="label-mini">Clave de usuario</label>
+                <input type="text" class="input-filter-notable" placeholder="Ej. USR-001">
+            </div>
 
-      <div class="field-info w-small">
-        <label class="label-mini">Clave</label>
-        <input #escanearcajaInput type="text" name="folio" class="input-filter-notable "
-          [(ngModel)]="camposInfo[0].valor" (keydown.enter)="agregarItem()" (keydown)="soloNumeros($event)"
-          (input)="limpiarEntrada($event, 0)" maxlength="10">
-      </div>
+            <div class="form-row">
+                <label class="label-mini">Nombre</label>
+                <input type="text" class="input-filter-notable" placeholder="Nombre completo">
+            </div>
 
-      <div class="field-info w-small">
-        <label class="label-mini">Nombre</label>
-        <input type="text" name="referencia" class="input-filter-notable" [(ngModel)]="camposInfo[1].valor"
-          (input)="limpiarEntrada($event, 1)" [disabled]="true">
-      </div>
+            <div class="form-row">
+                <label class="label-mini">Puesto</label>
+                <input type="text" class="input-filter-notable" placeholder="Cargo actual">
+            </div>
 
-      <div class="field-info ">
-        <label class="label-mini">Perfil</label>
-        <select class="input-filter-notable" [(ngModel)]="camposInfo[0].valor" [disabled]="isWaiting()">
-          <option value="" disabled selected>Seleccione un nivel...</option>
-        </select>
-      </div>
+            <div class="form-row">
+                <label class="label-mini">Estatus</label>
+                <select class="input-filter-notable">
+                    <option value="1">Activo</option>
+                    <option value="0">Inactivo</option>
+                </select>
+            </div>
 
-      <!-- <div class="btn-group ">
-        <button class="btn-action-real blue" [disabled]="isWaiting()" (click)="agregarItem()"> @if (isWaiting()) {
-          <span class="spinner-mini"></span> Cargando...
-          } @else {
-          Agregar
-          }
-        </button>
-      </div>-->
+            <div class="form-row">
+                <label class="label-mini">Perfil</label>
+                <input type="text" class="input-filter-notable" placeholder="Nivel de acceso">
+            </div>
+        </div>
 
+        <div class="form-actions">
+            <button class="btn-action-real blue">Guardar Cambios</button>
+        </div>
     </div>
-  </section>
-
-  <!-- inicia seccion 2 Tabla central-->
-  <section class="tabla-scroll-container">
-
-    @if (isWaiting()) {
-    <div class="loading-overlay">
-      <div class="spinner-formal"></div>
-      <span class="bold-dark">Cargando datos...</span>
-    </div>
-    }
-
-    <table class="table-approved custom-table">
-      <thead>
-        <tr>
-          <th class="text-center" style="position: sticky; right: 0; background: #003366; z-index: 9;">*</th>
-          @for (head of cabeceras(); track $index) {
-          <th [style.left]="$index < columnasAFijar() ? calcularPosicion($index) : null">
-            {{ head.nombre }}
-          </th>
-          }
-          <th class="text-center" style="position: sticky; right: 0; background: #003366; z-index: 30;">Acciones</th>
-        </tr>
-      </thead>
-      <!-- Inicia cuerpo seccion 2 tabla central-->
-
-      <tbody>
-        @for (fila of tablaDatos(); track $index; let i = $index) {
-        <tr (dblclick)="activarEdicion(fila, {key: 'lbl_txt4'})" style="cursor: pointer;">
-          <td style="font-weight: bold; color: #888;">{{i + 1}}</td>
-
-          @for (head of cabeceras(); track $index) {
-          <td>
-            @if (filaEditando === fila) {
-
-            @if (head.key === 'perfil') {
-            <select [(ngModel)]="fila[head.key]" class="select-table-edit" (change)="guardarCambios(fila, head.key)"
-              (blur)="cancelarEdicion()">
-              <option value="" disabled>Seleccione...</option>
-              @for (opcion of listaOpciones(); track opcion.id) {
-              <option [value]="opcion.id">{{ opcion.nombre }}</option>
-              }
-            </select>
-            }
-
-            @else if (head.key === 'lbl_txt4') {
-            <input #inputFocus type="text" [(ngModel)]="valorTemporal" (contextmenu)="$event.preventDefault()"
-              (blur)="cancelarEdicion()" (keyup.escape)="cancelarEdicion()"
-              (keyup.enter)="guardarCambios(fila, head.key)" class="input-filter-notable">
-            }
-
-            } @else {
-            <span (click)="activarEdicion(fila, head)" class="clickable-cell">
-              {{ head.key === 'perfil' ? obtenerEtiqueta(fila[head.key]) : fila[head.key] }}
-            </span>
-            }
-          </td>
-          }
-
-          <td class="text-center">
-            @if (filaEditando === fila) {
-            <button class="btn-save-mini" (click)="guardarCambios(fila, 'lbl_txt4')">Guardar</button>
-            <button class="btn-cancel-mini" (click)="cancelarEdicion()">Cancelar</button>
-            } @else {
-            <a class="link-edit" (click)="activarEdicion(fila, {key: 'lbl_txt4'})">Editar</a>
-            <a class="link-delete" (click)="eliminarFila($index)">Eliminar</a>
-            }
-          </td>
-        </tr>
-        }
-      </tbody>
-    </table>
-  </section>
-  <!-- Termina seccion 2 tabla central-->
-
-  <div class="table-footer">
-    <div class="info-stats">
-
-      <div class="stat-group filtro-group">
-        <label for="filtro-pie">Filtro Rápido:</label>
-        <input #filtroInput id="filtro-pie" type="text" placeholder="Buscar en resultados..."
-          (input)="aplicarFiltro($event)">
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="stat-group">
-        <span class="label">Registros: </span>
-        <span class="value">{{ tablaDatos().length }}</span>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="stat-group">
-        <span class="label">Actualizado: </span>
-        <span class="value">{{ fechaActualizacion() | date:'HH:mm:ss' }}</span>
-      </div>
-    </div>
-    <!--
-    <button class="btn-excel" (click)="descargarReporte()" [disabled]="tablaDatos().length === 0">
-      <span class="icon">📊</span> Exportar a Excel
-    </button>-->
-  </div>
-</div>
+</section>

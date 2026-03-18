@@ -83,7 +83,7 @@ export class InventarioComponent implements OnInit {
       { nombre: 'Rango Inicial', key: 'lbl_txt1', width: 50 },
       { nombre: 'Rango Final', key: 'lbl_txt2', width: 50 },
       //{ nombre: 'Descripcion', key: 'lbl_txt3', width: 150 },
-      { nombre: 'Descripcion', key: 'lbl_txt3', width: 90 }
+      { nombre: 'Descripcion', key: 'lbl_txt3', width: 200 }
     ]);
   }
   /**
@@ -344,6 +344,42 @@ export class InventarioComponent implements OnInit {
       event.preventDefault();
     }
   }
+  
+
+  soloLetrasYNumeros(event: any) {
+  // 1. Permitir teclas de control (Retroceso, flechas, etc.) para que la edición sea fluida
+  const teclasEspeciales = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Delete', 'Tab', 'Enter'];
+  if (teclasEspeciales.includes(event.key)) {
+    return;
+  }
+
+  // 2. Patrón actualizado: 
+  // \s permite espacios en blanco
+  // ñÑ permite la letra eñe
+  // á-ú permite tildes
+  const pattern = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s]$/;
+
+  if (event.type === 'keypress') {
+    const inputChar = String.fromCharCode(event.charCode || event.keyCode);
+    
+    // Si es un espacio (código 32) o coincide con el patrón, lo dejamos pasar
+    if (!pattern.test(inputChar) && event.charCode !== 32) {
+      event.preventDefault();
+      return;
+    }
+  }
+
+  // 3. Limpieza profunda
+  setTimeout(() => {
+    const input = event.target;
+    // La regex del replace DEBE coincidir con la del pattern
+    const cleanValue = input.value.replace(/[^a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s]/g, '');
+    
+    if (input.value !== cleanValue) {
+      input.value = cleanValue;
+    }
+  }, 0);
+}
 
   limpiarEntrada(event: any, index: number) {
     // 1. Obtenemos el valor directamente desde el input del HTML (no del ngModel)

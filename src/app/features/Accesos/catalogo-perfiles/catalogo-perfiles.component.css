@@ -1,0 +1,23 @@
+/* Aseguramos que el contenedor flex se porte bien aquí */
+.main-flex-container {
+    display: flex !important;
+    align-items: center;
+    gap: 10px; /* El espacio pequeño entre el input y el botón */
+    width: 100%;
+}
+
+/* Ajuste manual para que el input no sea ni gigante ni diminuto */
+.input-descripcion-ajuste {
+    flex: none !important; /* Evita que crezca solo */
+    width: 200px !important; /* Ajusta este valor a tu gusto (ej. 350px o 400px) */
+    height: 24px;
+    box-sizing: border-box;
+}
+
+/* Si el botón "Agregar" se ve raro, asegúrate de que tenga altura fija */
+.btn-action-real.blue {
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
