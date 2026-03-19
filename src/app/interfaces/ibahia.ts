@@ -70,4 +70,11 @@ export interface IAccesoPerfiles {
     Descripcion: string,
     Usuario: string   
 }
+export interface IAcessosUsuario{
+    tipo: number,
+    ClaveE :string,
+    ClaveU: string,
+    ClaveP: string,    // Para controlar si el acordeón está abierto
+    Usuario: string 
+}
 

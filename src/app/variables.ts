@@ -1,10 +1,10 @@
-export const url ='http://192.168.101.9:8086' //Para servidar dasboartd
+//export const url ='http://192.168.101.9:8086' //Para servidar dasboartd
 //export const url ='http://192.168.101.9:8085' //Para servidar WMS-DES
 
 //export const url ='https://localhost:7160' //Para servidar LOCAL
 //export const url ='http://192.168.101.9:8088' //Para servidar DESAROLLO
 //export const url ='http://192.168.101.10:80' //Para servidar PRODUCCION
-//export const url ='http://192.168.101.10:82' //Para servidar dasboartd PRODUCCION
+export const url ='http://192.168.101.10:82' //Para servidar dasboartd PRODUCCION
 
 
  /* export const APIURL_CALIDAD = `${url}/cedis/C4L1D4DC3D1S`;
@@ -46,6 +46,8 @@ export const APIURL_DINVENTARIO = `${url}/cedis/DINVENTARIO`
 export const APIURL_ACCESONIVELES = `${url}/cedis/ACCESONIVELES`
 export const APIURL_ACCESOPERFILES = `${url}/cedis/ACCESOPERFILES`
 export const APIURL_ACCESOPERFILESASIGNADOS = `${url}/cedis/ACCESOPERFILESAsignados`
+export const APIURL_ACCESOINVENTARIO = `${url}/cedis/ACCESOUSUARIO`
+
 
 
 

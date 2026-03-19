@@ -92,7 +92,7 @@ export class SidebarComponent {
    */
   obtenerSubmenus(modulo: any) {
     // 1. Si ya tiene submenús O ya intentamos cargarlos y no hubo, solo abrimos/cerramos
-    if ((modulo.sub && modulo.sub.length > 0) || modulo.intentado) {
+    if ((modulo.sub && modulo.sub.length > 0) || modulo.intentado ) {
       if (modulo.sub && modulo.sub.length > 0) {
         this.modulos.update(lista => lista.map(m =>
           m.Opcion === modulo.Opcion ? { ...m, abierto: !m.abierto } : m

@@ -3,10 +3,10 @@ import { inject, Injectable, signal } from '@angular/core';
 import { BehaviorSubject, catchError, filter, Observable, of, pairwise, throwError } from 'rxjs';
 //import { APIURL_AVANCEREC, APIURL_CALIDAD, APIURL_CIERREOC, APIRUL_G3TB4I4, APIURL_GETPRIMERCONTEOFOLIO, APIURL_GETPRIMERCONTEOSCANER, APIURL_GETSEGUNDOCONTEOFOLIO, APIURL_GETSEGUNDOCONTEOSCANER, APIURL_RECIBO, APIURL_VALPRECIO, APIRUL_PR1M3R5C4N30, APIRUL_PR1M3R5C4N30F4L74N735, APIRUL_53GUMD05C4N30, APIRUL_53GUMD05C4N30F4L74N735, APIRUL_BU5C4RC4J45B4H145MARA1, APIRUL_C0N5ULT4G3N3R4LB5H145MARA2, APIRUL_C0N5ULT4D3T4113B4145MARA3, APIURL_5CTU5LIZ5RD5T5, APIURL_REPORTEGENERALINCIDENCIAS, APIURL_PRIMERCONTEOVSSEGUNDOCONTEO, APIURL_4LM4C3N, APIURL_MULTITIENDA, APIURL_EXTRAERCAJAPALLET, APIURL_DESARMARPALLET, APIURL_MOVERPALLET, APIURL_CONSULTAPALLET, APIURL_CAMBIOPASSWORD, APIURL_L0G1N, APIURL_MENUSIDEBAR, APIURL_DINVENTARIO } from '../variables';
 import { Iembarqes } from '../interfaces/iembarqes';
-import { IAccesoPerfiles, IAcessoNiveles, IActualizarData, IAlmacen, IAlmacenPallet, Ibahia, IConsultaCaja, IContrasenna, IDInventario, IMenuSidebar, IReporteGeneralIncidencias } from '../interfaces/ibahia';
+import { IAccesoPerfiles, IAcessoNiveles, IAcessosUsuario, IActualizarData, IAlmacen, IAlmacenPallet, Ibahia, IConsultaCaja, IContrasenna, IDInventario, IMenuSidebar, IReporteGeneralIncidencias } from '../interfaces/ibahia';
 import { NavigationEnd, Router } from '@angular/router';
 import { IAutoidentifica } from '../interfaces/ilogin';
-import { APIURL_ACCESONIVELES, APIURL_ACCESOPERFILES, APIURL_ACCESOPERFILESASIGNADOS, APIURL_CAMBIOPASSWORD, APIURL_DINVENTARIO, APIURL_L0G1N, APIURL_MENUSIDEBAR } from '../variables';
+import { APIURL_ACCESOINVENTARIO, APIURL_ACCESONIVELES, APIURL_ACCESOPERFILES, APIURL_ACCESOPERFILESASIGNADOS, APIURL_CAMBIOPASSWORD, APIURL_DINVENTARIO, APIURL_L0G1N, APIURL_MENUSIDEBAR } from '../variables';
 export interface MiData {
   info1: string;
   info2: string;
@@ -60,11 +60,8 @@ export class ProcesosCedisService {
   private apiUrlGetAcessoNiveles = APIURL_ACCESONIVELES;
   private apiUrlGetAccesoPerfiles = APIURL_ACCESOPERFILES;
   private apiUrlGetAccesoPerfilesAsignados = APIURL_ACCESOPERFILESASIGNADOS;
-
-
-
-
-
+  private apiUrlGetAcessoInventario = APIURL_ACCESOINVENTARIO;
+  
 
 
   private previousUrl: string = '';
@@ -399,6 +396,16 @@ export class ProcesosCedisService {
   }
 
 
+
+  //--------------------------------------------------------------------------------------
+  getAccesosUsuario(body: IAcessosUsuario): Observable<any> {
+    let params = new HttpParams().set('tipo', body.tipo);
+    if (body.ClaveE) params = params.set('ClaveE', body.ClaveE);
+    if (body.ClaveU) params = params.set('ClaveU', body.ClaveU);
+    if (body.ClaveP) params = params.set('ClaveP', body.ClaveP);
+    if (body.Usuario) params = params.set('Usuario', body.Usuario);
+    return this.http.get<any>(this.apiUrlGetAcessoInventario, { params });
+  }
 
 
 

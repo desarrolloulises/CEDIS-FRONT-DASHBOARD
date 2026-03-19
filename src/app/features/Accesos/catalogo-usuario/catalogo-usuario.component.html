@@ -1,39 +1,64 @@
 <section class="glass-card">
-    <div class="form-container-perfil">
-        <h3   >Información del Usuario</h3>
+    <div class="form-wrapper">
+        <h3 class="titulo-centrado">Catalogo de Acceso a Usuarios</h3>
 
-        <div class="form-grid">
+        <div class="form-grid-aligned">
             <div class="form-row">
                 <label class="label-mini">Clave de usuario</label>
-                <input type="text" class="input-filter-notable" placeholder="Ej. USR-001">
+                <div class="input-search-group">
+                    <input #claveInput  [(ngModel)]="claveUsuario" type="text" class="input-filter-notable" placeholder="000000"
+                        (keydown.enter)="buscarDatos(claveInput.value)">
+
+                    <button type="button" class="btn-search-icon" (click)="buscarDatos(claveInput.value)">
+
+                        @if (cargandoBusqueda) {
+                        <div class="spinner-mini-white"></div>
+                        } @else {
+                        <span>🔍</span>
+                        }
+                    </button>
+                </div>
             </div>
 
             <div class="form-row">
                 <label class="label-mini">Nombre</label>
-                <input type="text" class="input-filter-notable" placeholder="Nombre completo">
+                <input [(ngModel)]="nombreUsuario" type="text" disabled class="input-filter-notable">
             </div>
 
             <div class="form-row">
                 <label class="label-mini">Puesto</label>
-                <input type="text" class="input-filter-notable" placeholder="Cargo actual">
+                <input [(ngModel)]="nombrePuesto" type="text" disabled class="input-filter-notable">
             </div>
 
             <div class="form-row">
                 <label class="label-mini">Estatus</label>
-                <select class="input-filter-notable">
-                    <option value="1">Activo</option>
-                    <option value="0">Inactivo</option>
+                <select class="input-filter-notable" [(ngModel)]="estatusActualTexto"
+                    (change)="capturarEstatus(estatusActualTexto)">
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
                 </select>
             </div>
 
             <div class="form-row">
                 <label class="label-mini">Perfil</label>
-                <input type="text" class="input-filter-notable" placeholder="Nivel de acceso">
-            </div>
-        </div>
+                <select class="input-filter-notable" [(ngModel)]="perfilSeleccionado" [disabled]="cargandoBusqueda">
 
-        <div class="form-actions">
-            <button class="btn-action-real blue">Guardar Cambios</button>
+                    <option value="" disabled selected>Seleccione un nivel...</option>
+
+                    @for (opcion of opcionesCombo(); track opcion.value) {
+                    <option [value]="opcion.value">{{ opcion.label }}</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="btn-container">
+                    <button type="button" class="btn-action-real blue" (click)="Guardado()"
+                        [disabled]="cargandoBusqueda">
+                        Guardar Cambios
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </section>

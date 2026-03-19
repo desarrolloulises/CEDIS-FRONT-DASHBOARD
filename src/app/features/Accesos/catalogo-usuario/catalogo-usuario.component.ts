@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, HostListener, inject, OnInit, QueryList, signal, ViewChild, ViewChildren } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, QueryList, signal, ViewChild, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { catchError, concatMap, map, of, ReplaySubject, tap } from 'rxjs';
 import { ExcelInventario } from '../../../services/InventarioExel';
@@ -18,7 +18,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 export class CatalogoUsuarioComponent implements OnInit {
 
   @ViewChild('escanearcajaInput') escanearcajaInput!: ElementRef; //Referencia a el input RangoIni
-  @ViewChild('filtroInput') filtroInput!: ElementRef<HTMLInputElement>; //referncia a el filtro
+  @ViewChild('filtroInput') filtroInput!: ElementRef<HTMLInputElement>; //referncia a el 
+
+
 
   // para trabajar peticiones 
   private destroyRef = inject(DestroyRef);
@@ -27,27 +29,40 @@ export class CatalogoUsuarioComponent implements OnInit {
   cargando = signal(false);// para indicar el estado de tiempo responde api
 
   public userRecivido = signal<string>('');
-  public fechaActualizacion = signal<Date>(new Date());
   public isWaiting = signal<boolean>(false);
   public tablaDatos = signal<any[]>([]);
-  public cabeceras = signal<any[]>([]); //signal que almacena las cabeceras
-  public columnasAFijar = signal<number>(0);
 
-  public listaOpciones = signal<any[]>([]);//para lista desplegable en la tabla
+  public opcionesCombo = signal<{ label: string, value: any }[]>([]); //Signasl para almacenar datos de la lista desplegable
 
-  public filaEditando: any = null; //Fila identificada para editar
-  valorTemporal: string = ''; //valor temporal de la fila editada
+  public cancelClick: boolean = false; //va ayudar a cancelar los clicks
 
-  private _datosBase: any[] = [];
-  fechaSeleccionada: string = new Date().toISOString().split('T')[0];
+  public clavePerfilGuardada = signal<string>('');
+
+  //public todosSeleccionados = false; // Controla qué botón se ve
+  public cargandoTodo = false;          // Evita clics repetidos (nuestro guardián)
+
+  public cargandoBusqueda: boolean = false; // variable par el metodo de busqueda
+  public perfilSeleccionado: string = ""; // es la variable refernte al valor del combo de perfil
+
+
 
   @ViewChildren('inputFocus') inputs!: QueryList<ElementRef>; ///para el foco de la celda es la refernecia o el nombre deñ input
 
   public camposInfo = [
-    { label: 'RangoIni', valor: '' },
-    { label: 'RangoFin', valor: '' },
-    { label: 'Descripcion', valor: '' }
+    { label: 'tipo', valor: '' },
+    { label: 'ClaveP', valor: '' },
+    { label: 'ClaveA', valor: '' },
+    { label: 'TipoA', valor: '' },
   ];
+
+  // variables par los input 
+  public claveUsuario: string = '';
+  public nombreUsuario: string = '';
+  public nombrePuesto: string = '';
+  public estatusNumerico: number = 1;// Para guardar el valor numeroco del combo de ESTATUS
+  public estatusActualTexto: string = ''
+  
+
 
   constructor(
     private ExcelInventario: ExcelInventario,
@@ -59,35 +74,17 @@ export class CatalogoUsuarioComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.setupWorkfloww();
-    const body = {
-      tipo: 1,
-      RangoIni: " ",
-      RangoFin: " ",
-      Ubica: " "
-    };
-    this.interaction$.next(body);
-  }
-
-  /**
-   * Coloca el foco en base a la referncia antes obtenida
-   */
-  ngAfterViewInit() {
-    this.escanearcajaInput.nativeElement.focus()
-  }
-
-  private setupWorkfloww() {
     const user = this.datosService.usuarioSignal();
     if (user) this.userRecivido.set(user);
-
-    this.cabeceras.set([
-      { nombre: 'Clave usuario', key: 'lbl_txt1', width: 50 },
-      { nombre: 'Nombre', key: 'lbl_txt2', width: 50 },
-      { nombre: 'Puesto', key: 'lbl_txt3', width: 150 },
-      { nombre: 'Estatus', key: 'lbl_txt4', width: 90 },
-      { nombre: 'Perfil', key: 'lbl_txt5', width: 90 },
-    ]);
+    //carga el perfil
+    this.interaction$.next({
+      tipo: 1,
+      ClaveP: "0",
+      Descripcion: " ",
+      bandera: "perfil"
+    });
   }
+
   /**
    * core del aplicativo tiene conexion con API, el flujo de trabajo y contro de errores con la API
    * @param body contiene el payload del aplicativo
@@ -111,91 +108,100 @@ export class CatalogoUsuarioComponent implements OnInit {
         };
       }),
 
-      concatMap(bodyEnviado =>
-        this.service.getDInventario(bodyEnviado).pipe(
-          // timeout(4000), // Recuerda lo que hablamos del tiempo de red
+      concatMap(bodyEnviado => {
+        const { bandera, ...bodyLimpio } = bodyEnviado;
+
+        // 1. Normalizamos: convertimos a string, quitamos espacios y pasamos a minúsculas
+        const banderaNormalizada = String(bandera || '').trim().toLowerCase();
+
+        //console.log("Comparando:", `"${banderaNormalizada}"`, "con 'perfil'");
+
+        // 2. La lógica de decisión
+        const apiCall$ = (banderaNormalizada === 'perfil') //mediante la bandera determinas la API
+          ? this.service.getAccesoPerfiles(bodyLimpio)
+          : this.service.getAccesosUsuario(bodyLimpio);
+
+        return apiCall$.pipe(
           map(respuestaApi => ({ resp: respuestaApi, body: bodyEnviado })),
           catchError(err => {
             console.error("❌ [API Error]:", err);
-            // Devolvemos un objeto con el mismo formato pero indicando el error
             return of({ resp: { err_id: -1, datos: [] }, body: bodyEnviado });
           })
-        )
-      ),
+        );
+      }),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: ({ resp, body }) => {
-        this.cargando.set(false);
+        this.cargandoBusqueda = false;
+        //console.log("body ", body);
+        // console.log("va a pintar ", resp);
+        // console.log(resp);
 
-        //LLenar los datos para las opciones de la lista desplegable
-        //this.listaOpciones.set(data); 
 
-        // --- TIPO 1: PINTAR TABLA COMPLETA ---
-        if (body.tipo === 1) {
+        // --- TIPO 1: PINTAR COMBO O LISTA DESPLEGABLE ---
+        if (body.tipo === 1 && body.bandera === 'perfil') {
+         // console.log("badera pintar " + body.bandera);
+          // 2. Verificamos que sea un array antes de procesar
           if (Array.isArray(resp)) {
-            this.tablaDatos.set([...resp]); //Sobreescribe la señal para pintar
-            this._datosBase = [...resp];  //copia para el filtro
-            this.fechaActualizacion.set(new Date());
-          }
-          return; // salir después de pintar
-        }
+            const nombres = resp.map((item: any) => ({
+              label: item.lbl_txt2?.trim(),
+              value: item.lbl_txt1
+            }));
+            // console.log(nombres);
 
-        // --- VALIDACIÓN DE RESPUESTAS DE ACCIÓN (2, 3, 4, 5) ---
-        if (Array.isArray(resp) && resp.length > 0) {
 
-          // Si la operación fue exitosa
-          if (resp[0].err_id === 0) {
+            // 3. Actualizamos la Signal
+            this.opcionesCombo.set(nombres);
 
-            // CASO A: Pasó la validación (Tipo 2), ahora mandamos a (Tipo 3) Guardar (Tipo 3)
-            if (body.tipo === 2) {
-              console.log("Error " + resp[0].err_id);
-
-              /*if (Number(body.RangoIni) > Number(body.RangoFin)) {
-                //console.log("Mayor " + body.RangoIni );
-                alert("Rango inicial  " + body.RangoIni + " es mayor que rango final " + body.RangoFin)
-                return
-              }*/
-
-              this.interaction$.next({ ...body, tipo: 3 });
-              return; // IMPORTANTE: Salir para esperar la respuesta del Tipo 3
-            }
-
-            // CASO B: Guardado exitoso (Tipo 3) o Edición/Eliminación (4, 5)
-            if (body.tipo === 3 || body.tipo === 4 || body.tipo === 5) {
-
-              // Limpiamos los inputs solo si fue un guardado exitoso
-              if (body.tipo === 3) this.camposInfo.forEach(c => c.valor = '');
-
-              /**
-               * Corta la actualizacion y pintado de la tabla principal
-               */
-              if (body.tipo === 4 || body.tipo === 5) {
-                return; // Cortamos aquí para evitar el refresco total
-              }
-
-              // MANDAMOS A REFRESCAR CON TIPO 1
-              this.interaction$.next({
-                tipo: 1,
-                RangoIni: " ",
-                RangoFin: " ",
-                Ubica: " "
-              });
-              return;
-            }
-
+            // console.log("Combo actualizado con:", nombres.length, "elementos");
           } else {
-            // Manejo de errores del servidor (err_id != 0)
-            alert("Error: " + resp[0].err_msg);
-            console.warn("⚠️ Error del servidor:", resp[0].err_msg);
-            this.limpiar()
+            // Si no es un array, reseteamos la Signal a vacía para evitar errores en el HTML
+            console.warn("La respuesta no contiene el array esperado en 'datos':", resp);
+            this.opcionesCombo.set([]);
           }
+
+          return;
+        } else {
+          // Para peticion Accesos_Usuario
+          const valor = body.ClaveU;
+
+          // console.log(resp[0].err_id + " === 0 " + " && " + body.tipo + "=== 1");
+
+          if (resp[0].err_id === 0 && body.tipo === 1) {
+            const body = {
+              tipo: 2,
+              ClaveE: " ",
+              ClaveU: valor,
+              ClaveP: ' ', //      TipoA: nuevoEstado ? 1 : 0,
+              bandera: "perfil2"
+            };
+
+            this.interaction$.next(body);
+            return
+          } else if (resp[0].err_id !== 0) {
+            alert(resp[0].err_msg)
+          }
+
+          if (body.tipo === 2) {
+           // console.log(resp[0]);
+            this.nombreUsuario = resp[0].lbl_text1
+            this.nombrePuesto = resp[0].lbl_text2
+            // Usamos la variable que guardó el cambio del combo
+            this.procesarRespuesta(resp)
+            this.procesarRespuestaEstaus(resp)
+            /*
+            lbl_Text2:"MONITORISTA"
+            lbl_Text3:0
+            lbl_Text4:""
+            lbl_Text5:""
+            lbl_text1:"BERNABE PEREZ JESUS"
+            */
+
+          }
+
+          return
         }
 
-        // Caso de tabla vacía
-        else if (Array.isArray(resp) && resp.length === 0 && body.tipo === 1) {
-          this.tablaDatos.set([]);
-          this._datosBase = [];
-        }
       },
       error: (err) => {
         this.cargando.set(false);
@@ -203,274 +209,137 @@ export class CatalogoUsuarioComponent implements OnInit {
       }
     });
   }
+  /************************************************************* */
+  buscarDatos(valor: string) {
 
-  /**
-   * Agrega 1 fila al final del resto
-   * @param {Event} [event] metodo que atravez de 3 valores que agrega la informacion al sp y se pinta en la tabla principal
-   */
-  agregarItem() {
-    // Verificación de seguridad para evitar clics dobles durante el delay de red
-    if (this.isWaiting()) return;
+    if (valor.trim().length < 1) {
+      console.log("valor " + valor);
 
-    const v1 = (this.camposInfo[0].valor || '').trim().length;
-    const v2 = (this.camposInfo[1].valor || '').trim().length;
-
-    if (v1 > 9 || v2 > 9) {
-      alert('No puedes exeder los 10 caracteres')
-      this.limpiar()
-      return;
+      return
     }
 
-    const dataParaEnviar = {
-      // Mapeamos los camposInfo a lo que tu API espera
-      tipo: 2,
-      RangoIni: this.camposInfo[0].valor || " ",
-      RangoFin: this.camposInfo[1].valor || " ",
-      Ubica: this.camposInfo[2].valor.trim() || " ",
-    };
+    this.cargandoBusqueda = true;
 
-
-    this.interaction$.next(dataParaEnviar);
-
-    this.limpiar();
-  }
-
-  /**************EDICION POR FILA************* */
-  /**
-   * Habilita la edicion de una fila
-   * @param fila es la referncia de una fila dentro de la tabla local
-   */
-  activarEdicion(fila: any, head: any) {
-    // this.filaEditando = { ...fila }; // Copia de lista por si cancela operacion
-    this.filaEditando = fila; //Edita la fila (lbl_txt3)
-    this.valorTemporal = fila[head.key];
-
-    // Limpia selecciones de texto previas que disparan menús contextuales
-    window.getSelection()?.removeAllRanges();
-
-    setTimeout(() => {
-      const inputParaEnfocar = this.inputs.first;
-      if (inputParaEnfocar) {
-        inputParaEnfocar.nativeElement.focus();
-        // inputParaEnfocar.nativeElement.select(); 
-      }
-    }, 50); // 50ms son suficientes para el renderizado
-  }
-
-  /**********************CANCELA PETICION DE EDICION************************** */
-  /**
-   * Cancela la edicion de la fila
-   */
-  cancelarEdicion() {
-    this.filaEditando = null;
-    this.valorTemporal = ''; // Limpiamos el buffer
-  }
-
-  /************************PARA GUARDAR**************************** */
-  /**
-   * Guarda los cambios de la tabla local en el sp
-   * @param fila referencia a donde se va a editar
-   * @returns los datos a pintar
-   */
-  guardarCambios(fila: any, key: string) {
-    // 1. Validar (usando el .trim() que vimos antes)
-    if (!this.valorTemporal?.toString().trim()) {
-      // alert("El campo no puede estar vacío");
-      return;
-    }
-
-    // 2. Pasamos el valor del buffer a la fila real ANTES de mandarlo a la API
-    fila[key] = this.valorTemporal;
-
-    // 2. Preparar objeto para la API (Mapeando lbl_txt de vuelta a RangoI/F)
-    const dataActualizada = {
-      tipo: 4,
-      RangoIni: fila.lbl_txt1,
-      RangoFin: fila.lbl_txt2,
-      Ubica: fila.lbl_txt3,
-    };
-
-    // 3. Enviar a la API
-    this.interaction$.next(dataActualizada);
-
-    // 4. Salir del modo edición y actualizar respaldo
-    //this.filaEditando = null;
-    // this._datosBase = [...this.tablaDatos()];
-    this.limpiar()
-  }
-
-  /********************PARA ELIMINAR*********************************/
-  /**
-   * Elimina un registro de la tabla de inventario mediante el sp .
-   * Remueve la fila del arreglo local y vuelve apintar la data.
-   * @param {number} index - La posición (índice) de la fila en el arreglo.
-   */
-  eliminarFila(index: number) {
-    // 1. Confirmación de seguridad
-    if (!confirm('¿Estás seguro de que deseas eliminar este registro?')) return;
-
-    // 2. Obtenemos los datos de la fila antes de borrarla
-    const itemAEliminar = this.tablaDatos()[index];
-
-    // 3. Preparamos el cuerpo para la API (Tipo 4 suele ser Delete)
+    //carga Accesos_Usuario
     const body = {
-      tipo: 5,
-      RangoIni: itemAEliminar.lbl_txt1,
-      RangoFin: itemAEliminar.lbl_txt2,
-      Ubica: itemAEliminar.lbl_txt3,
+      tipo: 1,
+      ClaveE: " ",
+      ClaveU: valor,
+      ClaveP: ' ', //      TipoA: nuevoEstado ? 1 : 0,
+      bandera: "perfil2"
     };
 
-    // 4. Enviamos al workflow para que impacte la DB y refresque la tabla
     this.interaction$.next(body);
 
-    // 5. Opcional: Borrado visual inmediato (aunque el Workflow refrescará al terminar)
-    this.tablaDatos.update(lista => lista.filter((_, i) => i !== index));
-    this._datosBase = [...this.tablaDatos()];
   }
 
-  /*************FILTRO PARA SOLO RECIONOCER LOS NUMEROS *** */
-  /**
-   * Filtro paar solo tomar los numero introcucido en tiempo real
-   * @param event que ayuda a identificar y pintar en el input solo numeros
-   * @returns solo los datos que son numero
-   */
-  soloNumeros(event: KeyboardEvent) {
-    // Teclas permitidas: Backspace, Delete, Tab, Escape, Enter, y flechas
-    const teclasPermitidas = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'];
-
-    if (teclasPermitidas.includes(event.key)) {
-      return; // Permitir estas teclas
-    }
-
-    // Usamos una expresión regular que solo permite dígitos del 0 al 9
-    const esNumero = /^[0-9]$/.test(event.key);
-
-    if (!esNumero) {
-      event.preventDefault();
-    }
-  }
-
-  soloLetrasYNumeros(event: any) {
-  // 1. Permitir teclas de control (Retroceso, flechas, etc.) para que la edición sea fluida
-  const teclasEspeciales = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Delete', 'Tab', 'Enter'];
-  if (teclasEspeciales.includes(event.key)) {
-    return;
-  }
-
-  // 2. Patrón actualizado: 
-  // \s permite espacios en blanco
-  // ñÑ permite la letra eñe
-  // á-ú permite tildes
-  const pattern = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s]$/;
-
-  if (event.type === 'keypress') {
-    const inputChar = String.fromCharCode(event.charCode || event.keyCode);
-    
-    // Si es un espacio (código 32) o coincide con el patrón, lo dejamos pasar
-    if (!pattern.test(inputChar) && event.charCode !== 32) {
-      event.preventDefault();
-      return;
-    }
-  }
-
-  // 3. Limpieza profunda
-  setTimeout(() => {
-    const input = event.target;
-    // La regex del replace DEBE coincidir con la del pattern
-    const cleanValue = input.value.replace(/[^a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s]/g, '');
-    
-    if (input.value !== cleanValue) {
-      input.value = cleanValue;
-    }
-  }, 0);
-}
-
-  // Función para obtener el texto de lista desplegable cuando NO se está editando
-  obtenerEtiqueta(id: number): string {
-    const opcion = this.listaOpciones().find(opt => opt.id === id);
-    return opcion ? opcion.nombre : 'Sin asignar';
-  }
-
-  limpiarEntrada(event: any, index: number) {
-    // 1. Obtenemos el valor directamente desde el input del HTML (no del ngModel)
-    const input = event.target as HTMLInputElement;
-    let valor = input.value;
-
-    // 2. Limpiamos: Solo permitimos números (0-9)
-    // El regex /[^0-9]/g busca CUALQUIER COSA que no sea un número y la borra
-    const valorLimpio = valor.replace(/[^0-9]/g, '');
-
-    // 3. Forzamos el valor de vuelta tanto al HTML como al objeto de datos
-    input.value = valorLimpio;
-    this.camposInfo[index].valor = valorLimpio;
-  }
+  /**************************************************************************** */
 
   /**
-   * Encarga de limpiar las cajas de texto
-   * coloca el foco en la primer cahja de texto para que el usuario siga trabajanado
+   * Pa cuando seleciona un elemento de la lista desplegable con los perfiles
    */
-  limpiar() {
-    // Limpiamos los campos
-    this.camposInfo.forEach(c => c.valor = "");
+  capturarValue(id: any) {
+    this.clavePerfilGuardada.set(id)
+    console.log('Valor de id : ' + id);
+    /* 
+     // Aquí ya tienes el ID para tu API
+     const body = {
+       tipo: 1,
+       ClaveP: id,
+       ClaveA: ' ',
+       TipoA: ' ',
+       bandera: "perfil"
+     };
+     //console.log(body);
+     // 4. Enviamos al workflow para que impacte la DB y refresque la tabla
+     this.interaction$.next(body);
+     */
 
-    // El truco final: un tiempo un poquito más largo para asegurar 
-    // que el navegador terminó de procesar el 'Enter'
-    setTimeout(() => {
-      if (this.escanearcajaInput) {
-        this.escanearcajaInput.nativeElement.focus();
-      }
-    }, 150); // Subimos a 150ms para asegurar la estabilidad
-  }
-
-  /********************************************************* */
-  /**
-   * filtra y visualmente muestra la informacion en la tabla local
-   * @param event 
-   */
-  aplicarFiltro(event: Event) {
-    const filtro = (event.target as HTMLInputElement).value.toLowerCase();//el texto de input a mayuscula
-    const filtrados = this._datosBase.filter(item =>
-      Object.values(item).some(v => String(v).toLowerCase().includes(filtro))
-    );// busca los datos similares en la copia local del sp
-    this.tablaDatos.set(filtrados); //repinta tabla local
-  }
-  /**
-   * Calcula la posición horizontal (left) de una columna sumando los anchos de las columnas previas.
-   * Útil para posicionamiento dinámico de elementos o columnas fijas (sticky).
-   * * @param {number} index - El índice de la columna actual de la cual se desea conocer su posición inicial.
-   * @returns {string} La distancia acumulada en píxeles (ej. "450px").
-   */
-  calcularPosicion(index: number): string {
-    const previo = this.cabeceras().slice(0, index).reduce((acc, col) => acc + (col.width || 100), 0);
-    return `${previo}px`;
-  }
-
-  getClaseEstado(estado: string): string {
-    return estado?.toLowerCase().includes('entregado') ? 'entregado' : 'pendiente';
-  }
-
-  /**
-   * Carga los datos a la tabla a descargar en el archivo asi como un nombre de archivo (libro)
-   */
-  descargarReporte() {
-    this.ExcelInventario.exportToExcelCustom(this.tablaDatos(), 'Catalogo de marbete');
   }
 
   /**
    * Detecta los eventos del teclado
    */
-  @HostListener('window:keydown', ['$event'])
-  handleKeyboardEvent(event: KeyboardEvent) {
-    // Detectamos Ctrl + F o Cmd + F (Mac)
-    if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
-      event.preventDefault(); // IMPORTANTE: Evita que se abra el buscador del navegador
-      this.enfocarFiltro();
-    }
+  /* @HostListener('window:keydown', ['$event'])
+   handleKeyboardEvent(event: KeyboardEvent) {
+     // Detectamos Ctrl + F o Cmd + F (Mac)
+     if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
+       event.preventDefault(); // IMPORTANTE: Evita que se abra el buscador del navegador
+       this.enfocarFiltro();
+     }
+   }
+ 
+   enfocarFiltro() {
+     this.filtroInput.nativeElement.focus();
+     this.filtroInput.nativeElement.select(); // Selecciona el texto para borrarlo rápido o editar
+   }
+ */
+  /***********************************************************/
+  /**
+   * 
+   * @param valor OBTENEMOS EL VALOR DEL COMBO
+   */
+  capturarEstatus(valor: string) {
+    // 2. Guardamos la conversión en la variable global
+    this.estatusNumerico = (valor === 'Inactivo' ? 0 : 1);
+    console.log("Estatus guardado como número:", this.estatusNumerico);
   }
 
-  enfocarFiltro() {
-    this.filtroInput.nativeElement.focus();
-    this.filtroInput.nativeElement.select(); // Selecciona el texto para borrarlo rápido o editar
+  // 3. Tu lógica de comparación con la respuesta de la API
+  // Cuando recibes la respuesta de la API tras buscar un usuario
+  procesarRespuesta(resp: any) {
+    // 2. Tomamos el valor de la API (ejemplo: si viene 1 o "1")
+    const valorAPI = resp[0].lbl_text3;
+
+    // 3. Dejamos seleccionado el que sea igual (Sincronización)
+    // Si la API trae 1, ponemos 'Activo'. Si trae 0, ponemos 'Inactivo'.
+    this.estatusActualTexto = (Number(valorAPI) === 0) ? 'Activo' : 'Inactivo';
+
+    //console.log("El combo se ha posicionado en:", this.estatusActualTexto);
   }
+
+  procesarRespuestaEstaus(resp: any) {
+    if (resp && resp[0]) {
+        // 1. Limpiamos el dato de la API de cualquier espacio o salto de línea
+        const perfilDesdeAPI = String(resp[0].lbl_text5) ;
+ 
+        // 2. Buscamos la opción real dentro del combo
+        const opcionEncontrada = this.opcionesCombo().find(opt => 
+            String(opt.label).trim() === perfilDesdeAPI
+        );        
+console.log(opcionEncontrada);
+
+        if (opcionEncontrada) {
+            // 3. ¡IMPORTANTE! Asignamos el value exacto del objeto encontrado
+            this.perfilSeleccionado = opcionEncontrada.value;
+            console.log("¡Éxito! Perfil seleccionado:", this.perfilSeleccionado);
+        } else {
+            console.log("No se encontró coincidencia exacta para:", perfilDesdeAPI);
+            this.perfilSeleccionado = ""; // Default
+        }
+        
+        this.cargandoBusqueda = false;
+    }
+}
+
+Guardado(){
+
+  // 1. Obtener el ID/Key directamente de la variable vinculada
+    const idPerfil = this.perfilSeleccionado; 
+    // 2. Si necesitas asegurarte de que sea un NÚMERO puro:
+    const idPerfilNumerico = Number(idPerfil);
+    console.log(idPerfilNumerico);
+    
+    const body = {
+      tipo: 3,
+      ClaveE: this.estatusActualTexto  === 'Inactivo' ? '1' : '0',
+      ClaveU: this.claveUsuario,
+      ClaveP: this.perfilSeleccionado, //      TipoA: nuevoEstado ? 1 : 0,
+      bandera: "perfil2"
+    };
+console.log(body);
+
+    this.interaction$.next(body);
+}
 
 }

@@ -1,44 +1,110 @@
-.form-container-perfil {
-    padding: 15px;
-    max-width: 600px; /* Limitamos el ancho para que no se vea gigante en PC */
-    font-size: 13px;
-}
-
-.form-grid {
+/* Contenedor que elimina espacios a la izquierda */
+.form-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 12px; /* Espacio entre filas */
+    align-items: flex-start; /* Todo el bloque a la izquierda */
+    padding: 10px;   
 }
 
+/* Título centrado respecto a TODO el card */
+.titulo-centrado {
+    width: 100%;
+    text-align: left;
+    color: black;
+    font-size: 16px;
+    margin-bottom: 25px;
+    font-weight: bold;
+}
+
+/* El Grid alineado a la izquierda */
+.form-grid-aligned {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: auto; /* Para que no fuerce el centro */
+}
+
+/* Definición de columnas: Label(140px) e Input(300px) */
 .form-row {
     display: grid;
-    grid-template-columns: 150px 1fr; /* 150px para etiqueta, el resto para el input */
-    align-items: center; /* Centra verticalmente */
-    gap: 20px;
+    grid-template-columns: 140px 300px; /* 140 label 300 input*/
+    align-items: center;
+    gap: 15px;
 }
 
-/* Reutilizamos y reforzamos tus estilos globales */
-.form-row .label-mini {
+.form-row .label-mini {     
     font-size: 13px;
-    margin-bottom: 0; /* Quitamos el margen inferior para que alinee con el input */
-    text-align: right; /* Alineamos el texto a la derecha para pegar a los inputs */
+    text-align: right; /* Pega el texto al input */
+    margin: 0;
+    color: black;
 }
 
-.form-row .input-filter-notable {
-    height: 30px; /* Altura estándar para tus formularios */
+/* El botón ocupa exactamente el ancho del input */
+.btn-container {
     width: 100%;
-    max-width: 350px; /* Tamaño similar al de tus otros componentes */
-}
-
-.form-actions {
-    margin-top: 25px;
     display: flex;
-    justify-content: flex-end; /* Botón a la derecha */
-    max-width: 520px; /* Alineado con el final de los inputs */
+    justify-content: flex-end; /* Lo pega al borde derecho del input */
 }
 
-/* Estilo para que el select se vea igual que los inputs */
-select.input-filter-notable {
+.btn-action-real.blue {
+    margin: 0;
+    width: auto;
+    min-width: 90px; /* Opcional: para que no se vea tan corto */
+}
+
+/**************************************************************/
+/* 1. Contenedor e Input se mantienen igual */
+.input-search-group {
+    display: flex;
+    align-items: center;
+    width: 300px;
+}
+
+.input-search-group .input-filter-notable {
+    flex: 1;
+    height: 28px;
+    border: 1px solid #003366;
+    border-right: none;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    padding: 0 8px;
+}
+
+/* 2. EL BOTÓN: Forzamos el estado constante */
+.btn-search-icon, 
+.btn-search-icon:focus, 
+.btn-search-icon:active {
+    height: 28px;
+    width: 40px; 
+    color: white !important; /* Lupa SIEMPRE blanca */
+    border: 1px solid #003366;
+    border-left: none;
+    border-radius: 0 4px 4px 0;
     cursor: pointer;
-    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    outline: none !important; /* Quita el cerco naranja/azul del navegador */
+    box-shadow: none !important; /* Evita que se mueva al presionar */
+    transition: background 0.2s;
+}
+
+/* 3. HOVER: Un azul un poco más claro para que se note el movimiento */
+.btn-search-icon:hover {
+    background-color: #004a92 !important;
+    border-color: #004a92;
+}
+
+/* 4. LA LUPA: Aseguramos que no se mueva ni se oculte */
+.btn-search-icon span,
+.btn-search-icon i {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    color: white !important;
+    font-size: 14px;
+    pointer-events: none; /* El clic pasa directo al botón */
+    opacity: 1 !important;
+    visibility: visible !important;
 }
