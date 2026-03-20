@@ -152,7 +152,7 @@ export class AccesoPerfilComponent implements OnInit {
 
         // --- TIPO 1: PINTAR TABLA COMPLETA ---
         if (body.tipo === 1 && body.bandera === 'perfil') {
-          console.log("badera pintar " + body.bandera);
+          //console.log("badera pintar " + body.bandera);
 
 
           // 2. Verificamos que sea un array antes de procesar

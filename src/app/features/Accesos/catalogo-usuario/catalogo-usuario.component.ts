@@ -61,7 +61,7 @@ export class CatalogoUsuarioComponent implements OnInit {
   public nombrePuesto: string = '';
   public estatusNumerico: number = 1;// Para guardar el valor numeroco del combo de ESTATUS
   public estatusActualTexto: string = ''
-  
+
 
 
   constructor(
@@ -140,7 +140,7 @@ export class CatalogoUsuarioComponent implements OnInit {
 
         // --- TIPO 1: PINTAR COMBO O LISTA DESPLEGABLE ---
         if (body.tipo === 1 && body.bandera === 'perfil') {
-         // console.log("badera pintar " + body.bandera);
+          // console.log("badera pintar " + body.bandera);
           // 2. Verificamos que sea un array antes de procesar
           if (Array.isArray(resp)) {
             const nombres = resp.map((item: any) => ({
@@ -183,7 +183,7 @@ export class CatalogoUsuarioComponent implements OnInit {
           }
 
           if (body.tipo === 2) {
-           // console.log(resp[0]);
+            // console.log(resp[0]);
             this.nombreUsuario = resp[0].lbl_text1
             this.nombrePuesto = resp[0].lbl_text2
             // Usamos la variable que guardó el cambio del combo
@@ -282,7 +282,7 @@ export class CatalogoUsuarioComponent implements OnInit {
   capturarEstatus(valor: string) {
     // 2. Guardamos la conversión en la variable global
     this.estatusNumerico = (valor === 'Inactivo' ? 0 : 1);
-    console.log("Estatus guardado como número:", this.estatusNumerico);
+    // console.log("Estatus guardado como número:", this.estatusNumerico);
   }
 
   // 3. Tu lógica de comparación con la respuesta de la API
@@ -300,46 +300,47 @@ export class CatalogoUsuarioComponent implements OnInit {
 
   procesarRespuestaEstaus(resp: any) {
     if (resp && resp[0]) {
-        // 1. Limpiamos el dato de la API de cualquier espacio o salto de línea
-        const perfilDesdeAPI = String(resp[0].lbl_text5) ;
- 
-        // 2. Buscamos la opción real dentro del combo
-        const opcionEncontrada = this.opcionesCombo().find(opt => 
-            String(opt.label).trim() === perfilDesdeAPI
-        );        
-console.log(opcionEncontrada);
+      // 1. Limpiamos el dato de la API de cualquier espacio o salto de línea
+      const perfilDesdeAPI = String(resp[0].lbl_text5);
 
-        if (opcionEncontrada) {
-            // 3. ¡IMPORTANTE! Asignamos el value exacto del objeto encontrado
-            this.perfilSeleccionado = opcionEncontrada.value;
-            console.log("¡Éxito! Perfil seleccionado:", this.perfilSeleccionado);
-        } else {
-            console.log("No se encontró coincidencia exacta para:", perfilDesdeAPI);
-            this.perfilSeleccionado = ""; // Default
-        }
-        
-        this.cargandoBusqueda = false;
+      // 2. Buscamos la opción real dentro del combo
+      const opcionEncontrada = this.opcionesCombo().find(opt =>
+        String(opt.label).trim() === perfilDesdeAPI
+      );
+      //console.log(opcionEncontrada);
+
+      if (opcionEncontrada) {
+        // 3. ¡IMPORTANTE! Asignamos el value exacto del objeto encontrado
+        this.perfilSeleccionado = opcionEncontrada.value;
+        // console.log("¡Éxito! Perfil seleccionado:", this.perfilSeleccionado);
+      } else {
+        console.log("No se encontró coincidencia exacta para:", perfilDesdeAPI);
+        this.perfilSeleccionado = ""; // Default
+      }
+
+      this.cargandoBusqueda = false;
     }
-}
+  }
 
-Guardado(){
+  Guardado() {
 
-  // 1. Obtener el ID/Key directamente de la variable vinculada
-    const idPerfil = this.perfilSeleccionado; 
+    // 1. Obtener el ID/Key directamente de la variable vinculada
+    const idPerfil = this.perfilSeleccionado;
     // 2. Si necesitas asegurarte de que sea un NÚMERO puro:
     const idPerfilNumerico = Number(idPerfil);
-    console.log(idPerfilNumerico);
-    
+    //console.log(idPerfilNumerico);
+
     const body = {
       tipo: 3,
-      ClaveE: this.estatusActualTexto  === 'Inactivo' ? '1' : '0',
+      ClaveE: this.estatusActualTexto === 'Inactivo' ? '1' : '0',
       ClaveU: this.claveUsuario,
       ClaveP: this.perfilSeleccionado, //      TipoA: nuevoEstado ? 1 : 0,
       bandera: "perfil2"
     };
-console.log(body);
+    //console.log(body);
 
     this.interaction$.next(body);
-}
+    alert("Guardado con exito")
+  }
 
 }
