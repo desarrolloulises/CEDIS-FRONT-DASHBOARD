@@ -70,6 +70,7 @@ export class SidebarComponent {
     3: 'menu-embarque',
     4: 'menu',
     5: 'menu-toma-inventario',
+    13: 'reportes',
     20: 'accesos'
   };
 
@@ -79,6 +80,8 @@ export class SidebarComponent {
     '3-2': 'menu-embarque/inventario-por-tienda',
     '3-3': 'menu-embarque/programacion-embarque',
     '5-1': 'menu-embarque/marbetes-mantenimiento',
+    '13-1': 'reporte/reporte-primerReporte',
+
     '20-1': 'accesos/Accesos',
     '20-2': 'accesos/Perfiles',
     '20-3': 'accesos/Accesos-perfil',
@@ -92,7 +95,7 @@ export class SidebarComponent {
    */
   obtenerSubmenus(modulo: any) {
     // 1. Si ya tiene submenús O ya intentamos cargarlos y no hubo, solo abrimos/cerramos
-    if ((modulo.sub && modulo.sub.length > 0) || modulo.intentado ) {
+    if ((modulo.sub && modulo.sub.length > 0) || modulo.intentado) {
       if (modulo.sub && modulo.sub.length > 0) {
         this.modulos.update(lista => lista.map(m =>
           m.Opcion === modulo.Opcion ? { ...m, abierto: !m.abierto } : m

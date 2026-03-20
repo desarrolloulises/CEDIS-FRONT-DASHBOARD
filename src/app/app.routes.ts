@@ -70,6 +70,12 @@ export const routes: Routes = [
         path: 'accesos/Accesos-Usuarios',
         loadComponent: () => import('./features/Accesos/catalogo-usuario/catalogo-usuario.component').then(m => m.CatalogoUsuarioComponent)
       },
+      //reportes
+      {
+        path: 'reporte/reporte-primerReporte',
+        loadComponent: () => import('./features/reportes/reportes.component').then(m => m.ReportesComponent)
+      },
+      
 
       
     {
