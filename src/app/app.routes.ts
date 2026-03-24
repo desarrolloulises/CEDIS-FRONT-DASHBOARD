@@ -3,6 +3,7 @@ import { MainLayoutComponent } from './layout/main-layout/main-layout.component'
 import { LoginComponent } from './features/login/login.component';
 import { authGuard } from './core/auth.guard';
 import { CambioPassComponent } from './features/cambio-pass/cambio-pass.component';
+import { ReportesComponent } from './features/reportes/reportes.component';
 
 /**********LISTA O DICCIONARIO QUE INDICA EL CODIGO DE LA api Y LO ASOCIA A miComponente */
 /*export const MAPEO_RUTAS: { [key: number]: string } = {
@@ -26,14 +27,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       {
-      path: 'inicio',
-      loadComponent: () => import('./components/summary-cards/summary-cards.component').then(m => m.SummaryCardsComponent) // El login va SOLO, sin Layout
-    },
+        path: 'inicio',
+        loadComponent: () => import('./components/summary-cards/summary-cards.component').then(m => m.SummaryCardsComponent) // El login va SOLO, sin Layout
+      },
       // --- NIVEL 1 (Módulos Principales) ---
-      
+
 
       // --- NIVEL 1 (Módulos Principales) ---
-      
+
       //simulacion de embarque
       {
         path: 'menu-embarque/inventario-por-ruta',
@@ -75,16 +76,25 @@ export const routes: Routes = [
         path: 'reporte/reporte-primerReporte',
         loadComponent: () => import('./features/reportes/reportes.component').then(m => m.ReportesComponent)
       },
-      
 
-      
-    {
-      path: 'CambiaPass',
-      loadComponent: () => import('./features/cambio-pass/cambio-pass.component').then(m => m.CambioPassComponent) // El login va SOLO, sin Layout
-    }
+
+
+      {
+        path: 'CambiaPass',
+        loadComponent: () => import('./features/cambio-pass/cambio-pass.component').then(m => m.CambioPassComponent) // El login va SOLO, sin Layout
+      }
+      ,
+
+      {
+        path: 'ver-reporte',
+        component: ReportesComponent,
+        // ❌ QUITA EL GUARD AQUÍ. Si esta ruta no tiene guard, 
+        // el iframe no te mandará al login de Angular.
+      },
 
     ]
   },
+
   { path: '**', redirectTo: 'login' } // Si no existe la ruta, al login
 ]
 
