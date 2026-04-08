@@ -47,6 +47,7 @@ export const APIURL_ACCESONIVELES = `${url}/cedis/ACCESONIVELES`
 export const APIURL_ACCESOPERFILES = `${url}/cedis/ACCESOPERFILES`
 export const APIURL_ACCESOPERFILESASIGNADOS = `${url}/cedis/ACCESOPERFILESAsignados`
 export const APIURL_ACCESOINVENTARIO = `${url}/cedis/ACCESOUSUARIO`
+export const APIURL_VERREPORTE = `${url}/cedis/api/reportes/ver`
 
 
 

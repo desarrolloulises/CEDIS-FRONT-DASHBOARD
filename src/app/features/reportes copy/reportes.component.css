@@ -1,0 +1,21 @@
+.contenedor-visor {
+  width: 100%;
+  height: calc(100vh - 80px); /* Resta el alto de tu menú lateral/superior */
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+.iframe-ssrs {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-family: sans-serif;
+  color: #007bff;
+}

@@ -78,3 +78,8 @@ export interface IAcessosUsuario{
     Usuario: string 
 }
 
+export interface IReporteParams {
+  carpeta: string;
+  reporte: string;
+}
+

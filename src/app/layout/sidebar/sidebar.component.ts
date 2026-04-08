@@ -71,7 +71,10 @@ export class SidebarComponent {
     4: 'menu',
     5: 'menu-toma-inventario',
     13: 'reportes',
-    20: 'accesos'
+    14: 'panel',
+    20: 'accesos',
+
+    43: 'recibo'
   };
 
   // Diccionario para el Nivel 2 (Hijos) - ESTO ES LO QUE TE FALTA
@@ -81,11 +84,14 @@ export class SidebarComponent {
     '3-3': 'menu-embarque/programacion-embarque',
     '5-1': 'menu-embarque/marbetes-mantenimiento',
     '13-1': 'reporte/reporte-primerReporte',
+    '13-2': 'reporte/reporte-primerReporte',
+    '14-1': 'panel/Ubicacion-provedores', 
 
     '20-1': 'accesos/Accesos',
     '20-2': 'accesos/Perfiles',
     '20-3': 'accesos/Accesos-perfil',
-    '20-4': 'accesos/Accesos-Usuarios'
+    '20-4': 'accesos/Accesos-Usuarios',
+    '44-1': 'ver-reporte/44-1'
 
   };
   /**
@@ -120,19 +126,37 @@ export class SidebarComponent {
     // 3. Llamamos a la MISMA API
     this.service.getVerMenu(body).subscribe({
       next: (dataHijos) => {
+        // Dentro de obtenerSubmenus -> next: (dataHijos) => {
         const subProcesados = dataHijos.map(sub => {
-          // Creamos la llave combinada: "5-1"
           const llaveUnica = `${modulo.Opcion}-${sub.Opcion}`;
-          const ruta = this.MAPEO_RUTAS_HIJOS[llaveUnica] || 'inicio';
 
-          return { ...sub, URL: ruta };
+          // 1. Obtenemos la ruta del mapa o 'inicio' por defecto
+          const rutaOriginal = this.MAPEO_RUTAS_HIJOS[llaveUnica] || 'inicio';
+
+          // 2. Detectamos si es reporte (buscamos la palabra reporte en la cadena)
+          const esReporte = String(rutaOriginal).includes('reporte/');
+
+          // 3. Limpiamos la URL y asignamos el tipo
+          let urlFinal = rutaOriginal;
+          if (esReporte) {
+            urlFinal = rutaOriginal.split('/').pop() || rutaOriginal;
+          }
+
+          return {
+            ...sub,
+            URL: urlFinal,
+            tipo: esReporte ? 'reporte' : 'modulo'
+          };
         });
 
+        // 4. ACTUALIZACIÓN DE SEÑAL (Asegúrate de que 'cargando' pase a false)
         this.modulos.update(lista => lista.map(m =>
           m.Opcion === modulo.Opcion
             ? { ...m, sub: subProcesados, abierto: true, cargando: false, intentado: true }
             : m
         ));
+
+        // ... resto del update de señales
       },
       error: (err) => {
         // Si da 404, asumimos que no hay submenús y marcamos como abierto/cargado

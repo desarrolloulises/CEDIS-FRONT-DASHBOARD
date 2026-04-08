@@ -76,6 +76,12 @@ export const routes: Routes = [
         path: 'reporte/reporte-primerReporte',
         loadComponent: () => import('./features/reportes/reportes.component').then(m => m.ReportesComponent)
       },
+      
+      //panel control recibo
+      {
+        path: 'panel/Ubicacion-provedores',
+        loadComponent: () => import('./features/panelControl/catalogo-colores/catalogo-colores.component').then(m => m.CatalogoColoresComponent)
+      },
 
 
 
@@ -86,8 +92,8 @@ export const routes: Routes = [
       ,
 
       {
-        path: 'ver-reporte',
-        component: ReportesComponent,
+        path: 'ver-reporte/:id',
+        component: ReportesComponent
         // ❌ QUITA EL GUARD AQUÍ. Si esta ruta no tiene guard, 
         // el iframe no te mandará al login de Angular.
       },

@@ -6,37 +6,45 @@
 
     <!-------------AQUI VA EL CODIGO QUE CARGA LOS MODULOS Y SUBMODULOS------------------------>
     <nav class="menu-nav">
-  @for (modulo of modulos(); track modulo.Opcion) {
-    <div class="menu-item">
-      
-      <div class="menu-header" (click)="obtenerSubmenus(modulo)">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <i [class]="modulo.Icono"></i>
-          <span>{{ modulo.Descripcion }}</span>
+      @for (modulo of modulos(); track modulo.Opcion) {
+      <div class="menu-item">
+
+        <div class="menu-header" (click)="obtenerSubmenus(modulo)">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <i [class]="modulo.Icono"></i>
+            <span>{{ modulo.Descripcion }}</span>
+          </div>
+
+          @if (modulo.cargando) {
+          <span class="spinner-loader"></span>
+          } @else {
+          @if (!modulo.intentado || (modulo.sub && modulo.sub.length > 0)) {
+          <span class="arrow" [class.rotated]="modulo.abierto">▶</span>
+          }
+          }
         </div>
 
-        @if (modulo.cargando) {
-          <span class="spinner-loader"></span>
-        } @else {
-          @if (!modulo.intentado || (modulo.sub && modulo.sub.length > 0)) {
-            <span class="arrow" [class.rotated]="modulo.abierto">▶</span>
-          }
-        }
-      </div>
-<!---------------AQUI VA EL CODIGO QUE CARGA LOS SUBMENUS------------------------>
-      @if (modulo.abierto && modulo.sub?.length) {
+        @if (modulo.abierto && modulo.sub?.length) {
         <div class="sub-menu">
           @for (sub of modulo.sub; track sub.Opcion) {
-            <a [routerLink]="[sub.URL]" routerLinkActive="active">
-              {{ sub.Descripcion }}
-            </a>
+
+          @if (sub.tipo === 'reporte') {
+          <a [routerLink]="['/ver-reporte', sub.URL]" routerLinkActive="active">
+            {{ sub.Descripcion }}
+          </a>
+          } @else {
+          <a [routerLink]="[sub.URL]" routerLinkActive="active">
+            {{ sub.Descripcion }}
+          </a>
+          }
+
           }
         </div>
+        }
+      </div>
       }
-    </div>
-  }
-</nav>
-<!--
+    </nav>
+    <!--
     <nav class="menu-nav">
       <div class="menu-item">
         <div class="menu-header" (click)="toggleMenu('inventario')">
@@ -72,11 +80,9 @@
     @if (menuUsuarioAbierto()) {
     <div class="user-dropdown-up">
       <button class="dropdown-item" (click)="logout()">🚪 Cerrar Sesión</button>
-      <button class="dropdown-item" 
-            routerLink="/CambiaPass" 
-            (click)="menuUsuarioAbierto.set(false)">
-      🔑 Cambiar Contraseña
-    </button>
+      <button class="dropdown-item" routerLink="/CambiaPass" (click)="menuUsuarioAbierto.set(false)">
+        🔑 Cambiar Contraseña
+      </button>
     </div>
     }
 

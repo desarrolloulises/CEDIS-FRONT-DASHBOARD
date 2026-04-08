@@ -1,21 +1,28 @@
 .contenedor-visor {
+  display: flex; /* Activa el modo flexible */
+  flex-direction: column;
   width: 100%;
-  height: calc(100vh - 80px); /* Resta el alto de tu menú lateral/superior */
-  background-color: #ffffff;
-  overflow: hidden;
+  height: 100vh;
+  overflow: hidden; 
+  background-color: white;
 }
 
 .iframe-ssrs {
+  flex: 1 1 auto; /* Esto obliga al iframe a crecer y ocupar todo el espacio disponible */
   width: 100%;
   height: 100%;
-  border: none;
 }
 
-.loader {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  font-family: sans-serif;
-  color: #007bff;
+/* Personalización de la barra para que sea más visible en PC */
+.contenedor-visor::-webkit-scrollbar {
+  height: 10px; /* Grosor de la barra horizontal */
+}
+
+.contenedor-visor::-webkit-scrollbar-thumb {
+  background: #888; 
+  border-radius: 5px;
+}
+
+.contenedor-visor::-webkit-scrollbar-thumb:hover {
+  background: #555; 
 }

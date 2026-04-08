@@ -1,0 +1,14 @@
+<div class="contenedor-visor">
+  @if (urlSegura(); as url) {
+    <iframe 
+      [src]="url" 
+      class="iframe-ssrs"
+      frameborder="0"
+      allowfullscreen>
+    </iframe>
+  } @else {
+    <div class="loader">
+      <p>Cargando Portal de Reportes...</p>
+    </div>
+  }
+</div>
