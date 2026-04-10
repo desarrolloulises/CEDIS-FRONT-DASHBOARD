@@ -26,68 +26,86 @@ interface CeldaColoreada {
 export class UbicacionProvedoresComponent {
   @ViewChild('gridContainer') gridContainer!: ElementRef;
 
+  // --- CONFIGURACIÓN ---
   filas = signal(12);
   columnas = signal(29);
-  modoEdicion = signal(false);
-  seleccionadosParaBloquear = signal<Set<string>>(new Set());
-  seleccionTemporal = signal<Set<string>>(new Set());
 
-  seleccionAcumulada = signal<Set<string>>(new Set());
+  // --- MODOS DE OPERACIÓN ---
+  modoBloqueoEstructura = signal(false); // El botón "Bloquear"
+  tipoAccionColor = signal<'pintar' | 'borrar' | null>(null); // Los botones "Seleccionar/Deseleccionar"
+
+  // --- DATOS ---
+  celdasBloqueadasFisicas = signal<Set<string>>(new Set()); // Bloqueo de base (Estructura)
+  mapaColoresProveedores = signal<Map<string, string>>(new Map()); // Colores por código
+
   seleccionActualVisual = signal<Set<string>>(new Set());
+  colorActivo = signal('');
+  codigoInput = signal('');
 
-  todasLasSeleccionadas = computed(() => {
-    const union = new Set(this.seleccionAcumulada());
-    this.seleccionActualVisual().forEach(id => union.add(id));
-    return union;
-  });
-
-  // Lógica del rectángulo estilo Windows
+  // Lógica del rectángulo
   seleccionando = signal(false);
   startPos = { x: 0, y: 0 };
   rectStyle = signal({ left: '0px', top: '0px', width: '0px', height: '0px', display: 'none' });
 
-  //Datos del "Pincel" actual
-  colorActivo = signal('#d9534f'); // Rojo por defecto
-  codigoActual = signal('');
-  alCambiarInput(valor: string) {
-    this.codigoActual.set(valor);
-
-    // Lógica temporal para pruebas:
-    // Aquí es donde conectarás tu servicio para obtener el color del SP
-    const diccionarioColores: { [key: string]: string } = {
-      '101': '#d9534f', // Rojo
-      '102': '#0078d7', // Azul
-      '103': '#6f42c1', // Púrpura
-      '104': '#f0ad4e'  // Naranja
-    };
-
-    /**
-     * PARA IDENTIFICAR QUE COLOR PONER
-     */
-    
-
-    const nuevoColor = diccionarioColores[valor] || '#76a15d'; // Verde base si no hay código
-    this.colorActivo.set(nuevoColor);
-  }
-
-  // ESTO DEBE SER COMPUTED PARA USAR celdas() EN EL HTML
   celdas = computed(() => {
     const matriz = [];
     for (let f = 1; f <= this.filas(); f++) {
       for (let c = 1; c <= this.columnas(); c++) {
-        matriz.push({
-          id: `${f}-${c}`,
-          label: `(${c},${f})`,
-          tipo: c === 15 ? 'almacenaje' : 'almacenaje'
-        });
+        matriz.push({ id: `${f}-${c}`, label: `(${c},${f})`, tipo: 'almacenaje' });
       }
     }
     return matriz;
   });
 
-  // --- MÉTODOS DE SELECCIÓN ---
+  // --- ACCIONES ---
+
+  toggleModoBloqueo() {
+    this.modoBloqueoEstructura.update(v => !v);
+    this.tipoAccionColor.set(null); // Reseteamos acciones de color al bloquear estructura
+  }
+
+prepararSeleccionColor(tipo: 'pintar' | 'borrar') {
+  // Si estamos bloqueando estructura, solo permitimos activar "borrar"
+  // para que no se mezcle la pintura de proveedores con la de estructura.
+  //if (this.modoBloqueoEstructura() && tipo === 'pintar') return;
+
+  this.tipoAccionColor.set(tipo);
+}
+
+  alCambiarInput(valor: string) {
+    this.codigoInput.set(valor);
+    const diccionarioColores: { [key: string]: string } = {
+      '101': '#0bfd03',
+      '102': '#0078d7',
+      '103': '#6f42c1',
+      '104': '#f0ad4e'
+    };
+    this.colorActivo.set(diccionarioColores[valor] || '#5cb85c');
+  }
+
+  obtenerColorCelda(id: string): string | null {
+    // 1. Si estamos en modo BLOQUEO FÍSICO (Estructura)
+    if (this.modoBloqueoEstructura()) {
+      if (this.seleccionActualVisual().has(id) || this.celdasBloqueadasFisicas().has(id)) return '#fd0b03'; // Rojo estructura
+    }
+
+    // 2. Si estamos pintando/borrando colores de proveedor
+    if (this.seleccionActualVisual().has(id)) {
+      return this.tipoAccionColor() === 'borrar' ? '#ffffff' : this.colorActivo();
+    }
+
+    // 3. Colores permanentes (Si la celda está bloqueada físicamente tiene prioridad)
+    if (this.celdasBloqueadasFisicas().has(id)) return '#fd0b03';
+
+    return this.mapaColoresProveedores().get(id) || null;
+  }
+
+  // --- MOUSE EVENTS ---
+
   iniciarSeleccion(event: MouseEvent) {
-    if (!this.modoEdicion()) return;
+    // Solo iniciamos si el Modo Bloqueo está ON o si hay una acción de color activa
+    if (!this.modoBloqueoEstructura() && !this.tipoAccionColor()) return;
+
     this.seleccionando.set(true);
     const containerRect = this.gridContainer.nativeElement.getBoundingClientRect();
     this.startPos = { x: event.clientX - containerRect.left, y: event.clientY - containerRect.top };
@@ -95,87 +113,71 @@ export class UbicacionProvedoresComponent {
 
   moverSeleccion(event: MouseEvent) {
     if (!this.seleccionando()) return;
+    const containerRect = this.gridContainer.nativeElement.getBoundingClientRect();
+    const l = Math.min(this.startPos.x, event.clientX - containerRect.left);
+    const t = Math.min(this.startPos.y, event.clientY - containerRect.top);
+    const w = Math.abs(this.startPos.x - (event.clientX - containerRect.left));
+    const h = Math.abs(this.startPos.y - (event.clientY - containerRect.top));
 
-    // Usamos requestAnimationFrame para que el dibujo sea a 60fps y no se trabe
-    requestAnimationFrame(() => {
-      const containerRect = this.gridContainer.nativeElement.getBoundingClientRect();
-      const currentX = event.clientX - containerRect.left;
-      const currentY = event.clientY - containerRect.top;
-
-      const left = Math.min(this.startPos.x, currentX);
-      const top = Math.min(this.startPos.y, currentY);
-      const width = Math.abs(this.startPos.x - currentX);
-      const height = Math.abs(this.startPos.y - currentY);
-
-      this.rectStyle.set({
-        left: `${left}px`,
-        top: `${top}px`,
-        width: `${width}px`,
-        height: `${height}px`,
-        display: 'block'
-      });
-
-      this.calcularInterseccion(left, top, width, height);
-    });
+    this.rectStyle.set({ left: `${l}px`, top: `${t}px`, width: `${w}px`, height: `${h}px`, display: 'block' });
+    this.calcularInterseccion(l, t, w, h);
   }
 
   calcularInterseccion(l: number, t: number, w: number, h: number) {
-    const elementos = this.gridContainer.nativeElement.querySelectorAll('.celda.almacenaje');
-    const tocadosAhora = new Set<string>();
-
-    // Optimizamos: solo iteramos sobre elementos visibles
-    for (let el of elementos) {
-      const rect = {
-        left: el.offsetLeft,
-        top: el.offsetTop,
-        right: el.offsetLeft + el.offsetWidth,
-        bottom: el.offsetTop + el.offsetHeight
-      };
-
-      if (rect.left < l + w && rect.right > l && rect.top < t + h && rect.bottom > t) {
-        tocadosAhora.add(el.getAttribute('data-id')!);
-      }
-    }
-    this.seleccionActualVisual.set(tocadosAhora);
-  }
-
-  calcularCeldas(l: number, t: number, w: number, h: number) {
-    const elementos = this.gridContainer.nativeElement.querySelectorAll('.celda.almacenaje');
-    const nuevoSetTemporal = new Set<string>();
-
-    elementos.forEach((el: HTMLElement) => {
-      const rect = {
-        left: el.offsetLeft,
-        top: el.offsetTop,
-        right: el.offsetLeft + el.offsetWidth,
-        bottom: el.offsetTop + el.offsetHeight
-      };
-
-      if (rect.left < l + w && rect.right > l && rect.top < t + h && rect.bottom > t) {
-        nuevoSetTemporal.add(el.getAttribute('data-id')!);
+    const elementos = this.gridContainer.nativeElement.querySelectorAll('.celda');
+    const tocados = new Set<string>();
+    elementos.forEach((el: any) => {
+      const r = { left: el.offsetLeft, top: el.offsetTop, right: el.offsetLeft + el.offsetWidth, bottom: el.offsetTop + el.offsetHeight };
+      if (r.left < l + w && r.right > l && r.top < t + h && r.bottom > t) {
+        tocados.add(el.getAttribute('data-id')!);
       }
     });
-
-    // Actualizamos lo que se ve en tiempo real mientras arrastras
-    this.seleccionTemporal.set(nuevoSetTemporal);
+    this.seleccionActualVisual.set(tocados);
   }
 
-  finalizarSeleccion() {
-    if (!this.seleccionando()) return;
+ finalizarSeleccion() {
+  if (!this.seleccionando()) return;
 
-    // Al soltar, pasamos lo visual a lo acumulado
-    this.seleccionAcumulada.update(prev => {
-      const nuevo = new Set(prev);
-      this.seleccionActualVisual().forEach(id => nuevo.add(id));
-      return nuevo;
+  // 1. Identificamos si la intención es borrar
+  const esModoBorrar = this.tipoAccionColor() === 'borrar';
+
+  // 2. Si estamos en Modo Bloqueo de Estructura (El botón de la llave/candado)
+  if (this.modoBloqueoEstructura()) {
+    this.celdasBloqueadasFisicas.update(setExistente => {
+      const nuevoSet = new Set(setExistente);
+      
+      this.seleccionActualVisual().forEach(id => {
+        if (esModoBorrar) {
+          nuevoSet.delete(id); // <--- AQUÍ QUITA LA SELECCIÓN ROJA
+        } else {
+          nuevoSet.add(id);    // <--- AQUÍ PONE LA SELECCIÓN ROJA
+        }
+      });
+      return nuevoSet;
     });
-
-    this.seleccionando.set(false);
-    this.seleccionActualVisual.set(new Set());
-    this.rectStyle.update(s => ({ ...s, display: 'none' }));
   } 
-
-  toggleModoEdicion() {
-    this.modoEdicion.update(v => !v);
+  // 3. Si NO estamos en modo bloqueo, manejamos los colores de proveedores
+  else {
+    if (this.tipoAccionColor() === 'pintar') {
+      this.mapaColoresProveedores.update(mapa => {
+        const nuevoMapa = new Map(mapa);
+        this.seleccionActualVisual().forEach(id => {
+          nuevoMapa.set(id, this.colorActivo());
+        });
+        return nuevoMapa;
+      });
+    } else if (esModoBorrar) {
+      this.mapaColoresProveedores.update(mapa => {
+        const nuevoMapa = new Map(mapa);
+        this.seleccionActualVisual().forEach(id => nuevoMapa.delete(id));
+        return nuevoMapa;
+      });
+    }
   }
+
+  // Limpieza final de estados visuales
+  this.seleccionando.set(false);
+  this.seleccionActualVisual.set(new Set());
+  this.rectStyle.update(s => ({ ...s, display: 'none' }));
+}
 }

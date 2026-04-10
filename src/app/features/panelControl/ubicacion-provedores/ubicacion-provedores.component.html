@@ -1,33 +1,41 @@
 <div class="contenedor-principal" (mouseup)="finalizarSeleccion()">
 
   <header class="seccion-controles">
-    <section class="glass-card">
-      <div class="grid-operation">
+    <div class="toolbar">
 
-        <div class="toolbar">
-          <div class="bloque-accion">
-            <button class="btn-action-real blue" (click)="toggleModoEdicion()" [class.btn-grabando]="modoEdicion()">
-              <span class="icono">{{ modoEdicion() ? '✅' : '🔒' }}</span>
-              {{ modoEdicion() ? 'FINALIZAR' : 'BLOQUEAR' }}
-            </button>
-          </div>
-
-          <div class="field-info w-small">
-            <label class="label-mini">Proveedor:</label>
-            <input type="text" class="input-filter-notable">
-          </div>
-
-          <div class="input-wrapper">
-            <button class="btn-action-real blue">Seleccionar</button>
-          </div>
-
-          <div class="input-wrapper">
-            <button class="btn-action-real blue">Deseleccionar</button>
-          </div>
-
-        </div>
+      <div class="field-info w-small">
+        <label class="label-mini">Proveedor:</label>
+        <input type="text" class="input-filter-notable" [disabled]="modoBloqueoEstructura()"
+          (input)="alCambiarInput($any($event.target).value)" placeholder="Código...">
       </div>
-    </section>
+
+      <div class="input-wrapper">
+        <button class="btn-action-real blue" [disabled]="false"
+          [class.btn-activo]="tipoAccionColor() === 'pintar'" (click)="prepararSeleccionColor('pintar')">
+          Seleccionar
+        </button>
+      </div>
+
+      <div class="input-wrapper">
+        <button class="btn-action-real blue" (click)="prepararSeleccionColor('borrar')"
+          [class.btn-activo]="tipoAccionColor() === 'borrar'">
+          Deseleccionar
+        </button>
+      </div>
+
+      <div *ngIf="!modoBloqueoEstructura()" [style.background-color]="colorActivo()"
+        style="width: 20px; height: 20px; border-radius: 50%; border: 1px solid #fff;">
+      </div>
+
+      <div class="bloque-accion">
+        <button class="btn-action-real blue" (click)="toggleModoBloqueo()"
+          [class.btn-grabando]="modoBloqueoEstructura()">
+          <span class="icono">{{ modoBloqueoEstructura() ? '✅' : '🔒' }}</span>
+          {{ modoBloqueoEstructura() ? 'FINALIZAR BLOQUEO' : 'BLOQUEAR ESTRUCTURA' }}
+        </button>
+      </div>
+
+    </div>
   </header>
 
   <main class="seccion-mapa">
@@ -38,8 +46,7 @@
 
       <div class="grid-layout" [style.grid-template-columns]="'repeat(' + columnas() + ', 1fr)'">
         @for (celda of celdas(); track celda.id) {
-        <div class="celda" [attr.data-id]="celda.id" [ngClass]="celda.tipo"
-          [class.rojo-bloqueo]="todasLasSeleccionadas().has(celda.id)">
+        <div class="celda" [attr.data-id]="celda.id" [style.background-color]="obtenerColorCelda(celda.id)">
           <span class="label-coordenada">{{ celda.label }}</span>
         </div>
         }

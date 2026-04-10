@@ -10,7 +10,7 @@
   background-color: #f4f7f6;
   border-bottom: 2px solid #e0e0e0;
   padding: 20px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  /*box-shadow: 0 2px 5px rgba(0,0,0,0.05);*/
 }
 
 .toolbar {
@@ -70,8 +70,9 @@ button {
 .grid-layout {
   display: grid;
   gap: 2px;
-  background-color: #ccc; /* Color de líneas */
+  background-color: #fff; /* Color de líneas */
   padding: 2px;
+ /* border: 1px solid #000;*/
 }
 
 /* Rectángulo Azul de Selección */
@@ -94,7 +95,6 @@ button {
 }
 
 .almacenaje { background-color: #ffffff; }  
-/*.pasillo { background-color: #f6d465; }      */
 
 .rojo-bloqueo {
   background-color: #fd0b03 !important; /* Rojo */
@@ -104,4 +104,32 @@ button {
 .label-coordenada {
   user-select: none;
   pointer-events: none;
+}
+/* Agrega esto a tus estilos de .celda */
+.celda {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  transition: background 0.15s ease; /* Transición más fluida */
+  color: #333; /* Texto oscuro por defecto */
+  border: 1px solid #000;
+}
+
+/* Para que las coordenadas se vean blancas cuando el fondo es oscuro */
+.celda[style*="background-color"] .label-coordenada {
+  color: white;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+}
+.btn-activo {
+  background-color: #0078d7 !important; /* Azul resaltado para saber qué acción haces */
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+}
+
+.btn-action-real:disabled {
+  background-color: #ccc !important;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
