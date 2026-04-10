@@ -64,7 +64,9 @@ button {
 
 .grid-wrapper {
   position: relative;
-  display: inline-block; /* Ajusta al contenido */
+  user-select: none;          /* Evita que se seleccione texto */
+  -webkit-user-drag: none;    /* Evita el arrastre nativo en Chrome/Safari */
+  touch-action: none;         /* Evita scroll accidental en laptops con touch */
 }
 
 .grid-layout {
@@ -91,7 +93,8 @@ button {
   align-items: center;
   justify-content: center;
   font-size: 9px;
-  transition: background 0.2s;
+  transition: background 0.2s;user-select: none;
+  pointer-events: auto;
 }
 
 .almacenaje { background-color: #ffffff; }  
