@@ -1,0 +1,107 @@
+.contenedor-principal {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #ffffff;
+}
+
+/* --- SECCIÓN SUPERIOR --- */
+.seccion-controles {
+  background-color: #f4f7f6;
+  border-bottom: 2px solid #e0e0e0;
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  max-width: 1200px;
+}
+
+.btn-grabando {
+  background-color: #f0ad4e !important; /* Naranja activo */
+  border-color: #eea236 !important;
+}
+
+button {
+  background-color: #5cb85c; /* Verde */
+  color: white;
+  border: 1px solid #4cae4c;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-moderno {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 250px;
+}
+
+.contador-badge {
+  background: #333;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+/* --- SECCIÓN INFERIOR (MAPA) --- */
+.seccion-mapa {
+  flex: 1;
+  overflow: auto;
+  padding: 20px;
+  background-color: #fff;
+}
+
+.grid-wrapper {
+  position: relative;
+  display: inline-block; /* Ajusta al contenido */
+}
+
+.grid-layout {
+  display: grid;
+  gap: 2px;
+  background-color: #ccc; /* Color de líneas */
+  padding: 2px;
+}
+
+/* Rectángulo Azul de Selección */
+.marquee-azul {
+  position: absolute;
+  border: 1px solid #0078d7;
+  background-color: rgba(0, 120, 215, 0.25);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.celda {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  transition: background 0.2s;
+}
+
+.almacenaje { background-color: #ffffff; }  
+/*.pasillo { background-color: #f6d465; }      */
+
+.rojo-bloqueo {
+  background-color: #fd0b03 !important; /* Rojo */
+  color: white;
+}
+
+.label-coordenada {
+  user-select: none;
+  pointer-events: none;
+}

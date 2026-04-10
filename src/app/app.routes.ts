@@ -77,9 +77,15 @@ export const routes: Routes = [
         loadComponent: () => import('./features/reportes/reportes.component').then(m => m.ReportesComponent)
       },
       
-      //panel control recibo
+      //panel control provedores
       {
         path: 'panel/Ubicacion-provedores',
+        loadComponent: () => import('./features/panelControl/ubicacion-provedores/ubicacion-provedores.component').then(m => m.UbicacionProvedoresComponent)
+      },
+      
+      //panel control recibo
+      {
+        path: 'panel/Ubicacion-colores',
         loadComponent: () => import('./features/panelControl/catalogo-colores/catalogo-colores.component').then(m => m.CatalogoColoresComponent)
       },
 

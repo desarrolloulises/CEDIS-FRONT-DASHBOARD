@@ -1,1 +1,61 @@
-<p>catalogo-colores works!</p>
+<div class="dashboard-wrapper">
+
+  <section class="glass-card">
+    <div class="field-info w-large">
+      <h2 class="titulo">Catálogo de colores</h2>
+    </div>
+
+    <div class="grid-operation">
+
+
+      <div class="field-info w-small">
+        <label class="label-mini">Color</label>
+        <div class="recuadro-disparador" [style.background-color]="colorTemporal" (click)="nuevoPicker.click()">
+          <input #escanearcajaInput type="text" name="folio" class="input-filter-notable ">
+        </div>
+
+        <input #nuevoPicker type="color" [(ngModel)]="colorTemporal" (change)="confirmarNuevoColor(nuevoPicker.value)"
+          style="display: none;">
+      </div>
+    </div>
+  </section>
+
+  <section class=" tabla-scroll-container">
+
+    @if (isWaiting()) {
+    <div class="loading-overlay">
+      <div class="spinner-formal"></div>
+      <span class="bold-dark">Cargando datos...</span>
+    </div>
+    }
+
+    <table class="table-approved custom-table">
+      <thead>
+        <tr>
+          <th class="col-clave">Clave</th>
+          <th class="col-color">Color</th>
+          <th class="col-activo">Activo</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of listaColores(); track item.clave) {
+        <tr>
+          <td class="txt-centro">{{ item.clave }}</td>
+          <td>
+            <div class="recuadro-color" [style.background-color]="item.colorHex" (click)="picker.click()">
+            </div>
+            <input #picker type="color" [value]="item.colorHex" (change)="cambiarColor(item.clave, picker.value)"
+              style="display: none;">
+          </td>
+          <td class="txt-centro cursor-pointer" (click)="toggleActivo(item.clave)">
+            {{ item.activo ? '[X]' : '[ ]' }}
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+
+  </section>
+
+
+</div>

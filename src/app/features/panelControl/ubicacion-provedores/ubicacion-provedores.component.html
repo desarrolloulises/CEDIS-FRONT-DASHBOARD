@@ -1,0 +1,49 @@
+<div class="contenedor-principal" (mouseup)="finalizarSeleccion()">
+
+  <header class="seccion-controles">
+    <section class="glass-card">
+      <div class="grid-operation">
+
+        <div class="toolbar">
+          <div class="bloque-accion">
+            <button class="btn-action-real blue" (click)="toggleModoEdicion()" [class.btn-grabando]="modoEdicion()">
+              <span class="icono">{{ modoEdicion() ? '✅' : '🔒' }}</span>
+              {{ modoEdicion() ? 'FINALIZAR' : 'BLOQUEAR' }}
+            </button>
+          </div>
+
+          <div class="field-info w-small">
+            <label class="label-mini">Proveedor:</label>
+            <input type="text" class="input-filter-notable">
+          </div>
+
+          <div class="input-wrapper">
+            <button class="btn-action-real blue">Seleccionar</button>
+          </div>
+
+          <div class="input-wrapper">
+            <button class="btn-action-real blue">Deseleccionar</button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </header>
+
+  <main class="seccion-mapa">
+    <div class="grid-wrapper" #gridContainer (mousedown)="iniciarSeleccion($event)"
+      (mousemove)="moverSeleccion($event)">
+
+      <div class="marquee-azul" [ngStyle]="rectStyle()"></div>
+
+      <div class="grid-layout" [style.grid-template-columns]="'repeat(' + columnas() + ', 1fr)'">
+        @for (celda of celdas(); track celda.id) {
+        <div class="celda" [attr.data-id]="celda.id" [ngClass]="celda.tipo"
+          [class.rojo-bloqueo]="todasLasSeleccionadas().has(celda.id)">
+          <span class="label-coordenada">{{ celda.label }}</span>
+        </div>
+        }
+      </div>
+    </div>
+  </main>
+</div>

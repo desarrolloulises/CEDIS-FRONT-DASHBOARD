@@ -71,6 +71,7 @@ export class SidebarComponent {
     4: 'menu',
     5: 'menu-toma-inventario',
     13: 'reportes',
+    
     14: 'panel',
     20: 'accesos',
 
@@ -85,7 +86,8 @@ export class SidebarComponent {
     '5-1': 'menu-embarque/marbetes-mantenimiento',
     '13-1': 'reporte/reporte-primerReporte',
     '13-2': 'reporte/reporte-primerReporte',
-    '14-1': 'panel/Ubicacion-provedores', 
+    '14-1': 'panel/Ubicacion-provedores',
+    '14-2': 'panel/Ubicacion-colores', 
 
     '20-1': 'accesos/Accesos',
     '20-2': 'accesos/Perfiles',
