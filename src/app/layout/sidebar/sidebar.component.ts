@@ -5,6 +5,7 @@ import { PermissionService } from '../../core/permission.service';
 import { DatosService } from '../../service/servicio.service';
 import { ProcesosCedisService } from '../../service/procesos-cedis.service';
 import { IMenuSidebar } from '../../interfaces/ibahia';
+import { ReportService } from '../../services/ReportService';
 //import { MAPEO_RUTAS } from '../../app.routes';
 
 
@@ -15,7 +16,8 @@ import { IMenuSidebar } from '../../interfaces/ibahia';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })
-export class SidebarComponent {
+export class SidebarComponent { 
+
   public userRecivido = signal<string>(''); //recibiendo Usiuario
 
   private router = inject(Router);
@@ -30,9 +32,10 @@ export class SidebarComponent {
 
   constructor(
     private datosService: DatosService,
-    private service: ProcesosCedisService,) {
+    private service: ProcesosCedisService, ) {
     // console.log(this.datosService.usuarioSignal());
   }
+  private reporteService = inject(ReportService);
 
   //**************************************************************** */
 
@@ -71,7 +74,7 @@ export class SidebarComponent {
     4: 'menu',
     5: 'menu-toma-inventario',
     13: 'reportes',
-    
+
     14: 'panel',
     20: 'accesos',
 
@@ -87,7 +90,7 @@ export class SidebarComponent {
     '13-1': 'reporte/reporte-primerReporte',
     '13-2': 'reporte/reporte-primerReporte',
     '14-1': 'panel/Ubicacion-provedores',
-    '14-2': 'panel/Ubicacion-colores', 
+    '14-2': 'panel/Ubicacion-colores',
 
     '20-1': 'accesos/Accesos',
     '20-2': 'accesos/Perfiles',
@@ -181,7 +184,11 @@ export class SidebarComponent {
 
   //****************************************************************** */
 
-
+  notificarReporte(url: string) {
+    // Aquí es donde "despiertas" al visor de reportes
+    console.log("📢 Sidebar: Notificando reporte con ID ->", url);
+    this.reporteService.actualizarSeleccion(url);
+  }
 
 
   toggleMenuUsuario() {

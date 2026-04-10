@@ -29,7 +29,8 @@
           @for (sub of modulo.sub; track sub.Opcion) {
 
           @if (sub.tipo === 'reporte') {
-          <a [routerLink]="['/ver-reporte', sub.URL]" routerLinkActive="active">
+          <a [routerLink]="['/ver-reporte', sub.URL]" routerLinkActive="active"
+            (click)="notificarReporte(sub.URL)"> {{ sub.Descripcion }}
             {{ sub.Descripcion }}
           </a>
           } @else {
@@ -37,7 +38,6 @@
             {{ sub.Descripcion }}
           </a>
           }
-
           }
         </div>
         }

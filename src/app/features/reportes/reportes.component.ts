@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { SafeUrlPipe } from '../../services/safe-url.pipe';
+import { ReportService } from '../../services/ReportService';
 // Crea una interfaz simple para que sea ordenado
 
 
@@ -14,9 +15,24 @@ import { SafeUrlPipe } from '../../services/safe-url.pipe';
   styleUrl: './reportes.component.css'
 })
 export class ReportesComponent {
-  reportUrl!: SafeResourceUrl;
+  private reportService = inject(ReportService);
+  private sanitizer = inject(DomSanitizer);
 
+  reportUrl: SafeResourceUrl | null = null;
   cargando = signal<boolean>(true);
+
+  private idSeleccionado = signal<string | null>(null);
+
+  // Lo que el componente reporte va a leer
+  reporteIdActual = this.idSeleccionado.asReadonly();
+
+  actualizarSeleccion(id: string) {
+    this.idSeleccionado.set(id);
+  }
+
+
+
+
 
   // Ejemplo de cómo apagar el loader
   generarReporte() {
@@ -30,56 +46,104 @@ export class ReportesComponent {
     }, 2000);
   }
 
-  constructor(private sanitizer: DomSanitizer) { }
-  ngOnInit() {
-    // 1. URL de tu Minimal API (el puente que creamos en .NET 8)
-    // Cambia el puerto si tu API usa uno distinto al 5000
-    const apiBaseUrl = "http://192.168.101.191:8080/Reports/browse/?/api/visor/reporte";
 
-    // 2. Nombre del reporte tal cual lo espera el endpoint {nombreReporte}
-    const nombreReporte = "01%20%C3%81rea%20Recibo/Control%20Recibo";
+  // DICCIONARIO: La llave debe ser IGUAL a lo que sale en tu console.log
+  private readonly CONFIG_REPORTES: Record<string, string> = {
+    'reporte-primerReporte': '/11%20Inventarios/Toma%20de%20Inventario/Log%20de%20Errores%20Toma%20de%20Inventario',
+    '14-2': '/11%20Inventarios/Toma%20de%20Inventario/Log%20de%20Errores%20Toma%20de%20Inventario',
+    // Si en consola sale la URL completa del sub.URL, ponla aquí como llave
+  };
+  constructor() {
 
-    // 3. Parámetros que quieres enviarle al reporte
-    // Nota: Ya no ponemos &rs:Command ni nada de eso, eso ya lo hace el Back
-    const clienteId = "123";
+    effect(() => {
+      // 1. Escuchamos el ID que viene del servicio
+      const idRecuperado = this.reportService.reporteIdActual();
+
+      console.log("📥 Visor de Reportes recibió:", idRecuperado);
+ 
+
+      if (idRecuperado) {
+        // 2. Buscamos la ruta técnica de SSRS en nuestro diccionario
+        const rutaSSRS = this.CONFIG_REPORTES[idRecuperado];
+        console.log("ID RECUPERADO: " +  this.CONFIG_REPORTES[idRecuperado]);
+        if (rutaSSRS) {
+          
+         // this.cargando.set(true);
+
+console.log("rut " + rutaSSRS);
 
 
-    /*
-    // Construimos la URL que apunta a TU API
-    //const urlFinal = `${apiBaseUrl}/${nombreReporte}?ClienteId=${clienteId}`;
-    const urlFinal = `${rute}&rs:Command=Render&rs:Format=HTML5`;*/
-    const rute = "http://192.168.101.191:8080/Reports?/report/11%20Inventarios/Toma%20de%20Inventario/Log%20de%20Errores%20Toma%20de%20Inventario";
+          // 3. Construimos la URL completa
+          const servidor = 'http://192.168.101.191:8080/ReportServer?';
+          const urlFinal = `${servidor}${rutaSSRS}&rs:Command=Render `;
+          console.log("url " + urlFinal);
+          
+
+          console.log("🚀 Cargando URL en iframe:", urlFinal);
+
+          // 4. Saneamos la URL para que el iframe la acepte
+          this.reportUrl = this.sanitizer.bypassSecurityTrustResourceUrl(urlFinal);
+        } else {
+          console.warn("⚠️ El ID recibido no está configurado en el diccionario del componente.");
+          this.reportUrl = null;
+        }
+      }
+    });
+
+  }
+
+
+
+  /*
+    ngOnInit() {
+      // 1. URL de tu Minimal API (el puente que creamos en .NET 8)
+      // Cambia el puerto si tu API usa uno distinto al 5000
+      const apiBaseUrl = "http://192.168.101.191:8080/Reports/browse/?/api/visor/reporte";
+  
+      // 2. Nombre del reporte tal cual lo espera el endpoint {nombreReporte}
+      const nombreReporte = "01%20%C3%81rea%20Recibo/Control%20Recibo";
+  
+      // 3. Parámetros que quieres enviarle al reporte
+      // Nota: Ya no ponemos &rs:Command ni nada de eso, eso ya lo hace el Back
+      const clienteId = "123";
+  
+  
+      /*
+      // Construimos la URL que apunta a TU API
+      //const urlFinal = `${apiBaseUrl}/${nombreReporte}?ClienteId=${clienteId}`;
+      const urlFinal = `${rute}&rs:Command=Render&rs:Format=HTML5`;*/
+  /*  const rute = "http://192.168.101.191:8080/Reports?/report/11%20Inventarios/Toma%20de%20Inventario/Log%20de%20Errores%20Toma%20de%20Inventario";
     /*
      const baseUrl = "http://192.168.101.191:8080/ReportServer?";
      const pathReporte = "/report/01%20%C3%81rea%20Recibo/Control%20Recibo";
      const comandos = "rs:Command=Render&rc:Toolbar=true";
      */
-    const baseUrl = "http://192.168.101.191:8080/ReportServer/Pages/ReportViewer.aspx?";
-    const pathReporte = "%2f01+Área+Recibo%2fControl+Recibo";
-    const comandos = "rs:Command=Render&rc:Toolbar=true";
-    const url1 = "http://192.168.101.191:8080/ReportServer?/11%20Inventarios/Toma%20de%20Inventario/Log%20de%20Errores%20Toma%20de%20Inventario 	";
+  /*const baseUrl = "http://192.168.101.191:8080/ReportServer/Pages/ReportViewer.aspx?";
+  const pathReporte = "%2f01+Área+Recibo%2fControl+Recibo";
+  const comandos = "rs:Command=Render&rc:Toolbar=true";
+  const url1 = "http://192.168.101.191:8080/ReportServer?/11%20Inventarios/Toma%20de%20Inventario/Log%20de%20Errores%20Toma%20de%20Inventario 	";
 
-    const urlFinal = baseUrl + encodeURI(pathReporte) + comandos;
-    //const urlFinal = `${rute}?rs:Command=Render&rc:Toolbar=false`;
-    console.log(urlFinal);
+  const urlFinal = baseUrl + encodeURI(pathReporte) + comandos;
+  //const urlFinal = `${rute}?rs:Command=Render&rc:Toolbar=false`;
+  console.log(urlFinal);
 
-    // 4. Sanitizamos la URL de nuestra propia API para el iframe
-    this.reportUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url1);
-  }
-  /*
-    ngOnInit() {
-  
-      const url =
-        "http://192.168.101.191:8080/Reports/?/api/reportes/ver" +
-        "&rs:Command=Render" +
-        "&rc:Toolbar=false" +
-        "&rc:Parameters=false" +
-        "&ClienteId=123";
-  
-      this.reportUrl =
-        this.sanitizer.bypassSecurityTrustResourceUrl(url);
-  
-    }*/
+  // 4. Sanitizamos la URL de nuestra propia API para el iframe
+  this.reportUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url1);
+}
+/*
+  ngOnInit() {
+ 
+    const url =
+      "http://192.168.101.191:8080/Reports/?/api/reportes/ver" +
+      "&rs:Command=Render" +
+      "&rc:Toolbar=false" +
+      "&rc:Parameters=false" +
+      "&ClienteId=123";
+ 
+    this.reportUrl =
+      this.sanitizer.bypassSecurityTrustResourceUrl(url);
+ 
+  }*/
 
 }
 
