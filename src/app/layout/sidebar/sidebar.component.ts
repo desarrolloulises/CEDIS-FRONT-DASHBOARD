@@ -210,7 +210,7 @@ export class SidebarComponent {
 
   notificarReporte(url: string) {
     // Aquí es donde "despiertas" al visor de reportes
-    console.log("📢 Sidebar: Notificando reporte con ID ->", url);
+   // console.log("📢 Sidebar: Notificando reporte con ID ->", url);
     this.reporteService.actualizarSeleccion(url);
   }
 

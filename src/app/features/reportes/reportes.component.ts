@@ -94,16 +94,16 @@ export class ReportesComponent {
       // 1. Escuchamos el ID que viene del servicio
       const idRecuperado = this.reportService.reporteIdActual();
 
-      console.log("📥 Visor de Reportes recibió:", idRecuperado);
+     // console.log("📥 Visor de Reportes recibió:", idRecuperado);
 
 
       if (idRecuperado) {
         // 2. Buscamos la ruta técnica de SSRS en nuestro diccionario
         const rutaSSRS = this.CONFIG_REPORTES[idRecuperado];
-        console.log("ID RECUPERADO: " + this.CONFIG_REPORTES[idRecuperado]);
+      //  console.log("ID RECUPERADO: " + this.CONFIG_REPORTES[idRecuperado]);
         if (rutaSSRS) {
           // this.cargando.set(true);
-          console.log("rut " + rutaSSRS);
+         // console.log("rut " + rutaSSRS);
           // 3. Construimos la URL completa
           const servidor = 'http://192.168.101.191:8080/ReportServer?';
           const urlFinal = `${servidor}${rutaSSRS}&rs:Command=Render `;
