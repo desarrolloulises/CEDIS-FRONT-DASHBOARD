@@ -31,7 +31,7 @@
           @if (sub.tipo === 'reporte') {
           <a [routerLink]="['/ver-reporte', sub.URL]" routerLinkActive="active"
             (click)="notificarReporte(sub.URL)"> {{ sub.Descripcion }}
-            {{ sub.Descripcion }}
+          
           </a>
           } @else {
           <a [routerLink]="[sub.URL]" routerLinkActive="active">

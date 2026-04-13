@@ -16,7 +16,7 @@ import { ReportService } from '../../services/ReportService';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })
-export class SidebarComponent { 
+export class SidebarComponent {
 
   public userRecivido = signal<string>(''); //recibiendo Usiuario
 
@@ -32,7 +32,7 @@ export class SidebarComponent {
 
   constructor(
     private datosService: DatosService,
-    private service: ProcesosCedisService, ) {
+    private service: ProcesosCedisService,) {
     // console.log(this.datosService.usuarioSignal());
   }
   private reporteService = inject(ReportService);
@@ -74,8 +74,12 @@ export class SidebarComponent {
     4: 'menu',
     5: 'menu-toma-inventario',
     13: 'reportes',
-
     14: 'panel',
+    15: 'calidad',
+    16: 'Control-de-Bahías',
+    17: 'Embarques',
+    18: 'Embarques',
+
     20: 'accesos',
 
     43: 'recibo'
@@ -88,9 +92,29 @@ export class SidebarComponent {
     '3-3': 'menu-embarque/programacion-embarque',
     '5-1': 'menu-embarque/marbetes-mantenimiento',
     '13-1': 'reporte/reporte-primerReporte',
-    '13-2': 'reporte/reporte-primerReporte',
+    '13-2': 'reporte/Recibo-sin-primer-o-segundo-escaneo',
+    '13-3': 'reporte/Resumen-Recibo-por-Orden',
+
     '14-1': 'panel/Ubicacion-provedores',
     '14-2': 'panel/Ubicacion-colores',
+
+    '15-1': 'reporte/Consulta-ASN-por-orden-de-compra',
+    '16-1': 'reporte/Control-de-Bahías',
+    '17-1': 'reporte/Cajas-Escaneadas-no-Embarcadas',
+    '17-2': 'reporte/Embarques-por-día',
+    '17-3': 'reporte/Errores-sin-1er-o-2do-Escaneo',
+    '17-4': 'reporte/Inventario-pendiente-para-embarque',
+    '17-5': 'reporte/Resumen-embarque-por-tienda',
+
+    '18-1': 'reporte/Historial-de-caja',
+    '18-2': 'reporte/Inventario-Antiguedad',
+    '18-3': 'reporte/Inventario-por-Proveedor-Estilo',
+    '18-4': 'reporte/Inventario-por-Ruta',
+
+    '19-1': 'reporte/Inventario-Físico-vs-Teórico',
+    '19-2': 'reporte/Inventario-Físico-vs-Teórico-Resumido-por-Estilo',
+    '19-3': 'reporte/Log-de-Errores-Toma-de-Inventario',
+    '19-4': 'reporte/Toma-de-inventario-físico',
 
     '20-1': 'accesos/Accesos',
     '20-2': 'accesos/Perfiles',

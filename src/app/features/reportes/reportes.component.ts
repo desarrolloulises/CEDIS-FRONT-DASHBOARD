@@ -49,7 +49,42 @@ export class ReportesComponent {
 
   // DICCIONARIO: La llave debe ser IGUAL a lo que sale en tu console.log
   private readonly CONFIG_REPORTES: Record<string, string> = {
-    'reporte-primerReporte': '/11%20Inventarios/Toma%20de%20Inventario/Log%20de%20Errores%20Toma%20de%20Inventario',
+
+    //Recibo
+    'reporte-primerReporte': '/01%20%C3%81rea%20Recibo/Control%20Recibo',
+    'Recibo-sin-primer-o-segundo-escaneo': '/01%20%C3%81rea%20Recibo/Recibo%20sin%20primer%20o%20segundo%20escaneo',
+    'Resumen-Recibo-por-Orden': '/01%20%C3%81rea%20Recibo/Resumen%20Recibo%20por%20Orden',
+
+    //Calidad
+    'Consulta-ASN-por-orden-de-compra': '/02%20%C3%81rea%20Calidad/Consulta%20ASN%20por%20orden%20de%20compra',
+
+    //Bahías
+    'Control-de-Bahías': '/03%20%C3%81rea%20Bah%C3%ADas/Control%20de%20Bah%C3%ADas',
+
+    //EMBARQUES
+    'Cajas-Escaneadas-no-Embarcadas': '/04%20%C3%81rea%20Embarques/Cajas%20Escaneadas%20no%20Embarcadas',
+    'Embarques-por-día': '/04%20%C3%81rea%20Embarques/Embarques%20por%20d%C3%ADa',
+    'Errores-sin-1er-o-2do-Escaneo': '/04%20%C3%81rea%20Embarques/Errores%20sin%201er%20o%202do%20Escaneo',
+    'Inventario-pendiente-para-embarque': '/04%20%C3%81rea%20Embarques/Inventario%20pendiente%20para%20embarque',
+    'Resumen-embarque-por-tienda': '/04%20%C3%81rea%20Embarques/Resumen%20embarque%20por%20tienda',
+
+    //Inventarios
+    'Historial-de-caja': '/11%20Inventarios/Historial%20de%20caja',
+    'Inventario-Antiguedad': '/11%20Inventarios/Inventario%20Antiguedad',
+    'Inventario-por-Proveedor-Estilo': '/11%20Inventarios/Inventario%20por%20Proveedor%20Estilo',
+    'Inventario-por-Ruta': '/11%20Inventarios/Inventario%20por%20Ruta',
+    //Toma de Inventario
+    'Inventario-Físico-vs-Teórico': '/11%20Inventarios/Toma%20de%20Inventario/Inventario%20F%C3%ADsico%20vs%20Te%C3%B3rico',
+    'Inventario-Físico-vs-Teórico-Resumido-por-Estilo': '/11%20Inventarios/Inventario%20por%20Proveedor%20Estilo',
+    'Log-de-Errores-Toma-de-Inventario': '/11%20Inventarios/Toma%20de%20Inventario/Log%20de%20Errores%20Toma%20de%20Inventario',
+    'Toma-de-inventario-físico': '/11%20Inventarios/Toma%20de%20Inventario/Toma%20de%20inventario%20f%C3%ADsico',
+    
+    
+
+
+    // 'reporte/control-Recibo':'/01%20%C3%81rea%20Recibo/Control%20Recibo',
+    // 'reporte-primerReporte': '/11%20Inventarios/Toma%20de%20Inventario/Log%20de%20Errores%20Toma%20de%20Inventario',
+    //  'reporte/control-Recibo':'/01%20%C3%81rea%20Recibo/Control%20Recibo',
     '14-2': '/11%20Inventarios/Toma%20de%20Inventario/Log%20de%20Errores%20Toma%20de%20Inventario',
     // Si en consola sale la URL completa del sub.URL, ponla aquí como llave
   };
@@ -60,27 +95,20 @@ export class ReportesComponent {
       const idRecuperado = this.reportService.reporteIdActual();
 
       console.log("📥 Visor de Reportes recibió:", idRecuperado);
- 
+
 
       if (idRecuperado) {
         // 2. Buscamos la ruta técnica de SSRS en nuestro diccionario
         const rutaSSRS = this.CONFIG_REPORTES[idRecuperado];
-        console.log("ID RECUPERADO: " +  this.CONFIG_REPORTES[idRecuperado]);
+        console.log("ID RECUPERADO: " + this.CONFIG_REPORTES[idRecuperado]);
         if (rutaSSRS) {
-          
-         // this.cargando.set(true);
-
-console.log("rut " + rutaSSRS);
-
-
+          // this.cargando.set(true);
+          console.log("rut " + rutaSSRS);
           // 3. Construimos la URL completa
           const servidor = 'http://192.168.101.191:8080/ReportServer?';
           const urlFinal = `${servidor}${rutaSSRS}&rs:Command=Render `;
-          console.log("url " + urlFinal);
-          
-
-          console.log("🚀 Cargando URL en iframe:", urlFinal);
-
+          //console.log("url " + urlFinal);
+          // console.log("🚀 Cargando URL en iframe:", urlFinal);
           // 4. Saneamos la URL para que el iframe la acepte
           this.reportUrl = this.sanitizer.bypassSecurityTrustResourceUrl(urlFinal);
         } else {
