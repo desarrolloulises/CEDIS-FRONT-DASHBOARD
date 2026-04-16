@@ -1,0 +1,12 @@
+<div class="visor-container " style="position: relative;">
+  <video #videoPlayer autoplay playsinline></video>
+  
+  <div class="guia-qr"></div>
+
+  <div class="controles">
+    <button class="btn-abrir" (click)="iniciarCamara()">Abrir Cámara</button>
+    <button class="btn-capturar" (click)="capturarYEnviar()">Escanear / Capturar</button>
+  </div>
+
+  <canvas #canvasInvisible style="display: none;"></canvas>
+</div>

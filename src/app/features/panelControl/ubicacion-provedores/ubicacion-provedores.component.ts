@@ -64,13 +64,13 @@ export class UbicacionProvedoresComponent {
     this.tipoAccionColor.set(null); // Reseteamos acciones de color al bloquear estructura
   }
 
-prepararSeleccionColor(tipo: 'pintar' | 'borrar') {
-  // Si estamos bloqueando estructura, solo permitimos activar "borrar"
-  // para que no se mezcle la pintura de proveedores con la de estructura.
-  //if (this.modoBloqueoEstructura() && tipo === 'pintar') return;
+  prepararSeleccionColor(tipo: 'pintar' | 'borrar') {
+    // Si estamos bloqueando estructura, solo permitimos activar "borrar"
+    // para que no se mezcle la pintura de proveedores con la de estructura.
+    //if (this.modoBloqueoEstructura() && tipo === 'pintar') return;
 
-  this.tipoAccionColor.set(tipo);
-}
+    this.tipoAccionColor.set(tipo);
+  }
 
   alCambiarInput(valor: string) {
     this.codigoInput.set(valor);
@@ -106,108 +106,121 @@ prepararSeleccionColor(tipo: 'pintar' | 'borrar') {
 
   // --- MOUSE EVENTS ---
 
-iniciarSeleccion(event: MouseEvent) {
-  // Solo iniciamos si hay un modo activo
-  if (!this.modoBloqueoEstructura() && !this.tipoAccionColor()) return;
+  iniciarSeleccion(event: MouseEvent) {
+    // Solo iniciamos si hay un modo activo
+    if (!this.modoBloqueoEstructura() && !this.tipoAccionColor()) return;
 
-  // IMPORTANTE: Detiene el arrastre nativo del navegador
-  event.preventDefault(); 
+    // IMPORTANTE: Detiene el arrastre nativo del navegador
+    event.preventDefault();
 
-  this.seleccionando.set(true);
-  
-  const containerRect = this.gridContainer.nativeElement.getBoundingClientRect();
-  this.startPos = { 
-    x: event.clientX - containerRect.left, 
-    y: event.clientY - containerRect.top 
-  };
-}
-
- moverSeleccion(event: MouseEvent) {
-  if (!this.seleccionando()) return;
-
-  // OPTIMIZACIÓN 1: Solo ejecutamos cuando el navegador esté listo para pintar
-  requestAnimationFrame(() => {
-    if (!this.seleccionando()) return; // Doble check por si soltó el mouse rápido
+    this.seleccionando.set(true);
 
     const containerRect = this.gridContainer.nativeElement.getBoundingClientRect();
-    
-    // Calculamos posiciones relativas al contenedor
-    const currentX = event.clientX - containerRect.left;
-    const currentY = event.clientY - containerRect.top;
-
-    const l = Math.min(this.startPos.x, currentX);
-    const t = Math.min(this.startPos.y, currentY);
-    const w = Math.abs(this.startPos.x - currentX);
-    const h = Math.abs(this.startPos.y - currentY);
-
-    // Actualizamos el recuadro visual
-    this.rectStyle.set({ 
-      left: `${l}px`, 
-      top: `${t}px`, 
-      width: `${w}px`, 
-      height: `${h}px`, 
-      display: 'block' 
-    });
-
-    this.calcularInterseccion(l, t, w, h);
-  });
-}
-
-calcularInterseccion(l: number, t: number, w: number, h: number) {
-  // OPTIMIZACIÓN 2: Evitamos buscar en TODO el documento, usamos solo el contenedor
-  const elementos = this.gridContainer.nativeElement.getElementsByClassName('celda');
-  const tocados = new Set<string>();
-
-  // Usamos un for tradicional, es más rápido que forEach en listas de nodos grandes
-  for (let i = 0; i < elementos.length; i++) {
-    const el = elementos[i] as HTMLElement;
-    
-    // OPTIMIZACIÓN 3: Usamos offsetLeft/Top que son más rápidos que getBoundingClientRect
-    const rLeft = el.offsetLeft;
-    const rTop = el.offsetTop;
-    const rRight = rLeft + el.offsetWidth;
-    const rBottom = rTop + el.offsetHeight;
-
-    // Lógica de colisión (AABB)
-    if (rLeft < l + w && rRight > l && rTop < t + h && rBottom > t) {
-      const id = el.getAttribute('data-id');
-      if (id) tocados.add(id);
-    }
+    this.startPos = {
+      x: event.clientX - containerRect.left,
+      y: event.clientY - containerRect.top
+    };
   }
 
-  // Comparamos si el set cambió para evitar actualizaciones de señal innecesarias
-  // (Angular ya maneja esto bien con Signals, pero es buena práctica)
-  this.seleccionActualVisual.set(tocados);
-}
+  moverSeleccion(event: MouseEvent) {
+    if (!this.seleccionando()) return;
 
- finalizarSeleccion() {
+    // OPTIMIZACIÓN 1: Solo ejecutamos cuando el navegador esté listo para pintar
+    requestAnimationFrame(() => {
+      if (!this.seleccionando()) return; // Doble check por si soltó el mouse rápido
+
+      const containerRect = this.gridContainer.nativeElement.getBoundingClientRect();
+
+      // Calculamos posiciones relativas al contenedor
+      const currentX = event.clientX - containerRect.left;
+      const currentY = event.clientY - containerRect.top;
+
+      const l = Math.min(this.startPos.x, currentX);
+      const t = Math.min(this.startPos.y, currentY);
+      const w = Math.abs(this.startPos.x - currentX);
+      const h = Math.abs(this.startPos.y - currentY);
+
+      // Actualizamos el recuadro visual
+      this.rectStyle.set({
+        left: `${l}px`,
+        top: `${t}px`,
+        width: `${w}px`,
+        height: `${h}px`,
+        display: 'block'
+      });
+
+      this.calcularInterseccion(l, t, w, h);
+    });
+  }
+
+  calcularInterseccion(l: number, t: number, w: number, h: number) {
+    // OPTIMIZACIÓN 2: Evitamos buscar en TODO el documento, usamos solo el contenedor
+    const elementos = this.gridContainer.nativeElement.getElementsByClassName('celda');
+    const tocados = new Set<string>();
+
+    // Usamos un for tradicional, es más rápido que forEach en listas de nodos grandes
+    for (let i = 0; i < elementos.length; i++) {
+      const el = elementos[i] as HTMLElement;
+
+      // OPTIMIZACIÓN 3: Usamos offsetLeft/Top que son más rápidos que getBoundingClientRect
+      const rLeft = el.offsetLeft;
+      const rTop = el.offsetTop;
+      const rRight = rLeft + el.offsetWidth;
+      const rBottom = rTop + el.offsetHeight;
+
+      // Lógica de colisión (AABB)
+      if (rLeft < l + w && rRight > l && rTop < t + h && rBottom > t) {
+        const id = el.getAttribute('data-id');
+        if (id) tocados.add(id);
+      }
+    }
+
+    // Comparamos si el set cambió para evitar actualizaciones de señal innecesarias
+    // (Angular ya maneja esto bien con Signals, pero es buena práctica)
+    this.seleccionActualVisual.set(tocados);
+  }
+
+  finalizarSeleccion() {
   if (!this.seleccionando()) return;
 
-  // 1. Identificamos si la intención es borrar
   const esModoBorrar = this.tipoAccionColor() === 'borrar';
 
-  // 2. Si estamos en Modo Bloqueo de Estructura (El botón de la llave/candado)
+  // --- 1. CAPA DE ESTRUCTURA (ROJO) ---
   if (this.modoBloqueoEstructura()) {
     this.celdasBloqueadasFisicas.update(setExistente => {
       const nuevoSet = new Set(setExistente);
-      
       this.seleccionActualVisual().forEach(id => {
         if (esModoBorrar) {
-          nuevoSet.delete(id); // <--- AQUÍ QUITA LA SELECCIÓN ROJA
+          nuevoSet.delete(id); 
         } else {
-          nuevoSet.add(id);    // <--- AQUÍ PONE LA SELECCIÓN ROJA
+          nuevoSet.add(id);
+          // Si bloqueamos estructura, limpiamos el color de proveedor para que no haya basura visual
+          this.mapaColoresProveedores.update(m => {
+            const nuevoM = new Map(m);
+            nuevoM.delete(id);
+            return nuevoM;
+          });
         }
       });
       return nuevoSet;
     });
   } 
-  // 3. Si NO estamos en modo bloqueo, manejamos los colores de proveedores
+  // --- 2. CAPA DE COLORES DE PROVEEDORES ---
   else {
     if (this.tipoAccionColor() === 'pintar') {
       this.mapaColoresProveedores.update(mapa => {
         const nuevoMapa = new Map(mapa);
+        
         this.seleccionActualVisual().forEach(id => {
-          nuevoMapa.set(id, this.colorActivo());
+          // VALIDACIÓN DE DISPONIBILIDAD
+          const estaBloqueadaFisica = this.celdasBloqueadasFisicas().has(id);
+          const yaTieneColorAsignado = nuevoMapa.has(id);
+
+          // SOLO PINTA SI: No es estructura Y no tiene ya un color de proveedor
+          if (!estaBloqueadaFisica && !yaTieneColorAsignado) {
+            nuevoMapa.set(id, this.colorActivo());
+          }
+          // Si no cumple, el código simplemente ignora el ID (Omitir)
         });
         return nuevoMapa;
       });
@@ -220,7 +233,7 @@ calcularInterseccion(l: number, t: number, w: number, h: number) {
     }
   }
 
-  // Limpieza final de estados visuales
+  // Limpieza de estados visuales del recuadro de selección
   this.seleccionando.set(false);
   this.seleccionActualVisual.set(new Set());
   this.rectStyle.update(s => ({ ...s, display: 'none' }));

@@ -89,6 +89,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/panelControl/catalogo-colores/catalogo-colores.component').then(m => m.CatalogoColoresComponent)
       },
 
+      //camara y qr
+      {
+        path: 'camaraQr/camaraQr',
+        loadComponent: () => import('./features/camara-qr/camara-qr.component').then(m => m.CamaraQrComponent)
+      },
+
 
 
       {

@@ -1,0 +1,46 @@
+.visor-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+  background: #000;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+video {
+  width: 100%;
+  display: block;
+}
+
+.guia-qr {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  border: 3px solid rgba(0, 255, 0, 0.5);
+  box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+}
+
+.controles {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+button {
+  padding: 12px 20px;
+  border-radius: 25px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-abrir { background: #555; color: white; }
+.btn-capturar { background: #28a745; color: white; }

@@ -45,11 +45,15 @@
       <div class="marquee-azul" [ngStyle]="rectStyle()"></div>
 
       <div class="grid-layout" [style.grid-template-columns]="'repeat(' + columnas() + ', 1fr)'">
-        @for (celda of celdas(); track celda.id) {
-        <div class="celda" [attr.data-id]="celda.id" [style.background-color]="obtenerColorCelda(celda.id)">
-          <span class="label-coordenada">{{ celda.label }}</span>
-        </div>
-        }
+       @for (celda of celdas(); track celda.id) {
+  <div class="celda" 
+       [attr.data-id]="celda.id" 
+       [style.background-color]="obtenerColorCelda(celda.id)"
+       [class.bloqueada]="celdasBloqueadasFisicas().has(celda.id)"
+       [class.ocupada]="mapaColoresProveedores().has(celda.id)">
+    <span class="label-coordenada">{{ celda.label }}</span>
+  </div>
+}
       </div>
     </div>
   </main>

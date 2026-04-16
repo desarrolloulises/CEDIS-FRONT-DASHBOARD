@@ -81,6 +81,7 @@ export class SidebarComponent {
     18: 'Embarques',
 
     20: 'accesos',
+    30: 'camaraQr',
 
     43: 'recibo'
   };
@@ -120,6 +121,9 @@ export class SidebarComponent {
     '20-2': 'accesos/Perfiles',
     '20-3': 'accesos/Accesos-perfil',
     '20-4': 'accesos/Accesos-Usuarios',
+
+    '30-1': 'camaraQr/camaraQr',
+
     '44-1': 'ver-reporte/44-1'
 
   };
