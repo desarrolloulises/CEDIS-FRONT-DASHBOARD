@@ -1,12 +1,14 @@
 /* Este es el contenedor principal dentro del componente hijo */
 .visor-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;    /* Centra horizontalmente los elementos internos */
-  justify-content: flex-start; /* Los pega a la parte superior */
-  width: 100%;            /* Ocupa todo el ancho disponible del padre */
-  margin: 0 auto;         /* Centra el bloque en el navegador */
-  padding-top: 15px;      /* Margen superior para que no choque con el borde */
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+  background: #000;
+  border-radius: 15px;
+  overflow: hidden;
+
+
 }
 
 /* La imagen capturada */
@@ -24,7 +26,7 @@
   display: flex;
   gap: 15px;
   margin-top: 20px;
-  width: 90%;
+  width: 40%;
   max-width: 400px;       /* Mismo ancho que la foto para que se vean alineados */
 }
 
@@ -39,9 +41,6 @@
 
 .btn-repetir { background-color: #6c757d; color: white; }
 .btn-confirmar { background-color: #28a745; color: white; }
-
-
-
 
 .visor-wrapper {
   display: flex;
@@ -100,4 +99,66 @@
   color: white;
   font-size: 16px;
   text-transform: uppercase;
+}
+
+
+
+
+
+.visor-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+  background: #000;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+video {
+  width: 100%;
+  display: block;
+}
+
+.guia-qr {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  border: 3px solid rgba(0, 255, 0, 0.5);
+  box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+}
+
+.controles {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+button {
+  padding: 12px 20px;
+  border-radius: 25px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-abrir { background: #555; color: white; }
+.btn-capturar { background: #28a745; color: white; }
+
+.btn-switch {
+  background-color: #f39c12; /* Color naranja para diferenciarlo */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 0 5px;
 }

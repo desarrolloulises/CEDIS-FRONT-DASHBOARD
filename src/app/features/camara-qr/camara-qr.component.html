@@ -1,26 +1,67 @@
-<div class="contenedor-principal">
-
-  <div class="visor-container" style="position: relative;" *ngIf="!fotoCapturadaUrl">
-    <video #videoPlayer autoplay playsinline></video>
-    
-    <div class="guia-qr"></div>
-
-    <div class="controles">
-      <button class="btn-abrir" (click)="iniciarCamara()">Abrir Cámara</button>
-      <button class="btn-capturar" (click)="soloCapturar()">Capturar Foto</button>
+<div class="dashboard-layout">
+  <!-- Columna Izquierda -->
+  <aside class="columna-labels">
+    <div class="card-info" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+      <span class="icon">📋</span>
+      <div class="textos">
+        <label>Referencia {{i}}</label>
+        <span>Dato informativo</span>
+      </div>
     </div>
-  </div>
+  </aside>
 
-  <app-foto-visor 
-    *ngIf="fotoCapturadaUrl" 
-    [imageSrc]="fotoCapturadaUrl"
-    (onRetry)="resetearTodo()"
-    (onConfirm)="enviarFotoServidor()"
-    >
-  </app-foto-visor>
+  <!-- Centro -->
+  <main class="desarrollo-angular">
+    <div class="contenedor-principal">
+      <div class="visor-container" *ngIf="!fotoCapturadaUrl">
 
-  
+        <!-- NUEVO: Selector de Cámara -->
+        <div class="selector-dispositivo" *ngIf="listaCamaras.length > 1">
+          <select (change)="cambiarDispositivo($event)">
+            <option value="" disabled selected>Seleccionar Cámara</option>
+            <option *ngFor="let camara of listaCamaras" [value]="camara.deviceId">
+              {{ camara.label || 'Cámara ' + (listaCamaras.indexOf(camara) + 1) }}
+            </option>
+          </select>
+        </div>
 
-  <canvas #canvasInvisible style="display: none;"></canvas>
+        <video #videoPlayer autoplay playsinline></video>
+        <div class="guia-qr"></div>
 
+        <!-- BOTONES RECUPERADOS -->
+        <div class="controles">
+          <button class="btn-abrir" (click)="iniciarCamara()">Abrir Cámara</button>
+          <button class="btn-capturar" (click)="soloCapturar()">Capturar Foto</button>
+        </div>
+      </div>
+
+      <app-foto-visor *ngIf="fotoCapturadaUrl" [imageSrc]="fotoCapturadaUrl" (onRetry)="resetearTodo()"
+        (onConfirm)="enviarFotoServidor()">
+      </app-foto-visor>
+
+      <canvas #canvasInvisible style="display: none;"></canvas>
+    </div>
+
+    <!-- Labels Inferiores -->
+    <div class="labels-inferiores">
+      <div class="card-info" *ngFor="let i of [1,2,3,4,5,6]">
+        <span class="icon">ℹ️</span>
+        <div class="textos">
+          <label>Label Info {{i}}</label>
+          <span>Dato informativo</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Columna Derecha -->
+  <aside class="columna-labels">
+    <div class="card-info" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+      <span class="icon">📊</span>
+      <div class="textos">
+        <label>Estado {{i}}</label>
+        <span>Valor actual</span>
+      </div>
+    </div>
+  </aside>
 </div>
