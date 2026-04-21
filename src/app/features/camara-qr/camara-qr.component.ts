@@ -1,11 +1,12 @@
 import { Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { FotoVisorComponent } from '../foto-visor/foto-visor.component';
 
 @Component({
   selector: 'app-camara-qr',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FotoVisorComponent],
   templateUrl: './camara-qr.component.html',
   styleUrl: './camara-qr.component.css'
 })
@@ -15,13 +16,19 @@ export class CamaraQrComponent {
   @ViewChild('fotoCapturada') fotoCapturada!: ElementRef<HTMLImageElement>;
 
   private http = inject(HttpClient);
-  private stream: MediaStream | null = null;
+  //private stream: MediaStream | null = null;
+  // Referencias y estados
+  fotoCapturadaUrl: string | null = null;
+  blobTemporal: Blob | null = null;
+
+  // Define el tipo correctamente para que reconozca .deviceId
+  dispositivosVideo: MediaDeviceInfo[] = [];
+  indiceCamaraActual: number = 0;
+  stream: MediaStream | null = null;
 
   // IMPORTANTE: Cambia esta IP por la de tu servidor local
   private readonly API_URL = 'http://192.168.101.10:82/captura';
-
-  async iniciarCamara() {
-    // Verificamos si el navegador permite usar la cámara
+  async iniciarCamara(deviceId?: string) {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       alert("Tu navegador bloqueó la cámara por falta de HTTPS o conexión segura.");
       return;
@@ -37,74 +44,129 @@ export class CamaraQrComponent {
       console.error("Error al abrir cámara:", err);
     }
 
-
-    // Reset de la interfaz
-  this.fotoCapturada.nativeElement.style.display = 'none';
-  this.videoElement.nativeElement.style.display = 'block'
+    // ELIMINAR las líneas de 'this.fotoCapturada.nativeElement' de aquí, 
+    // ya que el *ngIf del HTML se encargará de mostrar/ocultar.
   }
 
-  capturarYEnviar() {
+  // RENOMBRAR O ACTUALIZAR: Esta función solo captura localmente
+  soloCapturar() {
     const video = this.videoElement.nativeElement;
     const canvas = this.canvasElement.nativeElement;
     const context = canvas.getContext('2d');
-    const imgPreview = this.fotoCapturada.nativeElement; // Referencia a la imagen
 
-    if (context) {
-      // --- AQUÍ DEFINES LA RESOLUCIÓN DEL RECORTE ---
+    if (context && video.videoWidth > 0) {
       const anchoRecorte = 400;
-      const altoRecorte = 400; 
+      const altoRecorte = 400;
 
       canvas.width = anchoRecorte;
       canvas.height = altoRecorte;
 
-      // Calculamos el centro para el recorte real
       const sx = (video.videoWidth - anchoRecorte) / 2;
       const sy = (video.videoHeight - altoRecorte) / 2;
 
-      // --- AQUÍ SE HACE EL RECORTE REAL ---
       context.drawImage(video, sx, sy, anchoRecorte, altoRecorte, 0, 0, anchoRecorte, altoRecorte);
 
+      // 1. Guardamos la URL para pasarle al componente HIJO
+      this.fotoCapturadaUrl = canvas.toDataURL('image/jpeg');
 
-      // ========================================================
-      // 🔥 PASO PARA PINTAR LA FOTO EN PANTALLA 🔥
-      // ========================================================
-      // Convertimos el contenido del canvas a una URL de imagen
-      const dataUrl = canvas.toDataURL('image/jpeg');
-
-      // Asignamos la imagen y la mostramos
-      imgPreview.src = dataUrl;
-      imgPreview.style.display = 'block';
-      video.style.display = 'none'; // Opcional: ocultas el video para que no gaste recursos
-      // ========================================================
-
-
-
-      // --- AQUÍ CONTROLAS CALIDAD Y PESO ---
+      // 2. Guardamos el BLOB para cuando se confirme el envío
       canvas.toBlob((blob) => {
         if (blob) {
-          // Log para que veas el peso en la consola (F12)
-          console.log(`Peso final: ${(blob.size / 1024).toFixed(2)} KB`);
-
-          const formData = new FormData();
-          formData.append('foto', blob, 'captura.jpg');
-
-          // Envío al servidor .92 (que luego lo mandará al .24)
-          this.http.post(this.API_URL, formData).subscribe({
-            next: (res: any) => {
-              // El ?. previene el error de "null" que tenías
-              alert("¡Guardado! " + (res?.mensaje || res?.Mensaje));
-            },
-            error: (err) => alert("Error al subir")
-          });
+          this.blobTemporal = blob;
         }
-      }, 'image/jpeg', 0.50); // 0.80 es el 80% de calidad
+      }, 'image/jpeg', 0.50);
+    } else {
+      alert("La cámara aún no carga el video o no está activa.");
     }
   }
 
-  // Limpieza al cerrar el componente
-  ngOnDestroy() {
-    if (this.stream) {
-      this.stream.getTracks().forEach(track => track.stop());
+  // NUEVA FUNCIÓN: Se ejecuta cuando el hijo emite (onConfirm)
+  enviarFotoServidor() {
+    if (!this.blobTemporal) return;
+
+    const formData = new FormData();
+    formData.append('foto', this.blobTemporal, 'captura.jpg');
+
+    this.http.post(this.API_URL, formData).subscribe({
+      next: (res: any) => {
+        alert("¡Guardado! " + (res?.mensaje || res?.Mensaje || "OK"));
+        this.resetearTodo(); // Regresamos a la cámara
+      },
+      error: (err) => {
+        console.error(err);
+        alert("Error al subir");
+      }
+    });
+  }
+
+  // NUEVA FUNCIÓN: Se ejecuta cuando el hijo emite (onRetry) o tras guardar
+  resetearTodo() {
+    this.fotoCapturadaUrl = null;
+    this.blobTemporal = null;
+
+    // Pequeño delay para que Angular renderice de nuevo el elemento <video>
+    setTimeout(() => {
+      if (this.stream && this.videoElement) {
+        this.videoElement.nativeElement.srcObject = this.stream;
+      }
+    }, 100);
+  }
+
+  // ... (ngOnDestroy se queda igual)
+
+
+  // Esta función procesa el archivo seleccionado desde el visor
+  procesarArchivoElegido(file: File) {
+    this.blobTemporal = file; // Guardamos el archivo directamente como blob
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      // Actualizamos la URL para que el componente hijo muestre la nueva imagen
+      this.fotoCapturadaUrl = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  ////-----------------------------------------------------------------------------------
+
+  async listarCamaras() {
+    try {
+      // Pedimos permiso primero, si no, enumerateDevices sale vacío
+      const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const dispositivos = await navigator.mediaDevices.enumerateDevices();
+
+      this.dispositivosVideo = dispositivos.filter(d => d.kind === 'videoinput');
+
+      // Cerramos el stream temporal
+      tempStream.getTracks().forEach(track => track.stop());
+    } catch (err) {
+      console.error("No se pudieron listar las cámaras:", err);
     }
+  }
+
+  // Función para el botón del icono de cambio
+  async cambiarCamara() {
+    // Verificamos que tengamos cámaras y que el arreglo no esté vacío
+    if (this.dispositivosVideo && this.dispositivosVideo.length > 1) {
+
+      // 1. Calculamos el siguiente índice
+      this.indiceCamaraActual = (this.indiceCamaraActual + 1) % this.dispositivosVideo.length;
+
+      // 2. Accedemos de forma segura al ID
+      const dispositivo = this.dispositivosVideo[this.indiceCamaraActual];
+
+      if (dispositivo && dispositivo.deviceId) {
+        const nuevoId = dispositivo.deviceId;
+        console.log("Cambiando a cámara:", dispositivo.label || nuevoId);
+
+        // 3. Llamamos a iniciarCamara con el ID específico
+        await this.iniciarCamara(nuevoId);
+      }
+    }
+  }
+
+  // Importante: Llamar a listarCamaras al iniciar
+  async ngOnInit() {
+    await this.listarCamaras();
   }
 }

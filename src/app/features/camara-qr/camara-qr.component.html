@@ -1,12 +1,26 @@
-<div class="visor-container " style="position: relative;">
-  <video #videoPlayer autoplay playsinline></video>
-  
-  <div class="guia-qr"></div>
+<div class="contenedor-principal">
 
-  <div class="controles">
-    <button class="btn-abrir" (click)="iniciarCamara()">Abrir Cámara</button>
-    <button class="btn-capturar" (click)="capturarYEnviar()">Escanear / Capturar</button>
+  <div class="visor-container" style="position: relative;" *ngIf="!fotoCapturadaUrl">
+    <video #videoPlayer autoplay playsinline></video>
+    
+    <div class="guia-qr"></div>
+
+    <div class="controles">
+      <button class="btn-abrir" (click)="iniciarCamara()">Abrir Cámara</button>
+      <button class="btn-capturar" (click)="soloCapturar()">Capturar Foto</button>
+    </div>
   </div>
 
+  <app-foto-visor 
+    *ngIf="fotoCapturadaUrl" 
+    [imageSrc]="fotoCapturadaUrl"
+    (onRetry)="resetearTodo()"
+    (onConfirm)="enviarFotoServidor()"
+    >
+  </app-foto-visor>
+
+  
+
   <canvas #canvasInvisible style="display: none;"></canvas>
+
 </div>

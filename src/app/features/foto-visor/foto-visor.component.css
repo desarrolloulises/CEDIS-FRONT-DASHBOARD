@@ -1,0 +1,103 @@
+/* Este es el contenedor principal dentro del componente hijo */
+.visor-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;    /* Centra horizontalmente los elementos internos */
+  justify-content: flex-start; /* Los pega a la parte superior */
+  width: 100%;            /* Ocupa todo el ancho disponible del padre */
+  margin: 0 auto;         /* Centra el bloque en el navegador */
+  padding-top: 15px;      /* Margen superior para que no choque con el borde */
+}
+
+/* La imagen capturada */
+.foto-previa {
+  width: 90%;             /* Se adapta al ancho de la pantalla móvil */
+  max-width: 400px;       /* No permite que se haga gigante en PC */
+  border: 4px solid #ffffff;
+  border-radius: 12px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+  object-fit: contain;    /* Asegura que la foto no se deforme */
+}
+
+/* Contenedor de los botones */
+.controles-visor {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+  width: 90%;
+  max-width: 400px;       /* Mismo ancho que la foto para que se vean alineados */
+}
+
+.btn {
+  flex: 1;                /* Hace que ambos botones midan lo mismo */
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-repetir { background-color: #6c757d; color: white; }
+.btn-confirmar { background-color: #28a745; color: white; }
+
+
+
+
+.visor-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  padding: 20px 10px;
+}
+
+.foto-previa {
+  width: 90%;
+  max-width: 380px;
+  border: 4px solid #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  margin-bottom: 20px;
+}
+
+.controles-visor {
+  width: 90%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fila-cambio {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 14px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn:active { opacity: 0.7; }
+
+/* Botones de Cámara y Galería */
+.btn-secundario {
+  flex: 1;
+  background-color: #495057;
+  color: white;
+}
+
+/* Botón de Confirmar (Destacado) */
+.btn-confirmar {
+  width: 100%;
+  background-color: #28a745;
+  color: white;
+  font-size: 16px;
+  text-transform: uppercase;
+}

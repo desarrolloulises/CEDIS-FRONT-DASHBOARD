@@ -1,0 +1,20 @@
+<div class="visor-wrapper">
+  <img [src]="imageSrc" class="foto-previa" alt="Vista previa">
+
+  <div class="controles-visor">
+    <div class="fila-cambio">
+      <button type="button" class="btn btn-secundario" (click)="onRetry.emit()">
+        📸 Cámara
+      </button>
+      <button type="button" class="btn btn-secundario" (click)="fileInput.click()">
+        📁 Galería
+      </button>
+    </div>
+
+    <button type="button" class="btn btn-confirmar" (click)="onConfirm.emit()">
+      ✅ Confirmar y Guardar
+    </button>
+  </div>
+
+  <input #fileInput type="file" accept="image/*" style="display: none" (change)="onFileChange($event)">
+</div>
