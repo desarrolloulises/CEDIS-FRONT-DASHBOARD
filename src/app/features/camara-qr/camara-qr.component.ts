@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FotoVisorComponent } from '../foto-visor/foto-visor.component';
@@ -12,7 +12,7 @@ import jsQR from 'jsqr';
   templateUrl: './camara-qr.component.html',
   styleUrl: './camara-qr.component.css'
 })
-export class CamaraQrComponent {
+export class CamaraQrComponent implements OnInit, OnDestroy {
   @ViewChild('videoPlayer') videoElement!: ElementRef<HTMLVideoElement>;
   @ViewChild('canvasInvisible') canvasElement!: ElementRef<HTMLCanvasElement>;
   @ViewChild('fotoCapturada') fotoCapturada!: ElementRef<HTMLImageElement>;
@@ -37,6 +37,25 @@ export class CamaraQrComponent {
 
   private scanning: boolean = false; // Controla el bucle
   public qrDetectado: boolean = false; // Evita lecturas repetidas
+
+
+  // 3. El método debe escribirse exactamente así
+  ngOnDestroy(): void {
+    // Detenemos el bucle de jsQR primero
+    this.scanning = false;
+
+    if (this.stream) {
+      // Obtenemos todas las pistas de video de la cámara externa
+      const tracks = this.stream.getTracks();
+
+      tracks.forEach(track => {
+        track.stop(); // <--- ESTO APAGA EL FOCO/LUZ DE LA CÁMARA
+      });
+
+      this.stream = null; // Limpiamos la referencia de memoria
+      console.log("Hardware de cámara liberado correctamente");
+    }
+  }
 
   // IMPORTANTE: Cambia esta IP por la de tu servidor local
   private readonly API_URL = 'http://192.168.101.10:82/captura';
@@ -84,46 +103,39 @@ export class CamaraQrComponent {
 
 
   async iniciarCamara(deviceId?: string) {
-    /*  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert("Tu navegador bloqueó la cámara por falta de HTTPS o conexión segura.");
-        return;
-      }
-  */
-    // DIFERENCIA 1: Detener la cámara anterior para liberar el recurso
+    // 1. Detener cualquier stream previo para liberar el hardware
     if (this.stream) {
       this.stream.getTracks().forEach(track => track.stop());
     }
+
+    // 2. Definir las reglas (Prioriza la trasera con 'environment')
     const constraints = {
-      video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'environment' },
+      video: deviceId
+        ? { deviceId: { exact: deviceId } }
+        : { facingMode: 'environment' }, // Si no hay ID, usa la trasera
       audio: false
     };
 
     try {
+      // 3. UNA SOLA LLAMADA al dispositivo
       this.stream = await navigator.mediaDevices.getUserMedia(constraints);
       this.videoElement.nativeElement.srcObject = this.stream;
+
+      // 4. Configurar el evento de inicio cuando el video cargue
+      this.videoElement.nativeElement.onloadedmetadata = () => {
+        this.videoElement.nativeElement.play(); // Asegura que el video inicie
+        this.scanning = true;      // Encendemos bandera de bucle
+        this.qrDetectado = false;  // Reseteamos detección
+        this.escanearAutomatico(); // Iniciamos jsQR
+      };
+
+      // Opcional: Actualizar tu lista de cámaras disponibles
+      await this.listarDispositivos();
+
     } catch (err) {
-      console.error("Error:", err);
+      console.error("Error al iniciar cámara:", err);
+      alert("No se pudo acceder a la cámara trasera. Revisa los permisos.");
     }
-
-    // ELIMINAR las líneas de 'this.fotoCapturada.nativeElement' de aquí, 
-    // ya que el *ngIf del HTML se encargará de mostrar/ocultar.
-
-try {
-    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
-    this.videoElement.nativeElement.srcObject = this.stream;
-    
-    // IMPORTANTE: Cuando el video esté listo, empezamos a escanear
-    this.videoElement.nativeElement.onloadedmetadata = () => {
-      this.scanning = true;
-      this.qrDetectado = false; // Permitimos lectura nueva
-      this.escanearAutomatico();
-    };
-
-  } catch (err) {
-    console.error("Error al iniciar cámara", err);
-  }
-
-
   }
 
   soloCapturar() {
