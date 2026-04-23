@@ -20,11 +20,49 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
     </div>   
   `,
   styles: [`
-    .visor-overlay { background: rgba(0,0,0,0.8); padding: 20px; border-radius: 15px; }
-    .img-preview { width: 100%; border-radius: 10px; border: 2px solid white; }
-    .botones { display: flex; gap: 10px; margin-top: 15px; justify-content: center; }
-    .btn-retry { background: #6c757d; color: white; border: none; padding: 10px; border-radius: 5px; }
-    .btn-confirm { background: #28a745; color: white; border: none; padding: 10px; border-radius: 5px; }
+    .visor-container-unificado { 
+      position: relative;
+      width: 100%;
+      max-width: 420px; /* Ajusta al mismo valor que tu cámara */
+      aspect-ratio: 4 / 3; 
+      background: #000;
+      border-radius: 12px;
+      border: 4px solid #fff; /* Misma línea blanca que la cámara */
+      overflow: hidden;
+      margin: auto;
+    }
+
+    .img-preview-unificada { 
+      width: 100%; 
+      height: 100%; 
+      object-fit: cover; /* Para que llene el cuadro igual que el video */
+    }
+
+    /* Posicionamos los botones EXACTAMENTE donde están los de la cámara */
+    .controles-unificados { 
+      position: absolute; 
+      bottom: 15px; 
+      left: 0; 
+      right: 0; 
+      display: flex; 
+      gap: 10px; 
+      justify-content: center; 
+      z-index: 50; 
+    }
+
+    .btn-retry, .btn-confirm { 
+      padding: 8px 16px; 
+      font-size: 0.9rem; 
+      border-radius: 4px; 
+      border: none; 
+      font-weight: bold;
+      cursor: pointer;
+      min-width: 110px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .btn-retry { background: #6c757d; color: white; }
+    .btn-confirm { background: #28a745; color: white; }
   `]
 })
 export class FotoVisorComponent {

@@ -1,13 +1,11 @@
 /* Contenedor principal: Ocupa toda la pantalla sin scroll */
 .dashboard-layout {
   display: grid;
-  grid-template-columns: 280px 1fr 280px;
-  gap: 15px;
-  padding: 15px;
-  height: 100vh;
-  box-sizing: border-box;
-  background-color: #f0f2f5;
-  overflow: hidden;
+  /* minmax asegura que no se rompa en pantallas pequeñas */
+  grid-template-columns: minmax(220px, 280px) 1fr minmax(220px, 280px);
+  gap: 12px;
+  padding: 10px;
+  background-color: #f4f7f9; /* Un gris azulado más moderno */
 }
 
 /* Columna Central: Divide espacio entre cámara y labels inferiores */
@@ -86,18 +84,20 @@ video {
   height: 100%;
 }
 
+/* Mejora de las tarjetas laterales */
 .card-info {
-  background: white;
-  border-radius: 8px;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-left: 4px solid #007bff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 12px;
+  border-left: 5px solid #007bff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+  transition: transform 0.2s;
 }
 
-
+.card-info:hover {
+  transform: translateY(-2px); /* Feedback visual en PC */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+}
 
 
 
@@ -123,11 +123,11 @@ video {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 200px;
-  height: 200px;
-  border: 3px solid rgba(0, 255, 0, 0.5);
-  box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
+  width: 220px;
+  height: 220px;
+  border: 2px dashed #00ff00;
+  box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.4); /* Oscurece el resto del video */
+  border-radius: 8px;
 }
 
 .controles {

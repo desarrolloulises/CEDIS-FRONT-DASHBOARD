@@ -95,6 +95,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/camara-qr/camara-qr.component').then(m => m.CamaraQrComponent)
       },
 
+      //registro-transportista
+      {
+        path: 'registroTransportista',
+        loadComponent: () => import('./features/transportista/registro-transportista/registro-transportista.component').then(m => m.RegistroTransportistaComponent)
+      },
+
 
 
       {
