@@ -1,0 +1,27 @@
+<div
+  class="toast"
+  [class.toast--success]="tipo === 'success'"
+  [class.toast--error]="tipo === 'error'"
+  role="alert"
+  aria-live="assertive">
+
+  <i
+    class="toast__icon ti"
+    [class.ti-circle-check]="tipo === 'success'"
+    [class.ti-alert-circle]="tipo === 'error'"
+    aria-hidden="true">
+  </i>
+
+  <div class="toast__body">
+    <p class="toast__titulo">{{ titulo }}</p>
+    <p class="toast__mensaje">{{ mensaje }}</p>
+  </div>
+
+  <button
+    class="toast__cerrar"
+    (click)="cerrar.emit()"
+    aria-label="Cerrar notificación">
+    ✕
+  </button>
+
+</div>

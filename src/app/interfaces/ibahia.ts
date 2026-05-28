@@ -82,4 +82,3 @@ export interface IReporteParams {
   carpeta: string;
   reporte: string;
 }
-

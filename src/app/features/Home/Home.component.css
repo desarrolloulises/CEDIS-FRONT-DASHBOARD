@@ -1,0 +1,95 @@
+.home-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  padding: var(--space-xl);
+  min-height: 100%;
+  background-color: var(--bg-body);
+}
+
+/* ── Hero ── */
+.home-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--primario);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl) calc(var(--space-xl) + 8px);
+  position: relative;
+  overflow: hidden;
+  min-height: 160px;
+}
+
+.hero-left {
+  position: relative;
+  z-index: 1;
+  max-width: 520px;
+}
+
+.hero-fecha {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: capitalize;
+  letter-spacing: 0.5px;
+  margin: 0 0 8px;
+}
+
+.hero-titulo {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 10px;
+  line-height: 1.2;
+}
+
+.hero-titulo span {
+  color: #6bb8f0;
+}
+
+.hero-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+}
+
+/* Decoración geométrica */
+.hero-deco {
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 220px;
+  height: 220px;
+  pointer-events: none;
+}
+
+.deco-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.deco-ring--1 { width: 180px; height: 180px; }
+.deco-ring--2 { width: 130px; height: 130px; border-color: rgba(255,255,255,0.12); }
+.deco-ring--3 { width: 80px;  height: 80px;  border-color: rgba(255,255,255,0.16); }
+
+.deco-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 42px;
+  color: rgba(255, 255, 255, 0.12);
+}
+
+/* ── Section ── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+

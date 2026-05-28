@@ -1,0 +1,55 @@
+<app-modal
+  title="Registro por QR"
+  [visible]="modalVisible"
+  (close)="cerrar()">
+
+  <div class="modal-wrapper">
+
+    <app-loading-spinner
+      [visible]="loading()"
+      texto="Registrando...">
+    </app-loading-spinner>
+
+    <div class="modal-body-curp">
+
+      <app-input
+        placeholder="Ingrese CURP"
+        [(value)]="curp"
+        size="sm"
+        (keyup.enter)="registrar()">
+      </app-input>
+
+    </div>
+
+    <div class="modal-footer-curp">
+
+      <app-button
+        label="Cancelar"
+        type="ghost"
+        size="sm"
+        [disabled]="loading()"
+        (click)="cerrar()">
+      </app-button>
+
+      <app-button
+        label="Registrar"
+        type="primary"
+        size="sm"
+        [disabled]="loading()"
+        (click)="registrar()">
+      </app-button>
+
+    </div>
+
+  </div>
+
+</app-modal>
+
+@if (toast) {
+  <app-toast
+    [tipo]="toast.tipo"
+    [titulo]="toast.titulo"
+    [mensaje]="toast.mensaje"    
+    (cerrar)="toast = null">
+  </app-toast>
+}

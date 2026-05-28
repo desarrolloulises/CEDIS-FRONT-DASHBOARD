@@ -1,0 +1,141 @@
+<div class="form-wrapper">
+
+  <app-loading-spinner [visible]="loadingGuardar()" texto="Registrando cita...">
+  </app-loading-spinner>
+
+  <div class="form-card">
+
+    <!-- HEADER -->
+    <div class="form-header">
+
+      <div class="form-title">
+        Agregar cita
+      </div>
+
+      <app-button label="Buscar por CURP" type="secondary" size="sm" (click)="modalCurpVisible = true">
+      </app-button>
+
+    </div>
+
+    <!-- GRID -->
+    <div class="form-grid">
+
+      <!-- Tipo ingreso -->
+      <app-select placeholder="Seleccione tipo" [value]="form.tipo" [options]="tiposIngresoOptions" size="sm"
+        (valueChange)="onTipoChange($event)">
+      </app-select>
+
+      <!-- Proveedor -->
+      <ng-container *ngIf="esProveedor">
+
+        <app-input placeholder="ID Proveedor" [(value)]="form.idProveedor" size="sm" (blur)="buscarProveedor()">
+        </app-input>
+
+        <app-input placeholder="Empresa / Razón Social" [(value)]="form.razonSocial" size="sm"
+          [disabled]="loadingProveedor()">
+        </app-input>
+
+      </ng-container>
+
+      <!-- Razón social libre -->
+      <app-input *ngIf="!esProveedor" placeholder="Razón Social" [(value)]="form.razonSocial" size="sm">
+      </app-input>
+
+      <!-- Nombre -->
+      <app-input placeholder="Nombre" [(value)]="form.nombre" size="sm" [disabled]="camposCurpBloqueados()">
+      </app-input>
+
+      <!-- Apellido paterno -->
+      <app-input placeholder="Apellido paterno" [(value)]="form.apellidoPaterno" size="sm"
+        [disabled]="camposCurpBloqueados()">
+      </app-input>
+
+      <!-- Apellido materno -->
+      <app-input placeholder="Apellido materno" [(value)]="form.apellidoMaterno" size="sm"
+        [disabled]="camposCurpBloqueados()">
+      </app-input>
+
+      <!-- CURP -->
+      <app-input placeholder="CURP" [(value)]="form.curp" size="sm" [disabled]="camposCurpBloqueados()"
+        (valueChange)="desbloquearCamposCurp()">
+      </app-input>
+
+      <!-- PLACAS -->
+      <app-input placeholder="Placas" [(value)]="form.placas" size="sm">
+      </app-input>
+
+      <!-- Tipo unidad -->
+      <app-select placeholder="Tipo de unidad" [value]="form.tipoUnidad" [options]="tiposUnidadOptions" size="sm"
+        (valueChange)="onTipoUnidadChange($event)">
+      </app-select>
+
+    </div>
+
+    <!-- OPCIONES -->
+    <div class="form-options">
+
+      <!-- Imprimir -->
+      <label class="checkbox-row">
+
+        <input type="checkbox" [(ngModel)]="form.imprimir">
+
+        <span>
+          ¿Imprimir?
+        </span>
+
+      </label>
+
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="form-actions">
+
+      <app-button label="Cancelar" type="ghost" size="sm" (click)="cerrar.emit(false)">
+      </app-button>
+
+      <app-button label="Confirmar" type="primary" size="sm" [disabled]="loadingGuardar()" (click)="guardar()">
+      </app-button>
+
+    </div>
+
+  </div>
+
+  <!-- MODAL CURP -->
+  <app-modal title="Buscar operador" [visible]="modalCurpVisible" (close)="cerrarModal()">
+
+    <div class="modal-wrapper">
+
+      <app-loading-spinner [visible]="loadingCurp()" texto="Consultando CURP...">
+      </app-loading-spinner>
+
+      <div class="modal-body-curp">
+
+        <app-input placeholder="Ingrese CURP" [(value)]="curpBusqueda" size="sm">
+        </app-input>
+
+      </div>
+
+      <div class="modal-footer-curp">
+
+        <app-button label="Cancelar" type="ghost" size="sm" [disabled]="loadingCurp()"
+          (click)="modalCurpVisible = false">
+        </app-button>
+
+        <app-button label="Consultar" type="primary" size="sm" [disabled]="loadingCurp()" (click)="consultarCurp()">
+        </app-button>
+
+      </div>
+
+    </div>
+
+  </app-modal>
+
+  @if (toast) {
+
+  <app-toast [tipo]="toast.tipo" [titulo]="toast.titulo" [mensaje]="toast.mensaje"
+    (cerrar)="toast = null">
+  </app-toast>
+
+  }
+
+</div>

@@ -1,0 +1,147 @@
+/* ─────────────────────────────────────────────
+   Contenedor tabla
+   ───────────────────────────────────────────── */
+
+.tabla-scroll-container {
+  flex: 1;
+
+  overflow: auto;
+
+  background: #fff;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+
+  position: relative;
+  max-height: 100%;
+  min-height: 300px;
+}
+
+/* ─────────────────────────────────────────────
+   Tabla
+   ───────────────────────────────────────────── */
+
+.table-approved {
+  width: 100%;
+
+  min-width: 1100px;
+
+  border-collapse: collapse;
+
+  font-size: 13px;
+}
+
+/* ─────────────────────────────────────────────
+   Header
+   ───────────────────────────────────────────── */
+
+.table-approved thead th {
+  position: sticky;
+
+  top: 0;
+
+  z-index: 10;
+
+  background: var(--primario);
+
+  color: #fff;
+
+  padding: 5px;
+
+  text-align: left;
+
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────
+   Celdas
+   ───────────────────────────────────────────── */
+
+.table-approved td {
+  padding: 5px;
+
+  border-bottom: 1px solid #f1f5f9;
+
+  color: #1f2937;
+
+  vertical-align: middle;
+}
+
+.table-approved tbody tr:hover td {
+  background: #f8fafc;
+}
+
+/* ─────────────────────────────────────────────
+   Empty state
+   ───────────────────────────────────────────── */
+
+.empty-state {
+  text-align: center;
+
+  padding: 40px 0;
+
+  color: #9ca3af;
+
+  font-size: 13px;
+}
+
+/* ─────────────────────────────────────────────
+   Acciones
+   ───────────────────────────────────────────── */
+
+.edit-actions {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 4px;
+
+  min-height: 32px;
+}
+
+/* ─────────────────────────────────────────────
+   Utilidades
+   ───────────────────────────────────────────── */
+
+.bold-dark {
+  font-weight: 600;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.mono-text {
+  font-family:
+    'Consolas',
+    'Courier New',
+    monospace;
+
+  font-size: 12px;
+
+  letter-spacing: 0.3px;
+}
+
+/* ─────────────────────────────────────────────
+   Error
+   ───────────────────────────────────────────── */
+
+.error-banner {
+  padding: 10px 14px;
+
+  background: #fee2e2;
+
+  color: #991b1b;
+
+  font-size: 13px;
+
+  border-bottom: 1px solid #fecaca;
+}

@@ -1,0 +1,539 @@
+<!-- =========================================================
+     REGISTRO DE INGRESO AL ALMACEN 
+========================================================= -->
+<div class="registro-wrapper">
+
+    <!-- ── TABS DE NAVEGACIÓN ─────────────────────────────── -->
+    <nav class="reg-tabs">
+        <button *ngFor="let sec of secciones" class="reg-tab"
+            [class.reg-tab--activo]="seccionActiva === sec.id"
+            type="button" (click)="irSeccion(sec.id)">
+            <span class="reg-tab__icono" [class]="sec.icon"></span>
+            <span class="reg-tab__label">{{ sec.label }}</span>
+        </button>
+    </nav>
+
+    <!-- ── FORMULARIO ─────────────────────────────────────── -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+        <!-- ═══════════════════════════════════════════════════
+         SECCIÓN 1: DATOS PERSONALES
+    ═══════════════════════════════════════════════════ -->
+        <section class="reg-seccion" [class.reg-seccion--visible]="seccionActiva === 'datos'">
+            <div class="reg-seccion__titulo">
+                <i class="ti ti-user"></i> Datos Personales
+            </div>
+
+            <div class="reg-grid">
+
+                <!-- Columna izquierda: campos -->
+                <div class="reg-campos">
+
+                    <!-- CURP -->
+                    <div class="campo-grupo">
+                        <label class="campo-label campo-label--req">CURP</label>
+                        <div class="campo-hint">Escanea el código QR o captura manualmente</div>
+                        <div class="campo-input-icon">
+                            <input type="text" formControlName="curp" class="campo-input"
+                                [class.campo-input--error]="isInvalid('curp')"
+                                placeholder="XXXX000000XXXXXX00"
+                                maxlength="18"
+                                (blur)="onCurpBlur()" />
+                            <i class="campo-icono-right ti ti-search"></i>
+                        </div>
+                        <span class="campo-error" *ngIf="isInvalid('curp')">CURP requerida (18 caracteres)</span>
+                    </div>
+
+                    <!-- Nombre (autocompletado) -->
+                    <div class="campo-grupo">
+                        <label class="campo-label">Nombre</label>
+                        <div class="campo-hint">Se despliega automáticamente al capturar CURP</div>
+                        <input type="text" formControlName="nombre"
+                            class="campo-input campo-input--readonly"
+                            placeholder="Se completará automáticamente" readonly />
+                    </div>
+
+                    <!-- Motivo -->
+                    <div class="campo-grupo">
+                        <label class="campo-label campo-label--req campo-label--select">Motivo</label>
+                        <select formControlName="motivo"
+                            class="campo-select campo-select--primario"
+                            [class.campo-select--error]="isInvalid('motivo')">
+                            <option value="">-- Selecciona motivo --</option>
+                            <option *ngFor="let m of motivosOpciones" [value]="m">{{ m }}</option>
+                        </select>
+                        <span class="campo-error" *ngIf="isInvalid('motivo')">Campo requerido</span>
+                    </div>
+
+                    <!-- No. Proveedor -->
+                    <div class="campo-grupo">
+                        <label class="campo-label">No. Proveedor <span class="campo-opcional">(Opcional)</span></label>
+                        <input type="text" formControlName="noProveedor" class="campo-input"
+                            placeholder="Número de proveedor" />
+                    </div>
+
+                    <!-- Razón Social -->
+                    <div class="campo-grupo">
+                        <label class="campo-label">Razón Social</label>
+                        <div class="campo-hint">Si es proveedor se despliega / se captura</div>
+                        <input type="text" formControlName="razonSocial" class="campo-input"
+                            placeholder="Nombre de la empresa" />
+                    </div>
+                </div>
+
+                <!-- Columna derecha: foto -->
+                <div class="reg-foto-panel">
+                    <div class="foto-label">
+                        <i class="ti ti-camera"></i> Foto del empleado
+                        <small>Cámara o teléfono</small>
+                    </div>
+
+                    <div class="foto-contenedor">
+                        <ng-container *ngIf="fotoPreview; else sinFoto">
+                            <img [src]="fotoPreview" alt="Foto del empleado" class="foto-preview" />
+                            <button type="button" class="btn-foto-eliminar" (click)="eliminarFoto()">
+                                <i class="ti ti-x"></i> Eliminar
+                            </button>
+                        </ng-container>
+                        <ng-template #sinFoto>
+                            <div class="foto-placeholder">
+                                <i class="ti ti-user-circle"></i>
+                                <p>Sin foto</p>
+                            </div>
+                        </ng-template>
+                    </div>
+
+                    <label class="btn btn--secundario btn--block btn--foto">
+                        <i class="ti ti-camera-plus"></i>
+                        Tomar / Subir Foto
+                        <input type="file" accept="image/*" capture="environment" style="display:none"
+                            (change)="onFotoCapturada($event)" />
+                    </label>
+                </div>
+
+            </div><!-- /reg-grid -->
+
+            <!-- Sub-sección: Vetado -->
+            <div class="reg-seccion__titulo reg-seccion__titulo--sub">
+                <i class="ti ti-ban"></i> Información de Veto
+            </div>
+
+            <div class="vetado-toggle">
+                <label class="toggle-switch">
+                    <input type="checkbox" formControlName="vetado" />
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">¿Empleado vetado?</span>
+                </label>
+            </div>
+
+            <div class="vetado-detalle" *ngIf="form.get('vetado')?.value">
+                <div class="reg-grid-2col">
+
+                    <!-- Tipo de Veto -->
+                    <div class="campo-grupo campo-grupo--span2">
+                        <label class="campo-label campo-label--select">Tipo de Veto</label>
+                        <select formControlName="tipoBan" class="campo-select campo-select--primario">
+                            <option value="">-- Parcial / Definitivo --</option>
+                            <option *ngFor="let t of tiposBan" [value]="t">{{ t }}</option>
+                        </select>
+                    </div>
+
+                    <!-- Fecha Inicio -->
+                    <div class="campo-grupo">
+                        <label class="campo-label">Fecha Inicio</label>
+                        <input type="date" formControlName="fechaInicio" class="campo-input" />
+                    </div>
+
+                    <!-- ── Sólo para PARCIAL: Duración, Fecha Término y Días Restantes ── -->
+                    <ng-container *ngIf="!esBanDefinitivo">
+
+                        <div class="campo-grupo">
+                            <label class="campo-label campo-label--select">Duración (Días)</label>
+                            <select formControlName="duracionDias" class="campo-select campo-select--primario">
+                                <option value="">-- 30 / 60 / 90 --</option>
+                                <option *ngFor="let d of duracionOpciones" [value]="d">{{ d }} días</option>
+                            </select>
+                        </div>
+
+                        <div class="campo-grupo">
+                            <label class="campo-label">Fecha Término</label>
+                            <input type="date" formControlName="fechaTermino"
+                                class="campo-input campo-input--readonly" readonly />
+                        </div>
+
+                        <div class="campo-grupo">
+                            <label class="campo-label">Días Restantes</label>
+                            <input type="number" formControlName="diasRestantes"
+                                class="campo-input campo-input--readonly" readonly />
+                        </div>
+
+                    </ng-container>
+                    <!-- ── Fin bloque parcial ── -->
+
+                </div>
+            </div>
+
+            <div class="reg-nav-botones">
+                <button type="button" class="btn btn--primario btn--next" (click)="irSeccion('vehiculo')">
+                    Siguiente: Vehículo →
+                </button>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════
+         SECCIÓN 2: VEHÍCULO
+    ═══════════════════════════════════════════════════ -->
+        <section class="reg-seccion" [class.reg-seccion--visible]="seccionActiva === 'vehiculo'">
+            <div class="reg-seccion__titulo">
+                <i class="ti ti-truck"></i> Datos del Vehículo
+            </div>
+
+            <div class="reg-grid-2col">
+
+                <div class="campo-grupo campo-grupo--span2">
+                    <label class="campo-label campo-label--select">Tipo de Vehículo</label>
+                    <select formControlName="tipoVehiculo" class="campo-select campo-select--primario">
+                        <option value="">-- Sin vehículo / Lista desplegable --</option>
+                        <option *ngFor="let t of tiposVehiculo" [value]="t">{{ t }}</option>
+                    </select>
+                </div>
+
+                <!-- Los campos de vehículo se muestran sólo si hay tipo seleccionado -->
+                <ng-container *ngIf="form.get('tipoVehiculo')?.value">
+
+                    <div class="campo-grupo">
+                        <label class="campo-label">Placa</label>
+                        <input type="text" formControlName="placa" class="campo-input" placeholder="ABC-123" />
+                    </div>
+
+                    <div class="campo-grupo">
+                        <label class="campo-label">Modelo</label>
+                        <input type="text" formControlName="modelo" class="campo-input" placeholder="Año o modelo" />
+                    </div>
+
+                    <div class="campo-grupo campo-grupo--span2">
+                        <label class="campo-label">Marca</label>
+                        <input type="text" formControlName="marca" class="campo-input" placeholder="Marca del vehículo" />
+                    </div>
+
+                </ng-container>
+
+                <!-- Mensaje cuando no hay vehículo -->
+                <div class="campo-grupo campo-grupo--span2" *ngIf="!form.get('tipoVehiculo')?.value">
+                    <div class="texto-vacio">
+                        <i class="ti ti-truck-off"></i>
+                        Personal sin vehículo registrado. Selecciona un tipo para capturar los datos.
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="reg-nav-botones">
+                <button type="button" class="btn btn--terciario" (click)="irSeccion('datos')">← Anterior</button>
+                <button type="button" class="btn btn--primario btn--next" (click)="irSeccion('equipo')">Siguiente: Equipo →</button>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════
+         SECCIÓN 3: EQUIPO DE SEGURIDAD
+    ═══════════════════════════════════════════════════ -->
+        <section class="reg-seccion" [class.reg-seccion--visible]="seccionActiva === 'equipo'">
+            <div class="reg-seccion__titulo">
+                <i class="ti ti-shield-check"></i> Equipo de Seguridad
+            </div>
+
+            <div class="equipo-grid">
+                <label class="equipo-checkbox">
+                    <input type="checkbox" formControlName="altaImss" />
+                    <span class="equipo-check__box"></span>
+                    <span class="equipo-check__label">Alta de IMSS</span>
+                </label>
+                <label class="equipo-checkbox">
+                    <input type="checkbox" formControlName="dc3" />
+                    <span class="equipo-check__box"></span>
+                    <span class="equipo-check__label">DC3</span>
+                </label>
+                <label class="equipo-checkbox">
+                    <input type="checkbox" formControlName="chalecoReflejante" />
+                    <span class="equipo-check__box"></span>
+                    <span class="equipo-check__label">Chaleco Reflejante</span>
+                </label>
+                <label class="equipo-checkbox">
+                    <input type="checkbox" formControlName="zapatosSeguridad" />
+                    <span class="equipo-check__box"></span>
+                    <span class="equipo-check__label">Zapatos de Seguridad</span>
+                </label>
+                <label class="equipo-checkbox">
+                    <input type="checkbox" formControlName="pantalonMezclilla" />
+                    <span class="equipo-check__box"></span>
+                    <span class="equipo-check__label">Pantalón Mezclilla <small>(Azul, Negro, Gris)</small></span>
+                </label>
+                <label class="equipo-checkbox">
+                    <input type="checkbox" formControlName="playeraMangaLarga" />
+                    <span class="equipo-check__box"></span>
+                    <span class="equipo-check__label">Playera Manga Larga</span>
+                </label>
+            </div>
+
+            <div class="reg-nav-botones">
+                <button type="button" class="btn btn--terciario" (click)="irSeccion('vehiculo')">← Anterior</button>
+                <button type="button" class="btn btn--primario btn--next" (click)="irSeccion('incidencias')">Siguiente: Incidencias →</button>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════
+         SECCIÓN 4: INCIDENCIAS
+    ═══════════════════════════════════════════════════ -->
+        <section class="reg-seccion" [class.reg-seccion--visible]="seccionActiva === 'incidencias'">
+            <div class="reg-seccion__titulo">
+                <i class="ti ti-alert-triangle"></i> Incidencias
+            </div>
+
+            <!-- Formulario fijo de nueva incidencia -->
+            <div class="form-fijo">
+                <div class="form-fijo__titulo">
+                    <i class="ti ti-plus-circle"></i> Nueva Incidencia
+                </div>
+                <div class="reg-grid-3col">
+
+                    <!-- Fecha -->
+                    <div class="campo-grupo">
+                        <label class="campo-label campo-label--req">Fecha</label>
+                        <input type="date" [formControl]="incFecha" class="campo-input"
+                            [class.campo-input--error]="isInvalidSub(nuevaIncidenciaForm, 'fecha')" />
+                        <span class="campo-error" *ngIf="isInvalidSub(nuevaIncidenciaForm, 'fecha')">Requerido</span>
+                    </div>
+
+                    <!-- Nivel (select 1-10) -->
+                    <div class="campo-grupo">
+                        <label class="campo-label campo-label--req campo-label--select">Nivel</label>
+                        <select [formControl]="incNivel"
+                            class="campo-select campo-select--primario"
+                            [class.campo-select--error]="isInvalidSub(nuevaIncidenciaForm, 'nivel')">
+                            <option value="">-- Nivel --</option>
+                            <option *ngFor="let n of nivelesOpciones" [value]="n">{{ n }}</option>
+                        </select>
+                        <span class="campo-error" *ngIf="isInvalidSub(nuevaIncidenciaForm, 'nivel')">Requerido</span>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="campo-grupo campo-grupo--span3-mobile">
+                        <label class="campo-label campo-label--req">
+                            Descripción
+                            <span class="campo-contador">{{ incDescripcion.value?.length || 0 }}/255</span>
+                        </label>
+                        <input type="text"
+                            [formControl]="incDescripcion"
+                            class="campo-input"
+                            [class.campo-input--error]="isInvalidSub(nuevaIncidenciaForm, 'descripcion')"
+                            placeholder="Describe la incidencia"
+                            maxlength="255" />
+                        <span class="campo-error" *ngIf="isInvalidSub(nuevaIncidenciaForm, 'descripcion')">Requerido (máx. 255 caracteres)</span>
+                    </div>
+                </div>
+
+                <!-- Acciones del formulario -->
+                <div class="form-fijo__actions">
+                    <button type="button" class="btn btn--terciario btn--limpiar" (click)="limpiarIncidenciaForm()">
+                        <i class="ti ti-eraser"></i> Limpiar
+                    </button>
+                    <button type="button" class="btn btn--secundario btn--agregar-inline" (click)="agregarIncidencia()">
+                        <i class="ti ti-plus"></i> Agregar Incidencia
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabla de incidencias -->
+            <div class="tabla-wrapper">
+                <div class="tabla-titulo">
+                    <i class="ti ti-list"></i> Incidencias registradas
+                    <span class="tabla-badge">{{ incidencias.length }}</span>
+                </div>
+
+                <div *ngIf="incidencias.length === 0" class="texto-vacio">
+                    <i class="ti ti-clipboard-x"></i>
+                    No hay incidencias registradas aún.
+                </div>
+
+                <div *ngIf="incidencias.length > 0" class="tabla-scroll">
+                    <table class="tabla">
+                        <thead>
+                            <tr>
+                                <th class="tabla-th tabla-th--fecha">Fecha</th>
+                                <th class="tabla-th tabla-th--nivel">Nivel</th>
+                                <th class="tabla-th tabla-th--desc">Descripción</th>
+                                <th class="tabla-th tabla-th--acc">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let inc of incidencias.controls; let i = index" class="tabla-tr">
+                                <td class="tabla-td tabla-td--fecha">{{ inc.get('fecha')?.value | date:'dd/MM/yyyy' }}</td>
+                                <td class="tabla-td tabla-td--nivel">
+                                    <span class="nivel-badge" [class]="'nivel-badge--' + getNivelClase(inc.get('nivel')?.value)">
+                                        {{ inc.get('nivel')?.value || '—' }}
+                                    </span>
+                                </td>
+                                <td class="tabla-td tabla-td--desc">
+                                    <!-- Click abre modal con texto completo -->
+                                    <span class="desc-truncada desc-truncada--clickable"
+                                        [title]="inc.get('descripcion')?.value"
+                                        (click)="abrirModalDescripcion(inc.get('descripcion')?.value)">
+                                        {{ inc.get('descripcion')?.value }}
+                                    </span>
+                                </td>
+                                <td class="tabla-td tabla-td--acc">
+                                    <button type="button" class="btn-eliminar" (click)="eliminarIncidencia(i)" title="Eliminar">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="reg-nav-botones">
+                <button type="button" class="btn btn--terciario" (click)="irSeccion('equipo')">← Anterior</button>
+                <button type="button" class="btn btn--primario btn--next" (click)="irSeccion('otros')">Siguiente: Otros →</button>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════
+         SECCIÓN 5: OTROS
+    ═══════════════════════════════════════════════════ -->
+        <section class="reg-seccion" [class.reg-seccion--visible]="seccionActiva === 'otros'">
+            <div class="reg-seccion__titulo">
+                <i class="ti ti-package"></i> Ingreso con elementos adicionales (Herramientas / Ropa / Equipos)
+            </div>
+
+            <!-- Formulario fijo de nuevo artículo -->
+            <div class="form-fijo">
+                <div class="form-fijo__titulo">
+                    <i class="ti ti-plus-circle"></i> Nuevo Artículo
+                </div>
+                <div class="reg-grid-3col">
+
+                    <!-- Tipo -->
+                    <div class="campo-grupo">
+                        <label class="campo-label campo-label--req">Tipo</label>
+                        <input type="text"
+                            [formControl]="otrTipo"
+                            class="campo-input"
+                            [class.campo-input--error]="isInvalidSub(nuevoOtroForm, 'tipo')"
+                            placeholder="Herramienta, Ropa, etc." />
+                        <span class="campo-error" *ngIf="isInvalidSub(nuevoOtroForm, 'tipo')">Requerido</span>
+                    </div>
+
+                    <!-- Cantidad -->
+                    <div class="campo-grupo">
+                        <label class="campo-label campo-label--req">Cantidad</label>
+                        <input type="number"
+                            [formControl]="otrCantidad"
+                            class="campo-input"
+                            [class.campo-input--error]="isInvalidSub(nuevoOtroForm, 'cantidad')"
+                            min="1"
+                            placeholder="0" />
+                        <span class="campo-error" *ngIf="isInvalidSub(nuevoOtroForm, 'cantidad')">Requerido (mín. 1)</span>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="campo-grupo campo-grupo--span3-mobile">
+                        <label class="campo-label">
+                            Descripción
+                            <span class="campo-contador">{{ otrDescripcion.value?.length || 0 }}/255</span>
+                        </label>
+                        <input type="text"
+                            [formControl]="otrDescripcion"
+                            class="campo-input"
+                            [class.campo-input--error]="isInvalidSub(nuevoOtroForm, 'descripcion')"
+                            placeholder="Descripción del artículo"
+                            maxlength="255" />
+                        <span class="campo-error" *ngIf="isInvalidSub(nuevoOtroForm, 'descripcion')">Máx. 255 caracteres</span>
+                    </div>
+                </div>
+
+                <!-- Acciones del formulario -->
+                <div class="form-fijo__actions">
+                    <button type="button" class="btn btn--terciario btn--limpiar" (click)="limpiarOtroForm()">
+                        <i class="ti ti-eraser"></i> Limpiar
+                    </button>
+                    <button type="button" class="btn btn--secundario btn--agregar-inline" (click)="agregarOtro()">
+                        <i class="ti ti-plus"></i> Agregar Artículo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabla de artículos -->
+            <div class="tabla-wrapper">
+                <div class="tabla-titulo">
+                    <i class="ti ti-list"></i> Artículos registrados
+                    <span class="tabla-badge">{{ otros.length }}</span>
+                </div>
+
+                <div *ngIf="otros.length === 0" class="texto-vacio">
+                    <i class="ti ti-box-off"></i>
+                    No hay artículos registrados aún.
+                </div>
+
+                <div *ngIf="otros.length > 0" class="tabla-scroll">
+                    <table class="tabla">
+                        <thead>
+                            <tr>
+                                <th class="tabla-th">Tipo</th>
+                                <th class="tabla-th tabla-th--nivel">Cantidad</th>
+                                <th class="tabla-th tabla-th--desc">Descripción</th>
+                                <th class="tabla-th tabla-th--acc">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of otros.controls; let i = index" class="tabla-tr">
+                                <td class="tabla-td">{{ item.get('tipo')?.value || '—' }}</td>
+                                <td class="tabla-td tabla-td--nivel">
+                                    <span class="cantidad-badge">{{ item.get('cantidad')?.value ?? '—' }}</span>
+                                </td>
+                                <td class="tabla-td tabla-td--desc">
+                                    <span class="desc-truncada desc-truncada--clickable"
+                                        [title]="item.get('descripcion')?.value"
+                                        (click)="abrirModalDescripcion(item.get('descripcion')?.value)">
+                                        {{ item.get('descripcion')?.value || '—' }}
+                                    </span>
+                                </td>
+                                <td class="tabla-td tabla-td--acc">
+                                    <button type="button" class="btn-eliminar" (click)="eliminarOtro(i)" title="Eliminar">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="reg-nav-botones">
+                <button type="button" class="btn btn--terciario" (click)="irSeccion('incidencias')">← Anterior</button>
+                <button type="submit" class="btn btn--primario btn--guardar">
+                    <i class="ti ti-device-floppy"></i>
+                    Guardar Registro
+                </button>
+            </div>
+        </section>
+
+    </form>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     MODAL: Descripción completa
+═══════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="modalDescripcion !== null" (click)="cerrarModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <span><i class="ti ti-file-description"></i> Descripción completa</span>
+            <button type="button" class="modal-cerrar" (click)="cerrarModal()">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            {{ modalDescripcion }}
+        </div>
+    </div>
+</div>

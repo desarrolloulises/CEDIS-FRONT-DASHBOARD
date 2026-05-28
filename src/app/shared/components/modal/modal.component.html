@@ -1,0 +1,42 @@
+<div
+  *ngIf="visible"
+  class="modal-overlay"
+
+  (click)="onBackdropClick()">
+
+  <div
+    class="modal-card"
+
+    [style.max-width]="width"
+
+    (click)="$event.stopPropagation()">
+
+    <!-- HEADER -->
+    <div class="modal-header">
+
+      <h3>
+        {{ title }}
+      </h3>
+
+      <button
+        class="modal-close"
+
+        (click)="cerrar()">
+
+        ✕
+
+      </button>
+
+    </div>
+
+    <!-- BODY -->
+    <div class="modal-body">
+
+      <ng-content>
+      </ng-content>
+
+    </div>
+
+  </div>
+
+</div>
