@@ -97,7 +97,7 @@ export class PermissionService {
   this.router.navigate(['/login'] , { replaceUrl: true });
   //window.location.reload(); //recarga la pagina para perder el token y seccion
   
-  console.log("Sesión cerrada correctamente");
+  //console.log("Sesión cerrada correctamente");
 }
   // En tu PermissionService, añade esta lógica para mejorar la seguridad
 checkTokenValidity() {

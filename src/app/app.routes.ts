@@ -28,7 +28,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'inicio',
-        loadComponent: () => import('./components/summary-cards/summary-cards.component').then(m => m.SummaryCardsComponent) // El login va SOLO, sin Layout
+        loadComponent: () => import('./features/Home/Home.component').then(m => m.HomeComponent) 
       },
       // --- NIVEL 1 (Módulos Principales) ---
 
@@ -76,13 +76,13 @@ export const routes: Routes = [
         path: 'reporte/reporte-primerReporte',
         loadComponent: () => import('./features/reportes/reportes.component').then(m => m.ReportesComponent)
       },
-      
+
       //panel control provedores
       {
         path: 'panel/Ubicacion-provedores',
         loadComponent: () => import('./features/panelControl/ubicacion-provedores/ubicacion-provedores.component').then(m => m.UbicacionProvedoresComponent)
       },
-      
+
       //panel control recibo
       {
         path: 'panel/Ubicacion-colores',
@@ -97,11 +97,14 @@ export const routes: Routes = [
 
       //registro-transportista
       {
-        path: 'registroTransportista',
-        loadComponent: () => import('./features/transportista/registro-transportista/registro-transportista.component').then(m => m.RegistroTransportistaComponent)
+        path: 'registro-ingreso-transportista-caseta',
+        loadComponent: () => import('./features/control-entradas-salidas-cedis/entrada-salida-transportista-caseta/entrada-salida-transportista-caseta.component').then(m => m.EntradaSalidaTransportistaCasetaComponent)
       },
 
-
+      {
+        path: 'registro-personal',
+        loadComponent: () => import('./features/control-entradas-salidas-cedis/registro-entrada-almacen/registro-entrada-almacen.component').then(m => m.RegistroEntradaAlmacenComponent)
+      },
 
       {
         path: 'CambiaPass',

@@ -1,0 +1,40 @@
+<div
+  class="input-wrapper"
+  [class.full-width]="fullWidth">
+
+  <!-- LABEL -->
+  <label
+    *ngIf="label"
+    class="input-label">
+
+    {{ label }}
+
+  </label>
+
+  <!-- INPUT -->
+  <input
+
+    class="app-input"
+
+    [ngClass]="[
+      'input-' + size,
+      mono ? 'mono-input' : ''
+    ]"
+
+    [type]="type"
+
+    [placeholder]="placeholder"
+
+    [disabled]="disabled"
+
+    [readonly]="readonly"
+
+    [ngModel]="value"
+
+    (ngModelChange)="
+      valueChange.emit($event)
+    "
+    (blur) = "blur.emit()"
+  />
+
+</div>

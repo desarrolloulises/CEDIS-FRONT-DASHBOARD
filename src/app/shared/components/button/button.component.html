@@ -1,0 +1,15 @@
+<button
+  class="btn"
+  [ngClass]="[
+    'btn-' + type,
+    'btn-' + size,
+    fullWidth ? 'btn-block' : ''
+  ]"
+  [disabled]="disabled"
+>
+
+  <span>
+    {{ label }}
+  </span>
+
+</button>

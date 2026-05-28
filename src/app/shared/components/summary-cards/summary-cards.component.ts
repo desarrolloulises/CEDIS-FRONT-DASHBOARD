@@ -1,7 +1,7 @@
 import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 // Importa tu servicio donde está la signal del usuario
-import { DatosService } from '../../service/servicio.service';
+import { DatosService } from '../../../service/servicio.service';
 
 
 export interface ICardData {

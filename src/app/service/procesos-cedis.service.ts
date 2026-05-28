@@ -63,10 +63,6 @@ export class ProcesosCedisService {
   private apiUrlGetAccesoPerfilesAsignados = APIURL_ACCESOPERFILESASIGNADOS;
   private apiUrlGetAcessoInventario = APIURL_ACCESOINVENTARIO;
   private apiUrlVerReporte = APIURL_VERREPORTE;
-  
-  
-
-
   private previousUrl: string = '';
   private currentUrl: string = '';
 
@@ -470,6 +466,5 @@ export class ProcesosCedisService {
 
 
   //**********************PARA DASBOART******************** */
-
 
 }

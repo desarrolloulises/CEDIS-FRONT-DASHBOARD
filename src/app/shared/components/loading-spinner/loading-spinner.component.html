@@ -1,0 +1,18 @@
+<div
+  *ngIf="visible()"
+  class="spinner-wrapper"
+  [class.spinner-wrapper--overlay]="overlay()"
+  [class.spinner-wrapper--compact]="compact()">
+
+  <div
+    class="spinner"
+    [class.spinner--compact]="compact()">
+  </div>
+
+  <span
+    *ngIf="showText()"
+    class="spinner-text">
+    {{ texto() }}
+  </span>
+
+</div>

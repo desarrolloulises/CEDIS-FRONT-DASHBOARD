@@ -1,0 +1,119 @@
+<div class="dashboard-wrapper">
+
+  <!-- HEADER -->
+  <div class="glass-card header-row-inline">
+
+    <div class="header-tools-left">
+
+      <span class="label-formal">
+        Control de Entrada Caseta
+      </span>
+
+      <app-input #searchInput placeholder="Presione F2 para Buscar en tabla" (value)="filtroBusqueda()"
+        (valueChange)="filtroBusqueda.set($event)" size="sm">
+      </app-input>
+
+      <app-button label="↻ Actualizar" type="secondary" size="sm" (click)="cargarDatos()">
+      </app-button>
+
+    </div>
+
+    <div class="header-tools-right">
+
+      <app-button label="Agregar Cita" type="primary" size="sm" (click)="abrirFormulario()">
+      </app-button>
+
+      <app-button label="Registro por QR" type="primary" size="sm" (click)="registroQr.abrir()">
+      </app-button>
+
+      <app-button label="Consultar Visitas" type="primary" size="sm">
+      </app-button>
+
+    </div>
+
+  </div>
+
+  <!-- FORMULARIO -->
+  <app-agregar-cita-transportista *ngIf="mostrarFormulario()" (cerrar)="onCerrarFormulario($event)">
+  </app-agregar-cita-transportista>
+
+  <!-- TABLA -->
+  <app-tabla-transportistas class="tabla-wrapper" [datos]="tablaDatos()" [isLoading]="isLoading()"
+    [errorMsg]="errorMsg()" (entrada)="onEntradaDesdeTabla($event)" (salida)="onSalidaDesdeTabla($event)"
+    (filaEditada)="onFilaEditada($event)">
+  </app-tabla-transportistas>
+
+  <!-- MODAL SALIDA -->
+  <app-modal title="Salida de Transporte" [visible]="modalSalidaVisible" (close)="cerrarModalSalida()">
+
+    <div class="modal-wrapper">
+
+      <app-loading-spinner [visible]="loadingSalida()" texto="Procesando salida...">
+      </app-loading-spinner>
+
+      <div class="modal-info-grid" *ngIf="salidaSeleccionada">
+
+        <div class="info-block">
+          <span class="info-label">Empresa</span>
+          <span class="info-value">{{ salidaSeleccionada.empresa }}</span>
+        </div>
+
+        <div class="info-block">
+          <span class="info-label">Operador</span>
+          <span class="info-value">{{ salidaSeleccionada.nombre }}</span>
+        </div>
+
+        <div class="info-block full-width">
+          <span class="info-label">CURP</span>
+          <span class="info-value">{{ salidaSeleccionada.curp_operador }}</span>
+        </div>
+
+      </div>
+
+      <label class="checkbox-row" *ngIf="salidaSeleccionada?.remolque">
+
+        <input type="checkbox" [(ngModel)]="saleSinCaja" [disabled]="loadingSalida()" />
+
+        <span>
+          ¿Sale sin caja?
+        </span>
+
+      </label>
+
+      <div class="modal-actions">
+        <app-button label="Cancelar" type="ghost" [disabled]="loadingSalida()" (click)="cerrarModalSalida()">
+        </app-button>
+        <app-button label="Confirmar salida" type="primary" [disabled]="loadingSalida()" (click)="confirmarSalida()">
+        </app-button>
+      </div>
+
+    </div>
+
+  </app-modal>
+
+  <!-- FOOTER -->
+  <div class="table-footer">
+    <div class="info-stats">
+
+      <div class="stat-group">
+        <span class="label">Total</span>
+        <span class="value">{{ totalRegistros() }}</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="stat-group">
+        <span class="label">Filtrados</span>
+        <span class="value">{{ totalFiltrados() }}</span>
+      </div>
+
+    </div>
+  </div>
+
+  <app-registro-qr (registrado)="cargarDatos()">
+  </app-registro-qr>
+
+  <app-toast *ngIf="toastVisible()" [tipo]="toastTipo()" [titulo]="toastTitulo()" [mensaje]="toastMensaje()"
+    (cerrar)="cerrarToast()">
+  </app-toast>
+</div>

@@ -1,98 +1,46 @@
 <div class="sidebar-container">
-  <div class="sidebar-top-group">
-    <div class="logo-section">
-      <img src="logo.png" alt="Logo" [routerLink]="['/inicio']">
-    </div>
 
-    <!-------------AQUI VA EL CODIGO QUE CARGA LOS MODULOS Y SUBMODULOS------------------------>
-    <nav class="menu-nav">
-      @for (modulo of modulos(); track modulo.Opcion) {
-      <div class="menu-item">
+  <div class="sidebar-logo">
+    <img src="logo.png" alt="Logo" [routerLink]="['/inicio']" />
+  </div>
 
-        <div class="menu-header" (click)="obtenerSubmenus(modulo)">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <i [class]="modulo.Icono"></i>
+  <nav class="sidebar-nav">
+    @for (modulo of modulos(); track modulo.Opcion) {
+      <div class="nav-item">
+        <div
+          class="nav-header"
+          [class.abierto]="modulo.abierto"
+          (click)="obtenerSubmenus(modulo)"
+        >
+          <div class="nav-header-left">
+            <i class="ti {{ ICONO_MODULO[modulo.Opcion] || 'ti-folder' }}" aria-hidden="true"></i>
             <span>{{ modulo.Descripcion }}</span>
           </div>
 
           @if (modulo.cargando) {
-          <span class="spinner-loader"></span>
-          } @else {
-          @if (!modulo.intentado || (modulo.sub && modulo.sub.length > 0)) {
-          <span class="arrow" [class.rotated]="modulo.abierto">▶</span>
-          }
+            <span class="spinner-loader" aria-label="Cargando"></span>
+          } @else if (!modulo.intentado || (modulo.sub && modulo.sub.length > 0)) {
+            <i class="ti ti-chevron-right chevron" [class.rotado]="modulo.abierto" aria-hidden="true"></i>
           }
         </div>
 
         @if (modulo.abierto && modulo.sub?.length) {
-        <div class="sub-menu">
-          @for (sub of modulo.sub; track sub.Opcion) {
-
-          @if (sub.tipo === 'reporte') {
-          <a [routerLink]="['/ver-reporte', sub.URL]" routerLinkActive="active"
-            (click)="notificarReporte(sub.URL)"> {{ sub.Descripcion }}
-          
-          </a>
-          } @else {
-          <a [routerLink]="[sub.URL]" routerLinkActive="active">
-            {{ sub.Descripcion }}
-          </a>
-          }
-          }
-        </div>
+          <div class="nav-sub">
+            @for (sub of modulo.sub; track sub.Opcion) {
+              @if (sub.tipo === 'reporte') {
+                <a
+                  [routerLink]="['/ver-reporte', sub.URL]"
+                  routerLinkActive="activo"
+                  (click)="notificarReporte(sub.URL)"
+                >{{ sub.Descripcion }}</a>
+              } @else {
+                <a [routerLink]="[sub.URL]" routerLinkActive="activo">{{ sub.Descripcion }}</a>
+              }
+            }
+          </div>
         }
       </div>
-      }
-    </nav>
-    <!--
-    <nav class="menu-nav">
-      <div class="menu-item">
-        <div class="menu-header" (click)="toggleMenu('inventario')">
-          <span>📦 Inventario</span>
-          <span class="arrow" [class.rotated]="menusAbiertos['inventario']">▶</span>
-        </div>
-        @if (menusAbiertos['inventario']) {
-        <div class="sub-menu">
-          <a routerLink="/inventario/consulta" routerLinkActive="active">Consulta Stock</a>
-          <a routerLink="/inventario/entradas" routerLinkActive="active">Entradas</a>
-        </div>
-        }
-      </div>
-
-      <div class="menu-item">
-        <div class="menu-header" (click)="toggleMenu('recibo')">
-          <span>🚚 Recibo</span>
-          <span class="arrow" [class.rotated]="menusAbiertos['recibo']">▶</span>
-        </div>
-        @if (menusAbiertos['recibo']) {
-        <div class="sub-menu">
-          <a routerLink="/recibo/ordenes" routerLinkActive="active">Órdenes de Compra</a>
-          <a routerLink="/recibo/historial" routerLinkActive="active">Historial</a>
-        </div>
-        }
-      </div>
-    </nav>
-  -->
-
-  </div>
-
-  <div class="user-section-bottom">
-    @if (menuUsuarioAbierto()) {
-    <div class="user-dropdown-up">
-      <button class="dropdown-item" (click)="logout()">🚪 Cerrar Sesión</button>
-      <button class="dropdown-item" routerLink="/CambiaPass" (click)="menuUsuarioAbierto.set(false)">
-        🔑 Cambiar Contraseña
-      </button>
-    </div>
     }
+  </nav>
 
-    <div class="user-info-compact" (click)="toggleMenuUsuario()">
-      <div class="user-avatar-circle">M</div>
-      <div class="user-data">
-        <span class="user-name">Milano</span>
-        <span class="user-role">Admin CEDIS</span>
-      </div>
-      <span class="user-dots">⋮</span>
-    </div>
-  </div>
 </div>

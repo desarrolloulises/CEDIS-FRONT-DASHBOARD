@@ -1,0 +1,161 @@
+/* =========================================================
+   OVERLAY
+========================================================= */
+
+.modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    rgba(0, 0, 0, 0.45);
+
+  backdrop-filter:
+    blur(2px);
+
+  animation:
+    fadeIn 0.15s ease;
+}
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.modal-card {
+  width: 100%;
+
+  background:
+    var(--bg-card);
+
+  border-radius:
+    var(--radius-lg);
+
+  box-shadow:
+    var(--shadow-lg);
+
+  overflow: hidden;
+
+  animation:
+    modalEnter 0.18s ease;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.modal-header {
+  height: 58px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 18px;
+
+  background:
+    var(--primario);
+
+  color:
+    var(--texto-blanco);
+}
+
+.modal-header h3 {
+  margin: 0;
+
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   CLOSE
+========================================================= */
+
+.modal-close {
+  width: 34px;
+  height: 34px;
+
+  border: none;
+
+  border-radius:
+    var(--radius-sm);
+
+  background:
+    rgba(255,255,255,0.12);
+
+  color:
+    var(--texto-blanco);
+
+  cursor: pointer;
+
+  transition:
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.modal-close:hover {
+  background:
+    rgba(255,255,255,0.20);
+}
+
+.modal-close:active {
+  transform: scale(0.95);
+}
+
+/* =========================================================
+   BODY
+========================================================= */
+
+.modal-body {
+  padding: 22px;
+}
+
+/* =========================================================
+   ANIMACIONES
+========================================================= */
+
+@keyframes fadeIn {
+
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalEnter {
+
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 640px) {
+
+  .modal-overlay {
+    padding: 12px;
+  }
+
+  .modal-card {
+    max-width: 100% !important;
+  }
+}

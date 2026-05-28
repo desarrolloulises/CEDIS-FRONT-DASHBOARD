@@ -1,11 +1,15 @@
 <div class="contenedor-principal">
-  <aside class="sidebar-izquierda">
+
+  <aside class="sidebar-izquierda" [class.sidebar-oculta]="!sidebarAbierto()">
     <app-sidebar></app-sidebar>
   </aside>
 
   <div class="cuerpo-derecha">
+    <app-header [sidebarAbierto]="sidebarAbierto()" (toggleSidebar)="toggleSidebar()"></app-header>
+
     <main class="contenido-dinamico">
-      <router-outlet></router-outlet> 
+      <router-outlet></router-outlet>
     </main>
   </div>
+
 </div>
