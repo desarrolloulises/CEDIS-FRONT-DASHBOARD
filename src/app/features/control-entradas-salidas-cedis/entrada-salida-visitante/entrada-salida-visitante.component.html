@@ -1,0 +1,299 @@
+<div class="ev-wrapper">
+
+  <!-- ── ENCABEZADO ──────────────────────────────────────────── -->
+  <div class="ev-header">
+    <div class="ev-header__left">
+      <h1 class="ev-title">Registro de Visitas</h1>
+      <p class="ev-subtitle">Control de entrada y salida</p>
+    </div>
+
+    <div class="ev-header__right">
+      <input
+        class="ev-search"
+        type="text"
+        placeholder="Buscar por nombre, tipo, empresa, CURP…"
+        [(ngModel)]="filtro"
+      />
+      <button class="ev-btn ev-btn--primary" (click)="openAlta()">
+        <i class="ti ti-plus"></i> Agregar
+      </button>
+      <button class="ev-btn ev-btn--outline" (click)="showQR = true">
+        <i class="ti ti-qrcode"></i> Reg. QR
+      </button>
+      <button class="ev-btn ev-btn--ghost" (click)="irConsultar()">
+        <i class="ti ti-search"></i> Consultar
+      </button>
+    </div>
+  </div>
+
+  <!-- ── CONTADOR ─────────────────────────────────────────────── -->
+  <p class="ev-count">{{ visitasFiltradas.length }} registros en total</p>
+
+  <!-- ── TABLA ────────────────────────────────────────────────── -->
+  <div class="ev-table-wrap">
+    <table class="ev-table">
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Fecha</th>
+          <th>Nombre</th>
+          <th>Ap. Paterno</th>
+          <th>Ap. Materno</th>
+          <th>CURP</th>
+          <th>Empresa / Área</th>
+          <th>Vehículo</th>
+          <th>Placas</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let v of visitasFiltradas; trackBy: trackById">
+          <td>
+            <span class="ev-badge ev-badge--{{ v.tipo | lowercase}}">
+              {{ v.tipo }}
+            </span>
+          </td>
+          <td>{{ v.fecha }}</td>
+          <td>{{ v.nombre }}</td>
+          <td>{{ v.apellidoPaterno }}</td>
+          <td>{{ v.apellidoMaterno }}</td>
+          <td class="ev-curp">{{ v.curp }}</td>
+          <td>
+            <ng-container *ngIf="v.tipo === 'Servicio Externo'; else areaTpl">
+              {{ v.empresa || '—' }}
+            </ng-container>
+            <ng-template #areaTpl>
+              {{ v.areaQueVisita || '—' }}
+            </ng-template>
+          </td>
+          <td>
+            <ng-container *ngIf="v.tieneVehiculo; else sinVeh">
+              {{ v.tipoVehiculo }} {{ v.marcaVehiculo }}
+            </ng-container>
+            <ng-template #sinVeh>—</ng-template>
+          </td>
+          <td>{{ v.placas || '—' }}</td>
+          <td class="ev-actions">
+            <button class="ev-icon-btn ev-icon-btn--edit"   title="Editar"    (click)="openEditar(v)">
+              <i class="ti ti-pencil"></i>
+            </button>
+            <button class="ev-icon-btn ev-icon-btn--exit"   title="Dar salida" (click)="marcarSalida(v.id)">
+              <i class="ti ti-logout"></i>
+            </button>
+            <button class="ev-icon-btn ev-icon-btn--print"  title="Imprimir"  (click)="imprimir(v)">
+              <i class="ti ti-printer"></i>
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="visitasFiltradas.length === 0">
+          <td colspan="10" class="ev-empty">Sin registros que coincidan.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /ev-wrapper -->
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     MODAL ALTA / EDICIÓN
+     ════════════════════════════════════════════════════════════════ -->
+<div class="ev-overlay" *ngIf="showAlta" (click)="showAlta = false"></div>
+
+<div class="ev-modal" *ngIf="showAlta" role="dialog" aria-modal="true">
+
+  <div class="ev-modal__header">
+    <h2 class="ev-modal__title">{{ modalTitulo }}</h2>
+    <button class="ev-modal__close" (click)="showAlta = false">
+      <i class="ti ti-x"></i>
+    </button>
+  </div>
+
+  <div class="ev-modal__body">
+
+    <!-- TIPO -->
+    <div class="ev-field ev-field--full">
+      <label class="ev-label">TIPO <span class="ev-req">*</span></label>
+      <select class="ev-select" [(ngModel)]="form.tipo" (ngModelChange)="onChangeTipo()">
+        <option *ngFor="let t of tipos" [value]="t">{{ t }}</option>
+      </select>
+    </div>
+
+    <!-- NOMBRES -->
+    <div class="ev-field-row">
+      <div class="ev-field">
+        <label class="ev-label">NOMBRE <span class="ev-req">*</span></label>
+        <input class="ev-input" type="text" placeholder="Nombre"
+               [(ngModel)]="form.nombre" [disabled]="curpBloqueado" />
+      </div>
+      <div class="ev-field">
+        <label class="ev-label">AP. PATERNO <span class="ev-req">*</span></label>
+        <input class="ev-input" type="text" placeholder="Ap. Paterno"
+               [(ngModel)]="form.apellidoPaterno" [disabled]="curpBloqueado" />
+      </div>
+      <div class="ev-field">
+        <label class="ev-label">AP. MATERNO</label>
+        <input class="ev-input" type="text" placeholder="Ap. Materno"
+               [(ngModel)]="form.apellidoMaterno" [disabled]="curpBloqueado" />
+      </div>
+    </div>
+
+    <!-- CURP -->
+    <div class="ev-field ev-field--curp">
+      <label class="ev-label">CURP</label>
+      <div class="ev-input-group">
+        <input class="ev-input" type="text" placeholder="CURP"
+               [(ngModel)]="form.curp" [disabled]="curpBloqueado" />
+        <button *ngIf="curpBloqueado" class="ev-link-btn ev-link-btn--danger"
+                type="button" (click)="desbloquearCURP()">
+          <i class="ti ti-lock-open"></i> Desbloquear
+        </button>
+        <button *ngIf="!curpBloqueado" class="ev-link-btn"
+                type="button" (click)="abrirConsultaCURP()">
+          <i class="ti ti-id-badge"></i> Consultar por CURP
+        </button>
+      </div>
+    </div>
+
+    <!-- EMPRESA  (solo Servicio Externo) -->
+    <div class="ev-field ev-field--full" *ngIf="form.tipo === 'Servicio Externo'">
+      <label class="ev-label">EMPRESA <span class="ev-req">*</span></label>
+      <input class="ev-input" type="text" placeholder="Nombre de la empresa"
+             [(ngModel)]="form.empresa" />
+    </div>
+
+    <!-- ÁREA  (solo Candidato) -->
+    <div class="ev-field ev-field--full" *ngIf="form.tipo === 'Candidato'">
+      <label class="ev-label">ÁREA QUE VISITA <span class="ev-req">*</span></label>
+      <select class="ev-select" [(ngModel)]="form.areaQueVisita">
+        <option value="">— Seleccionar —</option>
+        <option *ngFor="let a of areas" [value]="a">{{ a }}</option>
+      </select>
+    </div>
+
+    <!-- VEHÍCULO -->
+    <div class="ev-field ev-field--full">
+      <label class="ev-checkbox">
+        <input type="checkbox" [(ngModel)]="form.tieneVehiculo"
+               (ngModelChange)="onToggleVehiculo()" />
+        <span>¿Cuenta con vehículo?</span>
+      </label>
+    </div>
+
+    <div class="ev-field-row" *ngIf="form.tieneVehiculo">
+      <div class="ev-field">
+        <label class="ev-label">TIPO VEHÍCULO</label>
+        <select class="ev-select" [(ngModel)]="form.tipoVehiculo">
+          <option value="">— Tipo —</option>
+          <option *ngFor="let tv of tiposVehiculo" [value]="tv">{{ tv }}</option>
+        </select>
+      </div>
+      <div class="ev-field">
+        <label class="ev-label">MARCA</label>
+        <input class="ev-input" type="text" placeholder="Marca" [(ngModel)]="form.marcaVehiculo" />
+      </div>
+      <div class="ev-field">
+        <label class="ev-label">MODELO (AÑO)</label>
+        <input class="ev-input" type="text" placeholder="Modelo" [(ngModel)]="form.modeloVehiculo" />
+      </div>
+      <div class="ev-field">
+        <label class="ev-label">PLACAS</label>
+        <input class="ev-input" type="text" placeholder="Placas" [(ngModel)]="form.placas" />
+      </div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="ev-modal__footer">
+    <button class="ev-btn ev-btn--outline" (click)="showAlta = false">Cancelar</button>
+    <button class="ev-btn ev-btn--primary" [disabled]="!formValido" (click)="registrar()">
+      {{ modalBotonPrimario }}
+    </button>
+  </div>
+
+</div><!-- /modal alta -->
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     MODAL CONSULTA CURP
+     ════════════════════════════════════════════════════════════════ -->
+<div class="ev-overlay ev-overlay--top" *ngIf="showCURP" (click)="showCURP = false"></div>
+
+<div class="ev-modal ev-modal--sm" *ngIf="showCURP" role="dialog" aria-modal="true">
+
+  <div class="ev-modal__header">
+    <h2 class="ev-modal__title">Consultar por CURP</h2>
+    <button class="ev-modal__close" (click)="showCURP = false">
+      <i class="ti ti-x"></i>
+    </button>
+  </div>
+
+  <div class="ev-modal__body">
+    <p class="ev-modal__hint">Ingresa la CURP para auto-completar nombre y apellidos.</p>
+
+    <div class="ev-field ev-field--full">
+      <label class="ev-label">CURP (18 caracteres)</label>
+      <input
+        class="ev-input"
+        type="text"
+        placeholder="CURP"
+        maxlength="18"
+        [(ngModel)]="consultaCURP"
+        (keyup.enter)="consultarCURP()"
+      />
+      <p class="ev-error" *ngIf="errorCURP">{{ errorCURP }}</p>
+    </div>
+  </div>
+
+  <div class="ev-modal__footer">
+    <button class="ev-btn ev-btn--outline" (click)="showCURP = false">Cancelar</button>
+    <button class="ev-btn ev-btn--primary"
+            [disabled]="consultaCURP.trim().length < 18"
+            (click)="consultarCURP()">
+      Buscar
+    </button>
+  </div>
+
+</div><!-- /modal curp -->
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     MODAL QR
+     ════════════════════════════════════════════════════════════════ -->
+<div class="ev-overlay" *ngIf="showQR" (click)="showQR = false"></div>
+
+<div class="ev-modal ev-modal--sm" *ngIf="showQR" role="dialog" aria-modal="true">
+
+  <div class="ev-modal__header">
+    <h2 class="ev-modal__title">Registro por QR</h2>
+    <button class="ev-modal__close" (click)="showQR = false">
+      <i class="ti ti-x"></i>
+    </button>
+  </div>
+
+  <div class="ev-modal__body">
+    <p class="ev-modal__hint">Escanea o ingresa la CURP del visitante.</p>
+    <div class="ev-field ev-field--full">
+      <label class="ev-label">CURP / QR</label>
+      <input
+        class="ev-input"
+        type="text"
+        placeholder="CURP del visitante"
+        [(ngModel)]="qrInput"
+        (keyup)="onQRKey($event)"
+        autofocus
+      />
+    </div>
+  </div>
+
+  <div class="ev-modal__footer">
+    <button class="ev-btn ev-btn--outline" (click)="showQR = false">Cancelar</button>
+    <button class="ev-btn ev-btn--primary"
+            [disabled]="!qrInput.trim()"
+            (click)="submitQR()">
+      Registrar
+    </button>
+  </div>
+
+</div><!-- /modal qr -->
