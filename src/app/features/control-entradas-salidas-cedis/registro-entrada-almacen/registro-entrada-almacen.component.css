@@ -1,3 +1,8 @@
+/* =========================================================
+   REGISTRO EMPLEADO — Estilos del componente
+   Usa las variables globales del proyecto
+========================================================= */
+
 /* ── Wrapper principal ─────────────────────────────────── */
 .registro-wrapper {
   max-width: 992px;
@@ -139,10 +144,6 @@
 
 .campo-grupo--span2 {
   grid-column: span 2;
-}
-
-.campo-grupo--span3-mobile {
-  /* En desktop, ocupa su columna; en mobile se verá en su fila */
 }
 
 .campo-label {
@@ -777,7 +778,6 @@
 
 .tabla-th--fecha  { width: 110px; }
 .tabla-th--nivel  { width: 80px;  text-align: center; }
-.tabla-th--desc   { /* flexible */ }
 .tabla-th--acc    { width: 60px;  text-align: center; }
 
 .tabla-tr {
@@ -949,4 +949,255 @@
   word-break: break-word;
   max-height: 60vh;
   overflow-y: auto;
+}
+
+/* =========================================================
+   NUEVOS ESTILOS — iteración 2
+   (topbar, badges CURP, veto bloqueado, botones extra,
+    modal de reset, select readonly)
+========================================================= */
+
+/* ── Barra superior: tabs + botón nuevo ───────────────── */
+.reg-topbar {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.reg-topbar .reg-tabs {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* ── Botón "Nuevo registro" (reset global) ────────────── */
+.btn--reset {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-card);
+  border: 2px solid var(--error);
+  border-radius: var(--radius-md);
+  color: var(--error);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+  line-height: 1;
+}
+
+.btn--reset i {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.btn--reset:hover {
+  background: var(--error);
+  color: white;
+}
+
+/* ── Badge de estado CURP ─────────────────────────────── */
+.curp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 50px;
+  margin-top: 2px;
+}
+
+.curp-badge--encontrado {
+  background: var(--exito-light);
+  color: var(--exito-hover);
+  border: 1px solid var(--exito);
+}
+
+.curp-badge--no-encontrado {
+  background: var(--advertencia-light);
+  color: var(--advertencia-hover);
+  border: 1px solid var(--advertencia);
+}
+
+/* ── Select con apariencia readonly (autocompletado) ──── */
+.campo-select--readonly {
+  background-color: var(--bg-zebra);
+  color: var(--texto-secundario);
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+/* ── Bloque de veto bloqueado ─────────────────────────── */
+.veto-bloqueado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  background: var(--error-light);
+  border: 1.5px solid var(--error);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.veto-bloqueado__info {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  font-size: 0.83rem;
+  color: var(--error-hover, #b91c1c);
+}
+
+.veto-bloqueado__info i {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.veto-bloqueado__info div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.veto-bloqueado__info strong {
+  font-size: 0.85rem;
+}
+
+.veto-bloqueado__info span {
+  font-size: 0.78rem;
+  color: var(--texto-secundario);
+}
+
+/* ── Banner "Editando veto" ───────────────────────────── */
+.veto-edit-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  background: var(--advertencia-light);
+  border: 1.5px solid var(--advertencia);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-md);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--advertencia-hover, #92400e);
+}
+
+.veto-edit-banner i {
+  font-size: 1rem;
+}
+
+.veto-edit-banner .btn {
+  margin-left: auto;
+}
+
+/* ── Variantes de botón pequeño ──────────────────────── */
+.btn--sm {
+  padding: 5px var(--space-md);
+  font-size: 0.78rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn--advertencia {
+  background: var(--advertencia-light);
+  color: var(--advertencia-hover, #92400e);
+  border: 1.5px solid var(--advertencia);
+}
+
+.btn--advertencia:hover {
+  background: var(--advertencia);
+  color: white;
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--texto-secundario);
+  border: 1.5px solid var(--border-color);
+}
+
+.btn--ghost:hover {
+  background: var(--bg-zebra);
+  color: var(--texto-principal);
+}
+
+.btn--error {
+  background: var(--error);
+  color: white;
+  border: none;
+}
+
+.btn--error:hover {
+  background: var(--error-hover, #b91c1c);
+}
+
+/* ── Modal de confirmación de reset ──────────────────── */
+.modal-box--sm {
+  max-width: 400px;
+}
+
+.modal-header--advertencia {
+  background: var(--advertencia-hover, #d97706);
+}
+
+.modal-body p {
+  margin: 0 0 var(--space-sm);
+  font-size: 0.9rem;
+  color: var(--texto-principal);
+  line-height: 1.5;
+}
+
+.modal-body p:last-child {
+  margin-bottom: 0;
+  font-weight: 600;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  border-top: 1px solid var(--border-light);
+  background: var(--bg-zebra);
+}
+
+/* ── Responsive nuevos elementos ─────────────────────── */
+@media (max-width: 640px) {
+
+  .reg-topbar {
+    flex-wrap: wrap;
+  }
+
+  .reg-topbar .reg-tabs {
+    order: 1;
+    width: 100%;
+  }
+
+  .btn--reset {
+    order: 0;
+    align-self: center;
+    flex-direction: row;
+    margin-left: auto;
+    padding: 6px var(--space-sm);
+  }
+
+  .veto-bloqueado {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }

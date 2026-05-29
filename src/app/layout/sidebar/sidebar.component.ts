@@ -94,6 +94,7 @@ export class SidebarComponent {
     '30-1': 'camaraQr/camaraQr',
     '40-1': 'registro-ingreso-transportista-caseta',
     '40-2': 'registro-personal',
+    '40-3': 'control-visita',
     '44-1': 'ver-reporte/44-1'
   };
 
