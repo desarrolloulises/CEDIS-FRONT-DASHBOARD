@@ -1,0 +1,157 @@
+/* =========================================================
+   BASE
+========================================================= */
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: var(--radius-md);
+
+  cursor: pointer;
+
+  transition:
+    background-color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+
+  user-select: none;
+}
+
+/* =========================================================
+   EFECTOS
+========================================================= */
+
+.icon-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.icon-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.icon-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =========================================================
+   TAMAÑOS
+========================================================= */
+
+.icon-btn-xs {
+  width: 28px;
+  height: 28px;
+}
+
+.icon-btn-xs i {
+  font-size: 14px;
+}
+
+.icon-btn-sm {
+  width: 34px;
+  height: 34px;
+}
+
+.icon-btn-sm i {
+  font-size: 16px;
+}
+
+.icon-btn-md {
+  width: 42px;
+  height: 42px;
+}
+
+.icon-btn-md i {
+  font-size: 18px;
+}
+
+/* =========================================================
+   PRIMARY
+========================================================= */
+
+.icon-btn-primary {
+  background-color: transparent;
+  color: var(--primario);
+  box-shadow: var(--shadow-sm);
+}
+
+.icon-btn-primary:hover:not(:disabled) {
+  background-color: var(--primario-light);
+  box-shadow: var(--shadow-md);
+}
+
+/* =========================================================
+   SECONDARY
+========================================================= */
+
+.icon-btn-secondary {
+  background-color: transparent;
+  color: var(--secundario);
+}
+
+.icon-btn-secondary:hover:not(:disabled) {
+  background-color: var(--secundario-light);
+}
+
+/* =========================================================
+   GHOST
+========================================================= */
+
+.icon-btn-ghost {
+  background-color: transparent;
+  color: var(--texto-secundario);
+}
+
+.icon-btn-ghost:hover:not(:disabled) {
+  background-color: var(--bg-hover);
+  color: var(--texto-principal);
+}
+
+/* =========================================================
+   SUCCESS
+========================================================= */
+
+.icon-btn-success {  
+  background-color: transparent;    
+  color: var(--exito);
+  box-shadow: var(--shadow-sm);
+}
+
+.icon-btn-success:hover:not(:disabled) {
+  background-color: var(--exito-light);
+  box-shadow: var(--shadow-md);
+}
+
+/* =========================================================
+   WARNING
+========================================================= */
+
+.icon-btn-warning {
+  background-color: transparent;    
+  color: var(--advertencia);
+  box-shadow: var(--shadow-sm);
+}
+
+.icon-btn-warning:hover:not(:disabled) {
+  background-color: var(--advertencia-light);
+  box-shadow: var(--shadow-md);
+}
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.icon-btn-error {
+  background-color: transparent;
+  color: var(--error);
+  box-shadow: var(--shadow-sm);
+}
+
+.icon-btn-error:hover:not(:disabled) {
+  background-color: var(--error-light);
+  box-shadow: var(--shadow-md);
+}

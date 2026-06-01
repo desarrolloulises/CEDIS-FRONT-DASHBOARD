@@ -2,35 +2,29 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   Output
 } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-export interface ISelectOption {
 
+export interface ISelectOption {
   label: string;
   value: string;
 }
 
 @Component({
   selector: 'app-select',
-
   standalone: true,
-
   imports: [
     CommonModule,
     FormsModule
   ],
-
-  templateUrl:
-    './select.component.html',
-
-  styleUrls: [
-    './select.component.css'
-  ]
+  templateUrl: './select.component.html',
+  styleUrls: ['./select.component.css']
 })
-export class SelectComponent {
+export class SelectComponent implements OnChanges {
 
   // ─────────────────────────────
   // Value
@@ -40,8 +34,14 @@ export class SelectComponent {
   value: string = '';
 
   @Output()
-  valueChange =
-    new EventEmitter<string>();
+  valueChange = new EventEmitter<string>();
+
+  /** Copia interna que ngModel puede leer y escribir */
+  internalValue: string = '';
+
+  ngOnChanges(): void {
+    this.internalValue = this.value ?? '';
+  }
 
   // ─────────────────────────────
   // Options
@@ -55,12 +55,10 @@ export class SelectComponent {
   // ─────────────────────────────
 
   @Input()
-  placeholder: string =
-    'Seleccione una opción';
+  placeholder: string = 'Seleccione una opción';
 
   @Input()
-  size: 'sm' | 'md' | 'lg' =
-    'md';
+  size: 'sm' | 'md' | 'lg' = 'md';
 
   @Input()
   disabled: boolean = false;
@@ -72,14 +70,8 @@ export class SelectComponent {
   // Change
   // ─────────────────────────────
 
-  onChange(event: Event): void {
-
-    const value =
-      (event.target as HTMLSelectElement)
-      .value;
-
-    this.value = value;
-
-    this.valueChange.emit(value);
+  onModelChange(val: string): void {
+    this.value = val;
+    this.valueChange.emit(val);
   }
 }

@@ -6,10 +6,9 @@
     fullWidth ? 'btn-block' : ''
   ]"
   [disabled]="disabled"
+  (click)="onClick($event)"
 >
+  <i *ngIf="icon" [class]="icon"></i>
 
-  <span>
-    {{ label }}
-  </span>
-
+  <span>{{ label }}</span>
 </button>

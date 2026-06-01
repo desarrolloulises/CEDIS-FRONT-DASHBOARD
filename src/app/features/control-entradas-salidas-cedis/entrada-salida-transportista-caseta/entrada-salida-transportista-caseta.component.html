@@ -13,17 +13,17 @@
         (valueChange)="filtroBusqueda.set($event)" size="sm">
       </app-input>
 
-      <app-button label="↻ Actualizar" type="secondary" size="sm" (click)="cargarDatos()">
+      <app-button label="↻ Actualizar" type="secondary" size="sm" (clicked)="cargarDatos()">
       </app-button>
 
     </div>
 
     <div class="header-tools-right">
 
-      <app-button label="Agregar Cita" type="primary" size="sm" (click)="abrirFormulario()">
+      <app-button label="Agregar Cita" type="primary" size="sm" (clicked)="abrirFormulario()">
       </app-button>
 
-      <app-button label="Registro por QR" type="primary" size="sm" (click)="registroQr.abrir()">
+      <app-button label="Registro por QR" type="primary" size="sm" (clicked)="registroQr.abrir()">
       </app-button>
 
       <app-button label="Consultar Visitas" type="primary" size="sm">
@@ -81,9 +81,9 @@
       </label>
 
       <div class="modal-actions">
-        <app-button label="Cancelar" type="ghost" [disabled]="loadingSalida()" (click)="cerrarModalSalida()">
+        <app-button label="Cancelar" type="ghost" [disabled]="loadingSalida()" (clicked)="cerrarModalSalida()">
         </app-button>
-        <app-button label="Confirmar salida" type="primary" [disabled]="loadingSalida()" (click)="confirmarSalida()">
+        <app-button label="Confirmar salida" type="primary" [disabled]="loadingSalida()" (clicked)="confirmarSalida()">
         </app-button>
       </div>
 

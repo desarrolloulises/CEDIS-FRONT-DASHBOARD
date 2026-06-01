@@ -1,5 +1,3 @@
-/* shared/components/button/button.component.css */
-
 /* =========================================================
    BOTÓN BASE
 ========================================================= */
@@ -97,6 +95,73 @@
   background-color: #f3f4f6;
   color: var(--texto-principal);
 }
+
+/* =========================================================
+   SUCCESS
+========================================================= */
+
+.btn-success {
+  background-color: var(--exito);
+  color: var(--texto-blanco);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: var(--exito-hover);
+  box-shadow: var(--shadow-md);
+}
+
+/* =========================================================
+   WARNING
+========================================================= */
+
+.btn-warning {
+  background-color: var(--advertencia);
+  color: var(--texto-blanco);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-warning:hover:not(:disabled) {
+  background-color: var(--advertencia-hover);
+  box-shadow: var(--shadow-md);
+}
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.btn-error {
+  background-color: var(--error);
+  color: var(--texto-blanco);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-error:hover:not(:disabled) {
+  background-color: var(--error-hover);
+  box-shadow: var(--shadow-md);
+}
+
+/* =========================================================
+   ICONOS
+========================================================= */
+
+.btn i {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.btn-sm i {
+  font-size: 14px;
+}
+
+.btn-lg i {
+  font-size: 18px;
+}
+
+
 
 /* =========================================================
    TAMAÑOS
