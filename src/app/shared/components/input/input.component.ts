@@ -57,4 +57,9 @@ export class InputComponent {
   @Output()
   blur = new EventEmitter<void>();
 
+  @Output()
+  inputBlur = new EventEmitter<void>();
+
+  @Output()
+  enter = new EventEmitter<void>();
 }

@@ -86,15 +86,15 @@
             <ng-container *ngIf="loadingEditIndex() !== i">
 
               <app-button label="Editar" type="secondary" size="sm" [disabled]="loadingEditIndex() !== null"
-                (click)="editarFila(fila, i)">
+                (clicked)="editarFila(fila, i)">
               </app-button>
 
               <ng-container *ngIf="editingIndex() === i">
 
-                <app-button label="✔" type="primary" size="sm" (click)="guardarFila(fila, i)"> <!-- agregar fila -->
+                <app-button label="✔" type="primary" size="sm" (clicked)="guardarFila(fila, i)"> <!-- agregar fila -->
                 </app-button>
 
-                <app-button label="✕" type="ghost" size="sm" (click)="cancelarEdicion()">
+                <app-button label="✕" type="ghost" size="sm" (clicked)="cancelarEdicion()">
                 </app-button>
 
               </ng-container>
@@ -217,11 +217,11 @@
 
         <!-- ENTRADA -->
         <td class="text-center">
-
+          
           <app-button *ngIf="!fila.entrada" label="Entrada OK" type="primary" size="sm" [disabled]="true">
           </app-button>
 
-          <app-button *ngIf="fila.entrada" label="Registrar" type="primary" size="sm" (click)="onEntrada(fila, i)">
+          <app-button *ngIf="fila.entrada" label="Registrar" type="primary" size="sm" (clicked)="onEntrada(fila, i)">
           </app-button>
 
         </td>
@@ -229,7 +229,7 @@
         <!-- SALIDA -->
         <td class="text-center">
 
-          <app-button *ngIf="!fila.entrada" label="Salida" type="secondary" size="sm" (click)="onSalida(fila)">
+          <app-button *ngIf="!fila.entrada" label="Salida" type="secondary" size="sm" (clicked)="onSalida(fila)">
           </app-button>
 
           <span *ngIf="fila.entrada" class="text-muted">

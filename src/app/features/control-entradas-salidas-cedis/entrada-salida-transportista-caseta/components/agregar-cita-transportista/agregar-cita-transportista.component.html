@@ -12,7 +12,7 @@
         Agregar cita
       </div>
 
-      <app-button label="Buscar por CURP" type="secondary" size="sm" (click)="modalCurpVisible = true">
+      <app-button label="Buscar por CURP" type="secondary" size="sm" (clicked)="modalCurpVisible = true">
       </app-button>
 
     </div>
@@ -90,10 +90,10 @@
     <!-- ACTIONS -->
     <div class="form-actions">
 
-      <app-button label="Cancelar" type="ghost" size="sm" (click)="cerrar.emit(false)">
+      <app-button label="Cancelar" type="ghost" size="sm" (clicked)="cerrar.emit(false)">
       </app-button>
 
-      <app-button label="Confirmar" type="primary" size="sm" [disabled]="loadingGuardar()" (click)="guardar()">
+      <app-button label="Confirmar" type="primary" size="sm" [disabled]="loadingGuardar()" (clicked)="guardar()">
       </app-button>
 
     </div>
@@ -118,10 +118,10 @@
       <div class="modal-footer-curp">
 
         <app-button label="Cancelar" type="ghost" size="sm" [disabled]="loadingCurp()"
-          (click)="modalCurpVisible = false">
+          (clicked)="modalCurpVisible = false">
         </app-button>
 
-        <app-button label="Consultar" type="primary" size="sm" [disabled]="loadingCurp()" (click)="consultarCurp()">
+        <app-button label="Consultar" type="primary" size="sm" [disabled]="loadingCurp()" (clicked)="consultarCurp()">
         </app-button>
 
       </div>

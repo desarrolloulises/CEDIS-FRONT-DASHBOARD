@@ -1,0 +1,13 @@
+<button
+  class="icon-btn"
+  [title]="title"
+  [disabled]="disabled"
+  [ngClass]="[
+    'icon-btn-' + type,
+    'icon-btn-' + size
+  ]"
+>
+
+  <i [class]="icon"></i>
+
+</button>

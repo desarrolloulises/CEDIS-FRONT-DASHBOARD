@@ -32,19 +32,22 @@
 .modal-card {
   width: 100%;
 
-  background:
-    var(--bg-card);
+  background: var(--bg-card);
 
-  border-radius:
-    var(--radius-lg);
+  border-radius: var(--radius-lg);
 
-  box-shadow:
-    var(--shadow-lg);
+  box-shadow: var(--shadow-lg);
 
   overflow: hidden;
 
-  animation:
-    modalEnter 0.18s ease;
+  animation: modalEnter 0.18s ease;
+
+  /* NUEVO */
+  max-height: 90%;
+
+
+  display: flex;
+  flex-direction: column;
 }
 
 /* =========================================================
@@ -88,7 +91,7 @@
     var(--radius-sm);
 
   background:
-    rgba(255,255,255,0.12);
+    rgba(255, 255, 255, 0.12);
 
   color:
     var(--texto-blanco);
@@ -102,7 +105,7 @@
 
 .modal-close:hover {
   background:
-    rgba(255,255,255,0.20);
+    rgba(255, 255, 255, 0.20);
 }
 
 .modal-close:active {
@@ -115,6 +118,8 @@
 
 .modal-body {
   padding: 22px;
+  overflow-y: auto;
+  flex: 1;
 }
 
 /* =========================================================

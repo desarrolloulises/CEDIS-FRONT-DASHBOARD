@@ -20,7 +20,7 @@
 
   --primario: #2e3c4a;
   --primario-hover: #425364;
-  --primario-light: #e6eef7;
+  --primario-light: #bbcde2;
 
   --secundario: #27696c;
   --secundario-hover: #00949b;
@@ -217,7 +217,7 @@ body {
 }
 
 /*
-  Recordatorio: Revisar estilos posteriores a este comentario.
+  TODO Recordatorio: Revisar estilos posteriores a este comentario.
 */
 .sidebar-izquierda {
   width: 250px;

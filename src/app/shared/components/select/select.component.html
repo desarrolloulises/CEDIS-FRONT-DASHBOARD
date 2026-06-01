@@ -3,18 +3,11 @@
   [class.select-block]="fullWidth">
 
   <select
-
     class="select"
-
-    [ngClass]="[
-      'select-' + size
-    ]"
-
+    [ngClass]="['select-' + size]"
     [disabled]="disabled"
-
-    [value]="value"
-
-    (change)="onChange($event)">
+    [(ngModel)]="internalValue"
+    (ngModelChange)="onModelChange($event)">
 
     <option value="">
       {{ placeholder }}
@@ -23,9 +16,7 @@
     <option
       *ngFor="let item of options"
       [value]="item.value">
-
       {{ item.label }}
-
     </option>
 
   </select>
