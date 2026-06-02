@@ -2,15 +2,16 @@
 //export const url ='http://192.168.101.9:8085' //Para servidar WMS-DES
 
 //export const url ='http://localhost:5000' //Para servidor LOCAL
-//export const url ='http://192.168.101.9:8088' //Para servidar DESAROLLO
+export const url ='http://192.168.101.9:8088' //Para servidar DESAROLLO
 //export const url ='http://192.168.101.10:80' //Para servidar PRODUCCION
-export const url ='http://192.168.101.10:82' //Para servidar dasboartd PRODUCCION
+//export const url ='http://192.168.101.10:82' //Para servidar dasboartd PRODUCCION
 
 
  /* export const APIURL_CALIDAD = `${url}/cedis/C4L1D4DC3D1S`;
   export const APIURL_RECIBO = `${url}/cedis/R3C1B0C3D1S`;
   export const APIURL_CIERREOC = `${url}/cedis/C13RR3C3D1S`;
   export const APIURL_AVANCEREC = `${url}/cedis/4VANC3R3CCED1S`;
+  
   export const APIURL_VALPRECIO = `${url}/cedis/V4L1PR3C1OCED1S`;
   export const APIURL_GETPRIMERCONTEOFOLIO = `${url}/cedis/G3TPR1MRCNT30F0L10CED1S`;
   export const APIURL_GETPRIMERCONTEOSCANER = `${url}/cedis/G3TPR1MRCNT305C4N3RCED1S`;
