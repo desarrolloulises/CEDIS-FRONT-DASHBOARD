@@ -1,406 +1,706 @@
-import {
-  Component,
-  signal,
-  computed,
-  inject,
-  OnInit,
-  HostListener,
-  ViewChild,
-  ElementRef
-} from '@angular/core';
-
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-import { ITransportista } from './models/entrada-salida-transportista-caseta.model';
-import { TransportistaService } from './services/entrada-salida-transportista-caseta.service';
-import { DatosService } from '../../../service/servicio.service';
-
-import { AgregarCitaTransportistaComponent } from './components/agregar-cita-transportista/agregar-cita-transportista.component';
-import { TablaTransportistasComponent } from './components/tabla-transportista/tabla-transportista.component';
-import { RegistroQrComponent } from './components/registro-qr/registro-qr.component';
+import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
+import QRCode from 'qrcode';
 
 import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { InputComponent } from '../../../shared/components/input/input.component';
+import { IconButtonComponent } from '../../../shared/components/icon-button/icon-button.component';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { SelectComponent, ISelectOption } from '../../../shared/components/select/select.component';
+import { InputComponent } from '../../../shared/components/input/input.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 
+
+import { TransportistaService } from './services/entrada-salida-transportista-caseta.service';
+import { DatosService } from '../../../service/servicio.service';
+
+import {
+  ITransportista,
+  ITipoIngreso,
+  ITipoUnidad,
+  IApiErrorResponse,
+} from './models/entrada-salida-transportista-caseta.model';
+
+// ── Tipo interno del formulario ──────────────────────────────────────────────
+
+export interface FormTransportista {
+  tipoIngresoId: number | null;
+  empresa: string;
+  idProveedor: string;
+  nombre: string;
+  paterno: string;
+  materno: string;
+  curp: string;
+  placas: string;
+  tipoUnidadId: number | null;
+}
+
+function emptyForm(): FormTransportista {
+  return {
+    tipoIngresoId: null,
+    empresa: '',
+    idProveedor: '',
+    nombre: '',
+    paterno: '',
+    materno: '',
+    curp: '',
+    placas: '',
+    tipoUnidadId: null,
+  };
+}
+
+
 @Component({
-  selector: 'app-registro-transportista',
+  selector: 'app-entrada-salida-transportista-caseta',
   standalone: true,
   imports: [
     CommonModule,
     FormsModule,
 
-    AgregarCitaTransportistaComponent,
-    TablaTransportistasComponent,
-    RegistroQrComponent,
-
     ButtonComponent,
-    InputComponent,
+    IconButtonComponent,
     ModalComponent,
+    InputComponent,
+    SelectComponent,
     LoadingSpinnerComponent,
     ToastComponent,
   ],
   templateUrl: './entrada-salida-transportista-caseta.component.html',
-  styleUrls: ['./entrada-salida-transportista-caseta.component.css']
+  styleUrls: ['./entrada-salida-transportista-caseta.component.css'],
 })
-export class EntradaSalidaTransportistaCasetaComponent implements OnInit {
+export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDestroy {
+
+  // ── Estado principal ────────────────────────────────────────────────────
+  transportistas: ITransportista[] = [];
+  filtro = '';
+
+  // Catálogos cargados al inicio
+  tiposIngreso: ITipoIngreso[] = [];
+  tiposUnidad: ITipoUnidad[] = [];
+
+  // ── Modal alta / edición ────────────────────────────────────────────────
+  showAlta = false;
+  editandoId: number | null = null;
+  form: FormTransportista = emptyForm();
+  curpBloqueado = false;
+
+  // ── Modal CURP ──────────────────────────────────────────────────────────
+  showCURP = false;
+  consultaCURP = '';
+  cargandoCURP = false;
+
+  // ── Modal salida ────────────────────────────────────────────────────────
+  showSalida = false;
+  salidaTarget: ITransportista | null = null;
+  salidaConCaja: boolean | null = null;
+
+  // ── Modal QR ────────────────────────────────────────────────────────────
+  showQR = false;
+  qrInput = '';
+
+  // ── Spinner global ──────────────────────────────────────────────────────
+  cargando = false;
+
+  // ── Toast ───────────────────────────────────────────────────────────────
+  toastVisible = false;
+  toastTipo: 'success' | 'error' = 'success';
+  toastTitulo = '';
+  toastMensaje = '';
+
+  // ── Imprimir ───────────────────────────────────────────────────────────────
+  imprimirAlGuardar = false;
 
   // ─────────────────────────────
-  // Services
+  // Recursos impresión
   // ─────────────────────────────
 
-  private svc = inject(TransportistaService);
-  private datosService = inject(DatosService);
+  readonly imagenReverso =
+    './logo.png';
 
-  // ─────────────────────────────
-  // ViewChild
-  // ─────────────────────────────
+  readonly logoFrontal =
+    './logo_sm.png';
 
-  @ViewChild('searchInput', { read: ElementRef })
-  searchInput!: ElementRef;
+  readonly visitorBarImage =
+    '/visitor_bar.png';
 
-  @ViewChild(RegistroQrComponent)
-  registroQr!: RegistroQrComponent;
+  // ── Constructor / lifecycle ─────────────────────────────────────────────
 
-  // ─────────────────────────────
-  // Estado general
-  // ─────────────────────────────
-
-  isLoading = signal(false);
-  errorMsg = signal('');
-  filtroBusqueda = signal('');
-
-  // ─────────────────────────────
-  // Toast
-  // ─────────────────────────────
-
-  toastVisible = signal(false);
-  toastTipo = signal<'success' | 'error'>('success');
-  toastTitulo = signal('');
-  toastMensaje = signal('');
-
-  // ─────────────────────────────
-  // Formulario
-  // ─────────────────────────────
-
-  mostrarFormulario = signal(false);
-
-  // ─────────────────────────────
-  // Modal salida
-  // ─────────────────────────────
-
-  modalSalidaVisible = false;
-  salidaSeleccionada: ITransportista | null = null;
-  salidaIndex: number | null = null;
-  saleSinCaja = false;
-  loadingSalida = signal(false);
-
-  // ─────────────────────────────
-  // Datos tabla
-  // ─────────────────────────────
-
-  private datosRaw = signal<ITransportista[]>([]);
-
-  tablaDatos = computed(() => {
-    const filtro = this.filtroBusqueda().toLowerCase().trim();
-    if (!filtro) return this.datosRaw();
-    return this.datosRaw().filter(d =>
-      d.tipo_ingreso.toLowerCase().includes(filtro) ||
-      d.empresa.toLowerCase().includes(filtro) ||
-      d.nombre.toLowerCase().includes(filtro) ||
-      d.placas.toLowerCase().includes(filtro) ||
-      d.curp_operador.toLowerCase().includes(filtro)
-    );
-  });
-
-  totalRegistros = computed(() => this.datosRaw().length);
-  totalFiltrados = computed(() => this.tablaDatos().length);
-
-  // ─────────────────────────────
-  // Init
-  // ─────────────────────────────
+  constructor(
+    private router: Router,
+    private svc: TransportistaService,
+    public datosService: DatosService,
+  ) { }
 
   ngOnInit(): void {
-    this.cargarDatos();
+    this.cargarDatosIniciales();
   }
 
-  // ─────────────────────────────
-  // F2 → buscar
-  // ─────────────────────────────
+  ngOnDestroy(): void { }
 
-  @HostListener('document:keydown', ['$event'])
-  onKeyDown(event: KeyboardEvent): void {
-    if (event.key !== 'F2') return;
-    event.preventDefault();
-    this.searchInput?.nativeElement?.querySelector('input')?.focus();
-  }
+  // ── Consultar proveedor ───────────────────────────────────────────────────────────────
+  onChangeIdProveedor(): void {
+    const id = parseInt(this.form.idProveedor.trim(), 10);
+    if (isNaN(id) || id <= 0) {
+      this.form.empresa = '';
+      return;
+    }
 
-  // ─────────────────────────────
-  // Formulario
-  // ─────────────────────────────
-
-  abrirFormulario(): void {
-    this.mostrarFormulario.set(true);
-  }
-
-  onCerrarFormulario(recargo: boolean): void {
-    this.mostrarFormulario.set(false);
-    if (recargo) this.cargarDatos();
-  }
-
-  // ─────────────────────────────
-  // Cargar datos
-  // ─────────────────────────────
-
-  cargarDatos(): void {
-    this.isLoading.set(true);
-    this.errorMsg.set('');
-
-    this.svc.getEntradas().subscribe({
-      next: (data) => {
-        this.datosRaw.set(data);
-        this.isLoading.set(false);
+    this.svc.getProveedor(id).subscribe({
+      next: (res) => {
+        if ('error_id' in res) {
+          this.form.empresa = '';
+          const msg = (res.error_msg as string)?.trim()
+            ? res.error_msg as string
+            : `Ocurrió un error inesperado (código ${res.error_id}).`;
+          this.mostrarToast('error', `Error ${res.error_id}`, msg);
+          return;
+        }
+        this.form.empresa = res.razon_social;
       },
-      error: (err) => {
-        console.error(err);
-        const mensaje =
-          err?.error?.error_msg ??
-          'No se pudo conectar con el servidor.';
-
-        this.errorMsg.set(mensaje);
-
-        this.mostrarToastError(
-          'Error de conexión',
-          mensaje
-        );
-        this.isLoading.set(false);
-      }
+      error: (err) => {                                          
+        this.form.empresa = '';
+        const { titulo, mensaje } = this.extraerMensajeError(err, 'No se pudo obtener el proveedor.');
+        this.mostrarToast('error', titulo, mensaje);
+      },
     });
   }
 
-  // ─────────────────────────────
-  // Fila editada
-  // ─────────────────────────────
+  // ── Carga inicial ───────────────────────────────────────────────────────
 
-  onFilaEditada(evento: { index: number; datos: Partial<ITransportista> }): void {
-    const fila = this.tablaDatos()[evento.index];
-    const index = this.datosRaw().indexOf(fila);
-    if (index === -1) return;
-
-    const copia = [...this.datosRaw()];
-    copia[index] = { ...copia[index], ...evento.datos };
-    this.datosRaw.set(copia);
+  private cargarDatosIniciales(): void {
+    this.cargando = true;
+    forkJoin({
+      entradas: this.svc.getEntradas(),
+      tiposIngreso: this.svc.obtenerTiposIngreso(),
+      tiposUnidad: this.svc.obtenerTiposUnidad(),
+    }).subscribe({
+      next: ({ entradas, tiposIngreso, tiposUnidad }) => {
+        this.transportistas = entradas;
+        this.tiposIngreso = tiposIngreso;
+        this.tiposUnidad = tiposUnidad;
+        this.cargando = false;
+      },
+      error: (err) => {
+        this.cargando = false;
+        const { titulo, mensaje } = this.extraerMensajeError(err);
+        this.mostrarToast('error', titulo, mensaje);
+      },
+    });
   }
 
-  // ─────────────────────────────
-  // Entrada
-  // ─────────────────────────────
-
-  onEntradaDesdeTabla(evento: {
-    fila: ITransportista;
-    index: number;
-  }): void {
-
-    const { fila } = evento;
-
-    const index =
-      this.datosRaw().indexOf(fila);
-
-    if (index === -1) {
-      return;
+  // Procesar errores de la api
+  private extraerMensajeError(err: any, fallback = 'No se pudo contactar el servidor.'): { titulo: string; mensaje: string } {
+    const apiError = err?.error;
+    if (apiError?.error_id != null && apiError?.error_msg) {
+      return { titulo: `Error ${apiError.error_id}`, mensaje: apiError.error_msg };
     }
+    return { titulo: 'Error de red', mensaje: fallback };
+  }
 
-    const body = {
+  recargarLista(): void {
+    this.cargando = true;
+    this.svc.getEntradas().subscribe({
+      next: (data) => { this.transportistas = data; this.cargando = false; },
+      error: (err) => {
+        this.cargando = false;
+        const { titulo, mensaje } = this.extraerMensajeError(err);
+        this.mostrarToast('error', titulo, mensaje);
+      },
+    });
+  }
 
-      registro:
-        fila.id_cita,
+  // ── Catálogos,  opciones para select ───────────────────────────────────
 
+  get tiposIngresoOptions(): ISelectOption[] {
+    return this.tiposIngreso.map(t => ({ label: t.tipo, value: String(t.id) }));
+  }
+
+  get tiposUnidadOptions(): ISelectOption[] {
+    return this.tiposUnidad.map(t => ({ label: t.tipo_unidad, value: String(t.id) }));
+  }
+
+  // ── Helpers internos ────────────────────────────────────────────────────
+
+  private mostrarToast(tipo: 'success' | 'error', titulo: string, mensaje: string): void {
+    this.toastTipo = tipo;
+    this.toastTitulo = titulo;
+    this.toastMensaje = mensaje;
+    this.toastVisible = true;
+  }
+
+  private manejarRespuestaAPI(respuesta: { error_id: number; error_msg: string | null }, mensajeExito: string): boolean {
+    if (respuesta.error_id !== 0) {
+      const msg = respuesta.error_msg?.trim()
+        ? respuesta.error_msg
+        : `Ocurrió un error inesperado (código ${respuesta.error_id}).`;
+      this.mostrarToast('error', `Error ${respuesta.error_id}`, msg);
+      return false;
+    }
+    const msgExito = respuesta.error_msg?.trim() ? respuesta.error_msg : mensajeExito;
+    this.mostrarToast('success', 'Éxito', msgExito);
+    return true;
+  }
+
+  // ── Atajos de teclado ───────────────────────────────────────────────────
+
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'F1') {
+      event.preventDefault();
+      if (!this.showAlta && !this.showCURP && !this.showQR && !this.showSalida) {
+        this.openAlta();
+      }
+    }
+    if (event.key === 'F2') {
+      event.preventDefault();
+      document.querySelector<HTMLInputElement>('.etc-search-container input')?.focus();
+    }
+  }
+
+  // ── Tabla ───────────────────────────────────────────────────────────────
+
+  get transportistasFiltrados(): ITransportista[] {
+    const q = this.filtro.toLowerCase();
+    if (!q) return this.transportistas;
+    return this.transportistas.filter(t =>
+      [t.tipo_ingreso, t.nombre, t.paterno, t.materno, t.empresa, t.curp_operador, t.placas, t.desc_unidad]
+        .some(f => (f || '').toLowerCase().includes(q))
+    );
+  }
+
+  /** Nombre completo del operador para columna unificada */
+  nombreCompleto(t: ITransportista): string {
+    return [t.nombre, t.paterno, t.materno].filter(Boolean).join(' ');
+  }
+
+  /** Label del tipo de ingreso a partir de su id */
+  labelTipoIngreso(t: ITransportista): string {
+    return t.tipo_ingreso ?? '—';
+  }
+
+  badgeClass(idTipo: number): string {
+    return idTipo === 1
+      ? 'etc-badge etc-badge--entrega'
+      : 'etc-badge etc-badge--carga';
+  }
+
+  async imprimir(t: ITransportista): Promise<void> {
+    try {
+      const curp = t.curp_operador;
+      const nombre = [t.nombre, t.paterno, t.materno].filter(Boolean).join(' ');
+      const qrBase64 = await QRCode.toDataURL(curp, { width: 320, margin: 1 });
+
+      const ventana = window.open('', '_blank', 'width=700,height=1000');
+      if (!ventana) return;
+
+      ventana.document.write(`
+      <html>
+        <head>
+          <title>Etiqueta transportista</title>
+          <style>
+            @page { size: 75mm 100mm; margin: 0; }
+            html, body {
+              margin: 0; padding: 0;
+              width: 75mm; height: 100mm;
+              overflow: hidden;
+              font-family: Arial, sans-serif;
+              background: #fff;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            body { display: flex; flex-direction: column; }
+            .card-side {
+              position: relative;
+              width: 75mm; height: 50mm;
+              display: flex; overflow: hidden;
+              box-sizing: border-box;
+            }
+            .visitor-bar {
+              position: relative;
+              width: 12mm; flex-shrink: 0;
+              overflow: hidden;
+            }
+            .visitor-bar img {
+              position: absolute;
+              inset: 0; width: 100%; height: 100%;
+              object-fit: cover;
+            }
+            .visitor-text {
+              position: absolute;
+              top: 50%; left: 50%;
+              transform: translate(-50%, -50%) rotate(-90deg);
+              color: #fff; font-size: 10pt; font-weight: 900;
+              letter-spacing: 2px; white-space: nowrap;
+              text-transform: uppercase;
+              font-family: Arial, sans-serif; z-index: 2;
+            }
+            .content {
+              flex: 1; display: flex;
+              flex-direction: column;
+              align-items: center; justify-content: center;
+              box-sizing: border-box;
+            }
+            .front { border-bottom: 1px dashed #000; }
+            .front .content {
+              position: relative;
+              gap: 2mm; padding: 5mm 4mm 4mm;
+              transform: rotate(180deg);
+            }
+            .front-logo {
+              position: absolute;
+              top: 2mm; left: 2mm;
+              width: 10mm; height: 10mm;
+              object-fit: contain;
+            }
+            .qr { width: 30mm; height: 30mm; object-fit: contain; }
+            .curp {
+              font-size: 10pt; font-weight: 700;
+              letter-spacing: .5px; text-align: center;
+            }
+            .operador {
+              font-size: 8pt; text-align: center; max-width: 90%;
+            }
+            .back .content {
+              display: flex; align-items: center; justify-content: center;
+            }
+            .back-logo {
+              width: 70%; height: 70%;
+              object-fit: contain;
+              image-rendering: crisp-edges;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="card-side front">
+            <div class="visitor-bar">
+              <img src="${this.visitorBarImage}" />
+              <div class="visitor-text">TRANSPORTISTA</div>
+            </div>
+            <div class="content">
+              <img class="front-logo" src="${this.logoFrontal}" />
+              <img class="qr" src="${qrBase64}" />
+              <div class="curp">${curp}</div>
+              <div class="operador">${nombre}</div>
+            </div>
+          </div>
+          <div class="card-side back">
+            <div class="visitor-bar">
+              <img src="${this.visitorBarImage}" />
+              <div class="visitor-text">TRANSPORTISTA</div>
+            </div>
+            <div class="content">
+              <img class="back-logo" src="${this.imagenReverso}" />
+            </div>
+          </div>
+          <script>window.onload = () => { window.print(); setTimeout(() => window.close(), 700); };</script>
+        </body>
+      </html>
+    `);
+      ventana.document.close();
+    } catch (error) {
+      console.error('Error impresión:', error);
+      this.mostrarToast('error', 'Error de impresión', 'No se pudo imprimir la etiqueta.');
+    }
+  }
+
+  // ── Dar entrada ─────────────────────────────────────────────────────────
+
+  darEntrada(t: ITransportista): void {
+    this.cargando = true;
+    this.svc.registrarEntrada({
+      registro: t.id_cita,
       caja: 0,
-
-      usuario:
-        this.datosService.usuarioSignal()
-    };
-
-    this.loadingSalida.set(true);
-
-    this.svc.registrarEntrada(body)
-      .subscribe({
-
-        next: (response) => {
-
-          this.loadingSalida.set(false);
-
-          if (response.error_id !== 0) {
-
-            this.mostrarToastError(
-              'Error al registrar entrada',
-              response.error_msg ??
-              'No se pudo registrar entrada.'
-            );
-
-            return;
-          }
-
-          const copia =
-            [...this.datosRaw()];
-
-          copia[index] = {
-
-            ...copia[index],
-
-            entrada:
-              new Date().toISOString()
-          };
-
-          this.datosRaw.set(copia);
-        },
-
-        error: (err) => {
-
-          console.error(err);
-
-          this.loadingSalida.set(false);
-
-          this.mostrarToastError(
-            'Error de conexión',
-            err?.error?.error_msg ??
-            'Error al registrar entrada.'
-          );
+      usuario: this.datosService.usuarioSignal(),
+    }).subscribe({
+      next: (res) => {
+        this.cargando = false;
+        if (this.manejarRespuestaAPI(res, 'Entrada registrada correctamente.')) {
+          this.recargarLista();
         }
-      });
+      },
+      error: (err) => {
+        this.cargando = false;
+        const { titulo, mensaje } = this.extraerMensajeError(err);
+        this.mostrarToast('error', titulo, mensaje);
+      },
+    });
   }
 
-  // ─────────────────────────────
-  // Salida
-  // ─────────────────────────────
+  // ── Dar salida ──────────────────────────────────────────────────────────
 
-  onSalidaDesdeTabla(fila: ITransportista): void {
-    this.salidaSeleccionada = fila;
-    this.salidaIndex = this.datosRaw().indexOf(fila);
-    this.saleSinCaja = false;
-    this.modalSalidaVisible = true;
+  openSalida(t: ITransportista): void {
+    this.salidaTarget = t;
+    this.salidaConCaja = null;
+    this.showSalida = true;
   }
-
-  // ─────────────────────────────
-  // Confirmar salida
-  // ─────────────────────────────
 
   confirmarSalida(): void {
+    if (!this.salidaTarget) return;
+    if (this.salidaTarget.remolque === 1 && this.salidaConCaja === null) return;
 
-    if (
-      this.salidaSeleccionada === null ||
-      this.salidaIndex === null
-    ) {
-      return;
-    }
+    const target = this.salidaTarget;
+    this.showSalida = false;
+    this.cargando = true;
 
-    this.loadingSalida.set(true);
+    this.svc.registrarSalida({
+      registro: target.id_cita,
+      caja: this.salidaConCaja === true ? 1 : 0,
+      usuario: this.datosService.usuarioSignal(),
+    }).subscribe({
+      next: (res) => {
+        this.cargando = false;
+        if (this.manejarRespuestaAPI(res, 'Salida registrada correctamente.')) {
+          this.recargarLista();
+        }
+        this.salidaTarget = null;
+        this.salidaConCaja = null;
+      },
+      error: (err) => {
+        this.cargando = false;
+        const { titulo, mensaje } = this.extraerMensajeError(err);
+        this.mostrarToast('error', titulo, mensaje);
+      },
+    });
+  }
 
-    const body = {
+  // ── Modal alta / edición ────────────────────────────────────────────────
 
-      registro:
-        this.salidaSeleccionada.id_cita,
+  openAlta(): void {
+    this.editandoId = null;
+    this.form = emptyForm();
+    this.curpBloqueado = false;
+    this.imprimirAlGuardar = false;
+    this.showAlta = true;
+  }
 
-      caja:
-        this.saleSinCaja ? 1 : 0,
-
-      usuario:
-        this.datosService.usuarioSignal()
+  openEditar(t: ITransportista): void {
+    this.editandoId = t.id_cita;
+    this.form = {
+      tipoIngresoId: t.id_tipo_ingreso,
+      empresa: t.empresa,
+      idProveedor: '',
+      nombre: t.nombre,
+      paterno: t.paterno,
+      materno: t.materno,
+      curp: t.curp_operador,
+      placas: t.placas,
+      tipoUnidadId: t.tipo_unidad,
     };
+    this.curpBloqueado = false;
+    this.imprimirAlGuardar = false;
+    this.showAlta = true;
+  }
 
-    this.svc.registrarSalida(body)
-      .subscribe({
+  get modalTitulo(): string {
+    return this.editandoId !== null ? 'Editar transportista' : 'Alta de transportista';
+  }
 
-        next: (response) => {
+  get modalBotonPrimario(): string {
+    return this.editandoId !== null ? 'Guardar cambios' : 'Registrar entrada';
+  }
 
-          this.loadingSalida.set(false);
+  get esTipo2(): boolean {
+    // id 2 = Carga/Descarga
+    return this.form.tipoIngresoId === 2;
+  }
 
-          if (response.error_id !== 0) {
+  /** Remolque se deriva del tipo de unidad seleccionado en el catálogo */
+  get tieneRemolque(): boolean {
+    if (this.form.tipoUnidadId === null) return false;
+    const unidad = this.tiposUnidad.find(u => u.id === this.form.tipoUnidadId);
+    return unidad?.usa_remolque === 1;
+  }
 
-            this.mostrarToastError(
-              'Error al registrar salida',
-              response.error_msg ??
-              'No se pudo registrar salida.'
-            );
+  onChangeTipoIngreso(): void {
+    if (!this.esTipo2) this.form.idProveedor = '';
+  }
 
+  get formValido(): boolean {
+    if (!this.form.tipoIngresoId) return false;
+    if (!this.form.empresa.trim()) return false;
+    if (!this.form.nombre.trim() || !this.form.paterno.trim()) return false;
+    if (!this.form.placas.trim() || !this.form.tipoUnidadId) return false;
+    if (this.esTipo2 && this.editandoId === null && !this.form.idProveedor.trim()) return false;
+    return true;
+  }
+
+  registrar(): void {
+    if (!this.formValido) return;
+
+    // Solo validar CURP si hay datos de operador (nombre + paterno + curp)
+    if (this.form.curp.trim() && this.form.nombre.trim() && this.form.paterno.trim()) {
+      this.cargando = true;
+      this.svc.validarCurp({
+        curp_operador: this.form.curp.trim().toUpperCase(),
+        nombre: this.form.nombre.trim().toUpperCase(),
+        paterno: this.form.paterno.trim().toUpperCase(),
+        materno: this.form.materno.trim().toUpperCase(),
+        usuario: this.datosService.usuarioSignal(),   // ← del DatosService
+      }).subscribe({
+        // En registrar(), bloque next de validarCurp:
+        next: (res) => {
+          if (res.error_id !== 0) {
+            this.cargando = false;
+            const msg = res.error_msg?.trim()
+              ? res.error_msg
+              : `Ocurrió un error inesperado (código ${res.error_id}).`;
+            this.mostrarToast('error', `Error ${res.error_id}`, msg);  // ← consistente con manejarRespuestaAPI
             return;
           }
-
-          const copia =
-            [...this.datosRaw()];
-
-          copia.splice(
-            this.salidaIndex!,
-            1
-          );
-
-          this.datosRaw.set(copia);
-
-          this.mostrarToastSuccess(
-            'Salida registrada',
-            'La salida fue registrada correctamente.'
-          );
-
-          this.cerrarModalSalida();
+          this._ejecutarGuardado();
         },
-
         error: (err) => {
-
-          console.error(err);
-
-          this.loadingSalida.set(false);
-
-          this.mostrarToastError(
-            'Error de conexión',
-            err?.error?.error_msg ??
-            'Error al registrar salida.'
-          );
-        }
+          this.cargando = false;
+          const { titulo, mensaje } = this.extraerMensajeError(err);
+          this.mostrarToast('error', titulo, mensaje);
+        },
       });
+    } else {
+      // Sin CURP, ir directo
+      this.cargando = true;
+      this._ejecutarGuardado();
+    }
   }
 
-  // ─────────────────────────────
-  // Cerrar modal salida
-  // ─────────────────────────────
-
-  cerrarModalSalida(): void {
-    if (this.loadingSalida()) return;
-    this.modalSalidaVisible = false;
-    this.salidaSeleccionada = null;
-    this.salidaIndex = null;
-    this.saleSinCaja = false;
+  private _ejecutarGuardado(): void {
+    if (this.editandoId !== null) {
+      this.svc.modificarTransportista({
+        tipo_ingreso: this.form.tipoIngresoId!,
+        registro: this.editandoId,
+        empresa: this.form.empresa,
+        curp_operador: this.form.curp,
+        nombre: this.form.nombre,
+        paterno: this.form.paterno,
+        materno: this.form.materno,
+        placas: this.form.placas,
+        unidad: this.form.tipoUnidadId!,
+        usuario: this.datosService.usuarioSignal(),
+      }).subscribe({
+        next: (res) => {
+          this.cargando = false;
+          if (this.manejarRespuestaAPI(res, 'Transportista actualizado correctamente.')) {
+            this.showAlta = false;
+            this.editandoId = null;
+            this.recargarLista();
+          }
+        },
+        error: (err) => {
+          this.cargando = false;
+          const { titulo, mensaje } = this.extraerMensajeError(err);
+          this.mostrarToast('error', titulo, mensaje);
+        },
+      });
+    } else {
+      this.svc.altaTransportista({
+        tipo_ingreso: this.form.tipoIngresoId!,
+        empresa: this.form.empresa,
+        curp_operador: this.form.curp,
+        nombre: this.form.nombre,
+        paterno: this.form.paterno,
+        materno: this.form.materno,
+        placas: this.form.placas,
+        usuario: this.datosService.usuarioSignal(),
+        unidad: this.form.tipoUnidadId!,
+      }).subscribe({
+        next: (res) => {
+          this.cargando = false;
+          if (this.manejarRespuestaAPI(res, 'Entrada registrada correctamente.')) {
+            if (this.imprimirAlGuardar) {
+              this.imprimir({
+                curp_operador: this.form.curp,
+                nombre: this.form.nombre,
+                paterno: this.form.paterno,
+                materno: this.form.materno,
+              } as ITransportista);
+            }
+            this.imprimirAlGuardar = false;
+            this.showAlta = false;
+            this.recargarLista();
+          }
+        },
+        error: (err) => {
+          this.cargando = false;
+          const { titulo, mensaje } = this.extraerMensajeError(err);
+          this.mostrarToast('error', titulo, mensaje);
+        },
+      });
+    }
   }
 
-  // ─────────────────────────────
-  // Toast helpers
-  // ─────────────────────────────
+  // ── Consulta CURP ───────────────────────────────────────────────────────
 
-  mostrarToastSuccess(
-    titulo: string,
-    mensaje: string
-  ): void {
-
-    this.toastTipo.set('success');
-    this.toastTitulo.set(titulo);
-    this.toastMensaje.set(mensaje);
-    this.toastVisible.set(true);
+  abrirConsultaCURP(): void {
+    this.consultaCURP = '';
+    this.showCURP = true;
   }
 
-  mostrarToastError(
-    titulo: string,
-    mensaje: string
-  ): void {
+  consultarCURP(): void {
+    const curp = this.consultaCURP.trim().toUpperCase();
+    this.cargandoCURP = true;
 
-    this.toastTipo.set('error');
-    this.toastTitulo.set(titulo);
-    this.toastMensaje.set(mensaje);
-    this.toastVisible.set(true);
+    this.svc.getOperadorPorCurp(curp).subscribe({
+      next: (res) => {
+        this.cargandoCURP = false;
+        if ('error_id' in res) {
+          const msg = (res.error_msg as string)?.trim()
+            ? res.error_msg as string
+            : `Ocurrió un error inesperado (código ${res.error_id}).`;
+          this.mostrarToast('error', `Error ${res.error_id}`, msg);
+          return;
+        }
+        this.form.curp = res.curp;
+        this.form.nombre = res.nombre;
+        this.form.paterno = res.paterno;
+        this.form.materno = res.materno;
+        this.curpBloqueado = true;
+        this.showCURP = false;
+        this.consultaCURP = '';
+        this.mostrarToast('success', 'CURP encontrada', `Datos cargados para ${res.nombre} ${res.paterno}.`);
+      },
+      error: (err) => {
+        this.cargandoCURP = false;
+        const { titulo, mensaje } = this.extraerMensajeError(err);
+        this.mostrarToast('error', titulo, mensaje);
+      },
+    });
   }
 
-  cerrarToast(): void {
-    this.toastVisible.set(false);
+  desbloquearCURP(): void {
+    this.curpBloqueado = false;
+    this.form.nombre = '';
+    this.form.paterno = '';
+    this.form.materno = '';
+    this.form.curp = '';
   }
+
+  // ── QR ──────────────────────────────────────────────────────────────────
+
+  submitQR(): void {
+    if (!this.qrInput.trim()) return;
+    this.cargando = true;
+    this.svc.registrarQr({ curp: this.qrInput.trim().toUpperCase() }).subscribe({
+      next: (res) => {
+        this.cargando = false;
+        if (this.manejarRespuestaAPI(res, 'Registro por QR completado.')) {
+          this.qrInput = '';
+          this.showQR = false;
+          this.recargarLista();
+        }
+      },
+      error: (err) => {
+        this.cargando = false;
+        const { titulo, mensaje } = this.extraerMensajeError(err);
+        this.mostrarToast('error', titulo, mensaje);
+      },
+    });
+  }
+
+  // ── Navegación ──────────────────────────────────────────────────────────
+
+  irConsultar(): void { this.router.navigate(['/control-visita']); }
+
+  trackById(_: number, t: ITransportista): number { return t.id_cita; }
 }

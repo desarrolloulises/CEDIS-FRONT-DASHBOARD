@@ -3,7 +3,7 @@
 /////////////////////////////////
 export interface ITransportista {
   id_cita: number;
-  tipo_ingreso_id: number;
+  id_tipo_ingreso: number;
   tipo_ingreso: string;
   fecha_cita: string;
   empresa: string;
@@ -13,7 +13,8 @@ export interface ITransportista {
   curp_operador: string;
   placas: string;
   tipo_unidad: number;
-  remolque: number;
+  desc_unidad: string;
+  remolque: number;      // 1 = sí, 0 = no
   entrada: string;
   salida: string;
 }
@@ -44,7 +45,6 @@ export interface IAltaTransportistaRequest {
 /////////////////////////////////
 // Respuesta alta transportista
 /////////////////////////////////
-
 export interface IAltaTransportistaResponse {
   error_id: number;
   error_msg: string | null;
@@ -62,7 +62,6 @@ export interface ITipoUnidad {
 /////////////////////////////////
 // Registrar entrada/salida
 /////////////////////////////////
-
 export interface IRegistroAccesoRequest {
   registro: number;
   caja: number;
@@ -72,7 +71,6 @@ export interface IRegistroAccesoRequest {
 /////////////////////////////////
 // Respuesta entrada/salida
 /////////////////////////////////
-
 export interface IRegistroAccesoResponse {
   error_id: number;
   error_msg: string | null;
@@ -102,7 +100,6 @@ export interface IModificarTransportistaResponse {
 /////////////////////////////////
 // Registrar QR
 /////////////////////////////////
-
 export interface IRegistrarQrRequest {
   curp: string;
 }
@@ -115,7 +112,6 @@ export interface IRegistrarQrResponse {
 /////////////////////////////////
 // Validar CURP
 /////////////////////////////////
-
 export interface IValidarCurpRequest {
   curp_operador: string;
   nombre: string;
@@ -132,7 +128,6 @@ export interface IValidarCurpResponse {
 /////////////////////////////////
 // Respuesta base de error
 /////////////////////////////////
-
 export interface IApiErrorResponse {
   error_id: number;
   error_msg: string;
