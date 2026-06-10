@@ -100,7 +100,7 @@ export const routes: Routes = [
         path: 'registro-ingreso-transportista-caseta',
         loadComponent: () => import('./features/control-entradas-salidas-cedis/entrada-salida-transportista-caseta/entrada-salida-transportista-caseta.component').then(m => m.EntradaSalidaTransportistaCasetaComponent)
       },
-
+      
       {
         path: 'registro-personal',
         loadComponent: () => import('./features/control-entradas-salidas-cedis/registro-entrada-almacen/registro-entrada-almacen.component').then(m => m.RegistroEntradaAlmacenComponent)
@@ -110,7 +110,7 @@ export const routes: Routes = [
         path: 'control-visita',
         loadComponent: () => import('./features/control-entradas-salidas-cedis/entrada-salida-visitante/entrada-salida-visitante.component').then(m => m.EntradaSalidaVisitanteComponent)
       },
-
+    
       {
         path: 'CambiaPass',
         loadComponent: () => import('./features/cambio-pass/cambio-pass.component').then(m => m.CambioPassComponent) // El login va SOLO, sin Layout

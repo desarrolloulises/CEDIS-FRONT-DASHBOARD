@@ -1,9 +1,5 @@
-/* =========================================================
-   REGISTRO EMPLEADO — Estilos del componente
-   Usa las variables globales del proyecto
-========================================================= */
 
-/* ── Wrapper principal ─────────────────────────────────── */
+
 .registro-wrapper {
   max-width: 992px;
   margin: 0 auto;
@@ -12,7 +8,6 @@
 }
 
 
-/* ── Tabs ──────────────────────────────────────────────── */
 .reg-tabs {
   display: flex;
   gap: var(--space-xs);
@@ -70,7 +65,6 @@
   font-size: 0.72rem;
 }
 
-/* ── Secciones ─────────────────────────────────────────── */
 .reg-seccion {
   display: none;
   background: var(--bg-card);
@@ -109,7 +103,6 @@
   border-color: var(--border-light);
 }
 
-/* ── Grids ─────────────────────────────────────────────── */
 .reg-grid {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -135,7 +128,6 @@
   gap: var(--space-md);
 }
 
-/* ── Campos ────────────────────────────────────────────── */
 .campo-grupo {
   display: flex;
   flex-direction: column;
@@ -157,7 +149,6 @@
   color: var(--error);
 }
 
-/* Etiqueta de select (verde) */
 .campo-label--select {
   color: var(--exito);
 }
@@ -216,7 +207,6 @@
   cursor: not-allowed;
 }
 
-/* Select (verde) */
 .campo-select {
   width: 100%;
   padding: 9px var(--space-md);
@@ -259,7 +249,6 @@
   gap: 4px;
 }
 
-/* ── Foto ──────────────────────────────────────────────── */
 .reg-foto-panel {
   display: flex;
   flex-direction: column;
@@ -331,7 +320,6 @@
   cursor: pointer;
 }
 
-/* ── Equipo checkboxes (amarillo) ──────────────────────── */
 .equipo-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -399,7 +387,6 @@
   color: #a16207;
 }
 
-/* ── Toggle vetado ─────────────────────────────────────── */
 .vetado-toggle {
   margin-bottom: var(--space-md);
 }
@@ -461,7 +448,6 @@
   animation: fadeIn 0.2s ease;
 }
 
-/* ── Incidencias y Otros ───────────────────────────────── */
 .btn-eliminar {
   background: var(--error-light);
   color: var(--error);
@@ -492,7 +478,6 @@
   border-radius: var(--radius-md);
 }
 
-/* ── Botones generales ─────────────────────────────────── */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -563,14 +548,12 @@
   box-shadow: var(--shadow-md);
 }
 
-/* ── Botón limpiar formulario ──────────────────────────── */
 .btn--limpiar {
   font-size: 0.82rem;
   padding: 7px var(--space-md);
   margin-right: var(--space-sm);
 }
 
-/* ── Barra de navegación secciones ─────────────────────── */
 .reg-nav-botones {
   display: flex;
   justify-content: space-between;
@@ -584,9 +567,6 @@
   margin-left: auto;
 }
 
-/* ═══════════════════════════════════════════════════════
-   RESPONSIVE — MÓVIL
-═══════════════════════════════════════════════════════ */
 @media (max-width: 640px) {
 
   .registro-wrapper {
@@ -641,9 +621,6 @@
   }
 }
 
-/* =========================================
-   TABLER ICONS
-========================================= */
 
 .reg-tab__icono,
 .reg-seccion__titulo i,
@@ -682,11 +659,6 @@
   opacity: 0.35;
 }
 
-/* =========================================================
-   FORMULARIO FIJO + TABLA
-========================================================= */
-
-/* ── Formulario fijo ───────────────────────────────────── */
 .form-fijo {
   background: var(--bg-zebra);
   border: 1.5px solid var(--border-color);
@@ -718,7 +690,6 @@
   font-size: 0.85rem;
 }
 
-/* Contador de caracteres */
 .campo-contador {
   font-weight: 400;
   font-size: 0.7rem;
@@ -726,7 +697,6 @@
   float: right;
 }
 
-/* ── Tabla wrapper ─────────────────────────────────────── */
 .tabla-wrapper {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -810,14 +780,13 @@
 }
 
 .tabla-td--desc {
-  max-width: 0;      /* fuerza el truncado con overflow */
+  max-width: 0;     
 }
 
 .tabla-td--acc {
   text-align: center;
 }
 
-/* Descripción truncada con ellipsis */
 .desc-truncada {
   display: block;
   white-space: nowrap;
@@ -827,7 +796,6 @@
   cursor: default;
 }
 
-/* Versión clickable para abrir modal */
 .desc-truncada--clickable {
   cursor: pointer;
   color: var(--secundario-hover);
@@ -839,7 +807,6 @@
   color: var(--primario);
 }
 
-/* Badge de nivel */
 .nivel-badge {
   display: inline-flex;
   align-items: center;
@@ -856,7 +823,6 @@
 .nivel-badge--alto   { background: var(--error-light);       color: var(--error-hover); }
 .nivel-badge--neutro { background: var(--bg-zebra);          color: var(--texto-muted); }
 
-/* Badge de cantidad */
 .cantidad-badge {
   display: inline-flex;
   align-items: center;
@@ -870,7 +836,6 @@
   font-weight: 700;
 }
 
-/* ── Responsive tabla ──────────────────────────────────── */
 @media (max-width: 640px) {
   .desc-truncada {
     max-width: 150px;
@@ -883,9 +848,7 @@
   }
 }
 
-/* =========================================================
-   MODAL — Descripción completa
-========================================================= */
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -951,13 +914,7 @@
   overflow-y: auto;
 }
 
-/* =========================================================
-   NUEVOS ESTILOS — iteración 2
-   (topbar, badges CURP, veto bloqueado, botones extra,
-    modal de reset, select readonly)
-========================================================= */
 
-/* ── Barra superior: tabs + botón nuevo ───────────────── */
 .reg-topbar {
   display: flex;
   align-items: flex-start;
@@ -970,7 +927,6 @@
   margin-bottom: 0;
 }
 
-/* ── Botón "Nuevo registro" (reset global) ────────────── */
 .btn--reset {
   display: inline-flex;
   flex-direction: column;
@@ -1000,7 +956,6 @@
   color: white;
 }
 
-/* ── Badge de estado CURP ─────────────────────────────── */
 .curp-badge {
   display: inline-flex;
   align-items: center;
@@ -1024,7 +979,6 @@
   border: 1px solid var(--advertencia);
 }
 
-/* ── Select con apariencia readonly (autocompletado) ──── */
 .campo-select--readonly {
   background-color: var(--bg-zebra);
   color: var(--texto-secundario);
@@ -1032,7 +986,6 @@
   opacity: 0.85;
 }
 
-/* ── Bloque de veto bloqueado ─────────────────────────── */
 .veto-bloqueado {
   display: flex;
   align-items: center;
@@ -1075,7 +1028,6 @@
   color: var(--texto-secundario);
 }
 
-/* ── Banner "Editando veto" ───────────────────────────── */
 .veto-edit-banner {
   display: flex;
   align-items: center;
@@ -1098,7 +1050,6 @@
   margin-left: auto;
 }
 
-/* ── Variantes de botón pequeño ──────────────────────── */
 .btn--sm {
   padding: 5px var(--space-md);
   font-size: 0.78rem;
@@ -1137,7 +1088,6 @@
   background: var(--error-hover, #b91c1c);
 }
 
-/* ── Modal de confirmación de reset ──────────────────── */
 .modal-box--sm {
   max-width: 400px;
 }
@@ -1167,7 +1117,6 @@
   background: var(--bg-zebra);
 }
 
-/* ── Responsive nuevos elementos ─────────────────────── */
 @media (max-width: 640px) {
 
   .reg-topbar {

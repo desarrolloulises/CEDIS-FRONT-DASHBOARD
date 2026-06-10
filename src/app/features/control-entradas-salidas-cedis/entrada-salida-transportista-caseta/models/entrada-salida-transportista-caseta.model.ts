@@ -4,6 +4,7 @@
 export interface ITransportista {
   id_cita: number;
   id_tipo_ingreso: number;
+  id_empresa: number;
   tipo_ingreso: string;
   fecha_cita: string;
   empresa: string;
@@ -15,6 +16,8 @@ export interface ITransportista {
   tipo_unidad: number;
   desc_unidad: string;
   remolque: number;      // 1 = sí, 0 = no
+  marca: string;
+  modelo: string;
   entrada: string;
   salida: string;
 }
@@ -25,6 +28,7 @@ export interface ITransportista {
 export interface ITipoIngreso {
   id: number;
   tipo: string;
+  valida_empresa: number;
 }
 
 /////////////////////////////////
@@ -32,12 +36,15 @@ export interface ITipoIngreso {
 /////////////////////////////////
 export interface IAltaTransportistaRequest {
   tipo_ingreso: number;
+  id_empresa: number;
   empresa: string;
   curp_operador: string;
   nombre: string;
   paterno: string;
   materno: string;
   placas: string;
+  marca: string;
+  modelo: string;
   usuario: string;
   unidad: number;
 }
@@ -80,6 +87,7 @@ export interface IRegistroAccesoResponse {
 // Modificar cita transportista
 /////////////////////////////////
 export interface IModificarTransportistaRequest {
+  id_empresa: number;
   tipo_ingreso: number;
   registro: number;
   empresa: string;
@@ -88,6 +96,8 @@ export interface IModificarTransportistaRequest {
   paterno: string;
   materno: string;
   placas: string;
+  marca: string;
+  modelo: string;
   unidad: number;
   usuario: string;
 }

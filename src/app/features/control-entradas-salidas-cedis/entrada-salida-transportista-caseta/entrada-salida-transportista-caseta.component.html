@@ -28,7 +28,8 @@
       </div>
 
       <div class="etc-header__actions">
-        <app-button label="Agregar entrada (F1)" type="primary" size="sm" title="F1 — Abrir registro" (clicked)="openAlta()">
+        <app-button label="Agregar entrada (F1)" type="primary" size="sm" title="F1 — Abrir registro"
+          (clicked)="openAlta()">
         </app-button>
         <app-button label="Registro QR" type="secondary" size="sm" (clicked)="showQR = true">
         </app-button>
@@ -66,7 +67,7 @@
           <th>Empresa</th>
           <th>Nombre Operador</th>
           <th>CURP</th>
-          <th>Placas / Tipo Unidad</th>
+          <th>Unidad</th>
           <th>Remolque</th>
           <th>Acciones</th>
         </tr>
@@ -93,6 +94,9 @@
             <span class="etc-placas">{{ t.placas || '—' }}</span>
             <span *ngIf="t.desc_unidad" class="etc-unidad-chip">
               {{ t.desc_unidad.trim() }}
+            </span>
+            <span *ngIf="t.marca || t.modelo" class="etc-unidad-chip">
+              {{ t.marca || '' }} {{ t.modelo || '' }}
             </span>
           </td>
 
@@ -146,18 +150,27 @@
       </app-select>
     </div>
 
-    <!-- ID PROVEEDOR — solo tipo 2 -->
-    <div class="etc-field etc-field--full" *ngIf="esTipo2 && editandoId === null">
-      <label class="etc-label">ID PROVEEDOR <span class="etc-req">*</span></label>
-      <app-input placeholder="ID del proveedor" [value]="form.idProveedor" (valueChange)="form.idProveedor = $event"
-        (inputBlur)="onChangeIdProveedor()">
+    <!-- ID EMPRESA — alta: editable cuando el tipo de ingreso lo requiere -->
+    <div class="etc-field etc-field--full" *ngIf="validaEmpresa && editandoId === null">
+      <label class="etc-label">ID EMPRESA <span class="etc-req">*</span></label>
+      <app-input placeholder="ID de la empresa" [value]="form.idProveedor" (valueChange)="form.idProveedor = $event"
+        (inputBlur)="onChangeIdEmpresa()">
+      </app-input>
+    </div>
+
+    <!-- ID EMPRESA — edición: editable, permite cambiar empresa -->
+    <div class="etc-field etc-field--full" *ngIf="validaEmpresa && editandoId !== null">
+      <label class="etc-label">ID EMPRESA</label>
+      <app-input placeholder="ID de la empresa" [value]="form.idProveedor" (valueChange)="form.idProveedor = $event"
+        (inputBlur)="onChangeIdEmpresa()">
       </app-input>
     </div>
 
     <!-- RAZÓN SOCIAL -->
     <div class="etc-field etc-field--full">
       <label class="etc-label">RAZÓN SOCIAL <span class="etc-req">*</span></label>
-      <app-input placeholder="Nombre de la empresa" [value]="form.empresa" (valueChange)="form.empresa = $event">
+      <app-input placeholder="Nombre de la empresa" [value]="form.empresa" [disabled]="validaEmpresa"
+        (valueChange)="form.empresa = $event">
       </app-input>
     </div>
 
@@ -198,7 +211,7 @@
       </div>
     </div>
 
-    <!-- VEHÍCULO (obligatorio) -->
+    <!-- VEHÍCULO -->
     <div class="etc-field-row">
       <div class="etc-field">
         <label class="etc-label">TIPO DE UNIDAD <span class="etc-req">*</span></label>
@@ -218,6 +231,22 @@
           {{ tieneRemolque ? 'Con remolque' : 'Sin remolque' }}
         </div>
       </div>
+    </div>
+
+    <!-- MARCA / MODELO — opcionales -->
+    <div class="etc-field-row">
+      <div class="etc-field">
+        <label class="etc-label">MARCA</label>
+        <app-input placeholder="Marca del vehículo" [value]="form.marca" (valueChange)="form.marca = $event">
+        </app-input>
+      </div>
+      <div class="etc-field">
+        <label class="etc-label">MODELO</label>
+        <app-input placeholder="Modelo del vehículo" [value]="form.modelo" (valueChange)="form.modelo = $event">
+        </app-input>
+      </div>
+      <!-- Celda vacía para mantener el grid de 3 columnas alineado -->
+      <div class="etc-field"></div>
     </div>
 
   </div><!-- /body -->
@@ -261,9 +290,9 @@
         <span class="etc-salida-label">Operador</span>
         <span class="etc-salida-value">{{ nombreCompleto(salidaTarget) }}</span>
       </div>
-      <div class="etc-salida-row" *ngIf="salidaTarget.remolque === 1">
-        <span class="etc-salida-label">Placas</span>
-        <span class="etc-salida-value etc-salida-value--mono">{{ salidaTarget.placas }}</span>
+      <div class="etc-salida-row">
+        <span class="etc-salida-label">CURP</span>
+        <span class="etc-salida-value">{{ salidaTarget.curp_operador }}</span>
       </div>
     </div>
 
@@ -271,14 +300,8 @@
     <div class="etc-salida-caja" *ngIf="salidaTarget.remolque === 1">
       <span class="etc-salida-caja__label">¿Sale con caja (remolque)?</span>
       <div class="etc-toggle-group">
-        <button class="etc-toggle-btn" [class.etc-toggle-btn--active]="salidaConCaja === true"
-          (click)="salidaConCaja = true">
-          <i class="ti ti-box"></i> Con caja
-        </button>
-        <button class="etc-toggle-btn" [class.etc-toggle-btn--active]="salidaConCaja === false"
-          (click)="salidaConCaja = false">
-          <i class="ti ti-box-off"></i> Sin caja
-        </button>
+        <app-button type="ghost" label="Con caja" icon="ti ti-box" (clicked)="salidaConCaja = true"></app-button>
+        <app-button type="ghost" label="Sin caja" icon="ti ti-box-off" (clicked)="salidaConCaja = false"></app-button>
       </div>
     </div>
 
