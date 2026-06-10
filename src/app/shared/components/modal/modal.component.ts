@@ -33,7 +33,7 @@ export class ModalComponent {
   width: string = '520px';
 
   @Input()
-  closeOnBackdrop: boolean = true;
+  closeOnBackdrop: boolean = false;
 
   @Output()
   close =

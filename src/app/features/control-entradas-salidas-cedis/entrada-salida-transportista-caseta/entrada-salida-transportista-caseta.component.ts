@@ -13,7 +13,6 @@ import { InputComponent } from '../../../shared/components/input/input.component
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 
-
 import { TransportistaService } from './services/entrada-salida-transportista-caseta.service';
 import { DatosService } from '../../../service/servicio.service';
 
@@ -30,11 +29,14 @@ export interface FormTransportista {
   tipoIngresoId: number | null;
   empresa: string;
   idProveedor: string;
+  idEmpresa: number;
   nombre: string;
   paterno: string;
   materno: string;
   curp: string;
   placas: string;
+  marca: string;
+  modelo: string;
   tipoUnidadId: number | null;
 }
 
@@ -43,11 +45,14 @@ function emptyForm(): FormTransportista {
     tipoIngresoId: null,
     empresa: '',
     idProveedor: '',
+    idEmpresa: 0,
     nombre: '',
     paterno: '',
     materno: '',
     curp: '',
     placas: '',
+    marca: '',
+    modelo: '',
     tipoUnidadId: null,
   };
 }
@@ -59,7 +64,6 @@ function emptyForm(): FormTransportista {
   imports: [
     CommonModule,
     FormsModule,
-
     ButtonComponent,
     IconButtonComponent,
     ModalComponent,
@@ -110,21 +114,13 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
   toastTitulo = '';
   toastMensaje = '';
 
-  // ── Imprimir ───────────────────────────────────────────────────────────────
+  // ── Imprimir ────────────────────────────────────────────────────────────
   imprimirAlGuardar = false;
 
-  // ─────────────────────────────
-  // Recursos impresión
-  // ─────────────────────────────
-
-  readonly imagenReverso =
-    './logo.png';
-
-  readonly logoFrontal =
-    './logo_sm.png';
-
-  readonly visitorBarImage =
-    '/visitor_bar.png';
+  // ── Recursos impresión ──────────────────────────────────────────────────
+  readonly imagenReverso = './logo.png';
+  readonly logoFrontal = './logo_sm.png';
+  readonly visitorBarImage = '/visitor_bar.png';
 
   // ── Constructor / lifecycle ─────────────────────────────────────────────
 
@@ -139,34 +135,6 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
   }
 
   ngOnDestroy(): void { }
-
-  // ── Consultar proveedor ───────────────────────────────────────────────────────────────
-  onChangeIdProveedor(): void {
-    const id = parseInt(this.form.idProveedor.trim(), 10);
-    if (isNaN(id) || id <= 0) {
-      this.form.empresa = '';
-      return;
-    }
-
-    this.svc.getProveedor(id).subscribe({
-      next: (res) => {
-        if ('error_id' in res) {
-          this.form.empresa = '';
-          const msg = (res.error_msg as string)?.trim()
-            ? res.error_msg as string
-            : `Ocurrió un error inesperado (código ${res.error_id}).`;
-          this.mostrarToast('error', `Error ${res.error_id}`, msg);
-          return;
-        }
-        this.form.empresa = res.razon_social;
-      },
-      error: (err) => {                                          
-        this.form.empresa = '';
-        const { titulo, mensaje } = this.extraerMensajeError(err, 'No se pudo obtener el proveedor.');
-        this.mostrarToast('error', titulo, mensaje);
-      },
-    });
-  }
 
   // ── Carga inicial ───────────────────────────────────────────────────────
 
@@ -191,15 +159,6 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
     });
   }
 
-  // Procesar errores de la api
-  private extraerMensajeError(err: any, fallback = 'No se pudo contactar el servidor.'): { titulo: string; mensaje: string } {
-    const apiError = err?.error;
-    if (apiError?.error_id != null && apiError?.error_msg) {
-      return { titulo: `Error ${apiError.error_id}`, mensaje: apiError.error_msg };
-    }
-    return { titulo: 'Error de red', mensaje: fallback };
-  }
-
   recargarLista(): void {
     this.cargando = true;
     this.svc.getEntradas().subscribe({
@@ -212,7 +171,17 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
     });
   }
 
-  // ── Catálogos,  opciones para select ───────────────────────────────────
+  // ── Procesar errores de la API ──────────────────────────────────────────
+
+  private extraerMensajeError(err: any, fallback = 'No se pudo contactar el servidor.'): { titulo: string; mensaje: string } {
+    const apiError = err?.error;
+    if (apiError?.error_id != null && apiError?.error_msg) {
+      return { titulo: `Error ${apiError.error_id}`, mensaje: apiError.error_msg };
+    }
+    return { titulo: 'Error de red', mensaje: fallback };
+  }
+
+  // ── Catálogos — opciones para select ───────────────────────────────────
 
   get tiposIngresoOptions(): ISelectOption[] {
     return this.tiposIngreso.map(t => ({ label: t.tipo, value: String(t.id) }));
@@ -271,12 +240,10 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
     );
   }
 
-  /** Nombre completo del operador para columna unificada */
   nombreCompleto(t: ITransportista): string {
     return [t.nombre, t.paterno, t.materno].filter(Boolean).join(' ');
   }
 
-  /** Label del tipo de ingreso a partir de su id */
   labelTipoIngreso(t: ITransportista): string {
     return t.tipo_ingreso ?? '—';
   }
@@ -286,6 +253,8 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
       ? 'etc-badge etc-badge--entrega'
       : 'etc-badge etc-badge--carga';
   }
+
+  // ── Imprimir ────────────────────────────────────────────────────────────
 
   async imprimir(t: ITransportista): Promise<void> {
     try {
@@ -297,108 +266,108 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
       if (!ventana) return;
 
       ventana.document.write(`
-      <html>
-        <head>
-          <title>Etiqueta transportista</title>
-          <style>
-            @page { size: 75mm 100mm; margin: 0; }
-            html, body {
-              margin: 0; padding: 0;
-              width: 75mm; height: 100mm;
-              overflow: hidden;
-              font-family: Arial, sans-serif;
-              background: #fff;
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
-            }
-            body { display: flex; flex-direction: column; }
-            .card-side {
-              position: relative;
-              width: 75mm; height: 50mm;
-              display: flex; overflow: hidden;
-              box-sizing: border-box;
-            }
-            .visitor-bar {
-              position: relative;
-              width: 12mm; flex-shrink: 0;
-              overflow: hidden;
-            }
-            .visitor-bar img {
-              position: absolute;
-              inset: 0; width: 100%; height: 100%;
-              object-fit: cover;
-            }
-            .visitor-text {
-              position: absolute;
-              top: 50%; left: 50%;
-              transform: translate(-50%, -50%) rotate(-90deg);
-              color: #fff; font-size: 10pt; font-weight: 900;
-              letter-spacing: 2px; white-space: nowrap;
-              text-transform: uppercase;
-              font-family: Arial, sans-serif; z-index: 2;
-            }
-            .content {
-              flex: 1; display: flex;
-              flex-direction: column;
-              align-items: center; justify-content: center;
-              box-sizing: border-box;
-            }
-            .front { border-bottom: 1px dashed #000; }
-            .front .content {
-              position: relative;
-              gap: 2mm; padding: 5mm 4mm 4mm;
-              transform: rotate(180deg);
-            }
-            .front-logo {
-              position: absolute;
-              top: 2mm; left: 2mm;
-              width: 10mm; height: 10mm;
-              object-fit: contain;
-            }
-            .qr { width: 30mm; height: 30mm; object-fit: contain; }
-            .curp {
-              font-size: 10pt; font-weight: 700;
-              letter-spacing: .5px; text-align: center;
-            }
-            .operador {
-              font-size: 8pt; text-align: center; max-width: 90%;
-            }
-            .back .content {
-              display: flex; align-items: center; justify-content: center;
-            }
-            .back-logo {
-              width: 70%; height: 70%;
-              object-fit: contain;
-              image-rendering: crisp-edges;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="card-side front">
-            <div class="visitor-bar">
-              <img src="${this.visitorBarImage}" />
-              <div class="visitor-text">TRANSPORTISTA</div>
+        <html>
+          <head>
+            <title>Etiqueta transportista</title>
+            <style>
+              @page { size: 75mm 100mm; margin: 0; }
+              html, body {
+                margin: 0; padding: 0;
+                width: 75mm; height: 100mm;
+                overflow: hidden;
+                font-family: Arial, sans-serif;
+                background: #fff;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+              body { display: flex; flex-direction: column; }
+              .card-side {
+                position: relative;
+                width: 75mm; height: 50mm;
+                display: flex; overflow: hidden;
+                box-sizing: border-box;
+              }
+              .visitor-bar {
+                position: relative;
+                width: 12mm; flex-shrink: 0;
+                overflow: hidden;
+              }
+              .visitor-bar img {
+                position: absolute;
+                inset: 0; width: 100%; height: 100%;
+                object-fit: cover;
+              }
+              .visitor-text {
+                position: absolute;
+                top: 50%; left: 50%;
+                transform: translate(-50%, -50%) rotate(-90deg);
+                color: #fff; font-size: 10pt; font-weight: 900;
+                letter-spacing: 2px; white-space: nowrap;
+                text-transform: uppercase;
+                font-family: Arial, sans-serif; z-index: 2;
+              }
+              .content {
+                flex: 1; display: flex;
+                flex-direction: column;
+                align-items: center; justify-content: center;
+                box-sizing: border-box;
+              }
+              .front { border-bottom: 1px dashed #000; }
+              .front .content {
+                position: relative;
+                gap: 2mm; padding: 5mm 4mm 4mm;
+                transform: rotate(180deg);
+              }
+              .front-logo {
+                position: absolute;
+                top: 2mm; left: 2mm;
+                width: 10mm; height: 10mm;
+                object-fit: contain;
+              }
+              .qr { width: 30mm; height: 30mm; object-fit: contain; }
+              .curp {
+                font-size: 10pt; font-weight: 700;
+                letter-spacing: .5px; text-align: center;
+              }
+              .operador {
+                font-size: 8pt; text-align: center; max-width: 90%;
+              }
+              .back .content {
+                display: flex; align-items: center; justify-content: center;
+              }
+              .back-logo {
+                width: 70%; height: 70%;
+                object-fit: contain;
+                image-rendering: crisp-edges;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="card-side front">
+              <div class="visitor-bar">
+                <img src="${this.visitorBarImage}" />
+                <div class="visitor-text">TRANSPORTISTA</div>
+              </div>
+              <div class="content">
+                <img class="front-logo" src="${this.logoFrontal}" />
+                <img class="qr" src="${qrBase64}" />
+                <div class="curp">${curp}</div>
+                <div class="operador">${nombre}</div>
+              </div>
             </div>
-            <div class="content">
-              <img class="front-logo" src="${this.logoFrontal}" />
-              <img class="qr" src="${qrBase64}" />
-              <div class="curp">${curp}</div>
-              <div class="operador">${nombre}</div>
+            <div class="card-side back">
+              <div class="visitor-bar">
+                <img src="${this.visitorBarImage}" />
+                <div class="visitor-text">TRANSPORTISTA</div>
+              </div>
+              <div class="content">
+                <img class="back-logo" src="${this.imagenReverso}" />
+              </div>
             </div>
-          </div>
-          <div class="card-side back">
-            <div class="visitor-bar">
-              <img src="${this.visitorBarImage}" />
-              <div class="visitor-text">TRANSPORTISTA</div>
-            </div>
-            <div class="content">
-              <img class="back-logo" src="${this.imagenReverso}" />
-            </div>
-          </div>
-          <script>window.onload = () => { window.print(); setTimeout(() => window.close(), 700); };</script>
-        </body>
-      </html>
-    `);
+            <script>window.onload = () => { window.print(); setTimeout(() => window.close(), 700); };</script>
+          </body>
+        </html>
+      `);
       ventana.document.close();
     } catch (error) {
       console.error('Error impresión:', error);
@@ -481,12 +450,15 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
     this.form = {
       tipoIngresoId: t.id_tipo_ingreso,
       empresa: t.empresa,
-      idProveedor: '',
+      idProveedor: t.id_empresa > 0 ? String(t.id_empresa) : '',
+      idEmpresa: t.id_empresa,
       nombre: t.nombre,
       paterno: t.paterno,
       materno: t.materno,
       curp: t.curp_operador,
       placas: t.placas,
+      marca: t.marca,
+      modelo: t.modelo,
       tipoUnidadId: t.tipo_unidad,
     };
     this.curpBloqueado = false;
@@ -502,12 +474,14 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
     return this.editandoId !== null ? 'Guardar cambios' : 'Registrar entrada';
   }
 
-  get esTipo2(): boolean {
-    // id 2 = Carga/Descarga
-    return this.form.tipoIngresoId === 2;
+  // ── Getter principal: controla visibilidad del campo ID EMPRESA ─────────
+
+  get validaEmpresa(): boolean {
+    if (!this.form.tipoIngresoId) return false;
+    const tipo = this.tiposIngreso.find(t => t.id === this.form.tipoIngresoId);
+    return tipo?.valida_empresa === 1;
   }
 
-  /** Remolque se deriva del tipo de unidad seleccionado en el catálogo */
   get tieneRemolque(): boolean {
     if (this.form.tipoUnidadId === null) return false;
     const unidad = this.tiposUnidad.find(u => u.id === this.form.tipoUnidadId);
@@ -515,7 +489,10 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
   }
 
   onChangeTipoIngreso(): void {
-    if (!this.esTipo2) this.form.idProveedor = '';
+    if (!this.validaEmpresa) {
+      this.form.idProveedor = '';
+      this.form.idEmpresa = 0;
+    }
   }
 
   get formValido(): boolean {
@@ -523,14 +500,48 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
     if (!this.form.empresa.trim()) return false;
     if (!this.form.nombre.trim() || !this.form.paterno.trim()) return false;
     if (!this.form.placas.trim() || !this.form.tipoUnidadId) return false;
-    if (this.esTipo2 && this.editandoId === null && !this.form.idProveedor.trim()) return false;
+    if (this.validaEmpresa && this.editandoId === null && !this.form.idProveedor.trim()) return false;
     return true;
   }
+
+  // ── Consultar empresa por ID ────────────────────────────────────────────
+
+  onChangeIdEmpresa(): void {
+    const id = parseInt(this.form.idProveedor.trim(), 10);
+    if (isNaN(id) || id <= 0) {
+      this.form.empresa = '';
+      this.form.idEmpresa = 0;
+      return;
+    }
+
+    this.svc.getProveedor(id).subscribe({
+      next: (res) => {
+        if ('error_id' in res) {
+          this.form.empresa = '';
+          this.form.idEmpresa = 0;
+          const msg = (res.error_msg as string)?.trim()
+            ? res.error_msg as string
+            : `Ocurrió un error inesperado (código ${res.error_id}).`;
+          this.mostrarToast('error', `Error ${res.error_id}`, msg);
+          return;
+        }
+        this.form.empresa = res.razon_social;
+        this.form.idEmpresa = id;
+      },
+      error: (err) => {
+        this.form.empresa = '';
+        this.form.idEmpresa = 0;
+        const { titulo, mensaje } = this.extraerMensajeError(err, 'No se pudo obtener la empresa.');
+        this.mostrarToast('error', titulo, mensaje);
+      },
+    });
+  }
+
+  // ── Registrar ───────────────────────────────────────────────────────────
 
   registrar(): void {
     if (!this.formValido) return;
 
-    // Solo validar CURP si hay datos de operador (nombre + paterno + curp)
     if (this.form.curp.trim() && this.form.nombre.trim() && this.form.paterno.trim()) {
       this.cargando = true;
       this.svc.validarCurp({
@@ -538,16 +549,15 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
         nombre: this.form.nombre.trim().toUpperCase(),
         paterno: this.form.paterno.trim().toUpperCase(),
         materno: this.form.materno.trim().toUpperCase(),
-        usuario: this.datosService.usuarioSignal(),   // ← del DatosService
+        usuario: this.datosService.usuarioSignal(),
       }).subscribe({
-        // En registrar(), bloque next de validarCurp:
         next: (res) => {
           if (res.error_id !== 0) {
             this.cargando = false;
             const msg = res.error_msg?.trim()
               ? res.error_msg
               : `Ocurrió un error inesperado (código ${res.error_id}).`;
-            this.mostrarToast('error', `Error ${res.error_id}`, msg);  // ← consistente con manejarRespuestaAPI
+            this.mostrarToast('error', `Error ${res.error_id}`, msg);
             return;
           }
           this._ejecutarGuardado();
@@ -559,7 +569,6 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
         },
       });
     } else {
-      // Sin CURP, ir directo
       this.cargando = true;
       this._ejecutarGuardado();
     }
@@ -576,8 +585,11 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
         paterno: this.form.paterno,
         materno: this.form.materno,
         placas: this.form.placas,
+        marca: this.form.marca,
+        modelo: this.form.modelo,
         unidad: this.form.tipoUnidadId!,
         usuario: this.datosService.usuarioSignal(),
+        id_empresa: this.form.idEmpresa,
       }).subscribe({
         next: (res) => {
           this.cargando = false;
@@ -602,8 +614,11 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
         paterno: this.form.paterno,
         materno: this.form.materno,
         placas: this.form.placas,
+        marca: this.form.marca,
+        modelo: this.form.modelo,
         usuario: this.datosService.usuarioSignal(),
         unidad: this.form.tipoUnidadId!,
+        id_empresa: this.form.idEmpresa,
       }).subscribe({
         next: (res) => {
           this.cargando = false;
