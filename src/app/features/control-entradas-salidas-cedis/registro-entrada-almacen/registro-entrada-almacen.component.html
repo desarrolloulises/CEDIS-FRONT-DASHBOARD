@@ -1,415 +1,348 @@
-<!-- =========================================================
-     REGISTRO DE EMPLEADO / PROVEEDOR
-========================================================= -->
-<div class="registro-wrapper">
+<div class="rw">
 
-  <!-- ── BARRA SUPERIOR: tabs + botón nuevo registro ──── -->
-  <div class="reg-topbar">
-    <nav class="reg-tabs">
-      <button *ngFor="let sec of secciones" class="reg-tab"
-          [class.reg-tab--activo]="seccionActiva === sec.id"
-          type="button" (click)="irSeccion(sec.id)">
-        <span class="reg-tab__icono" [class]="sec.icon"></span>
-        <span class="reg-tab__label">{{ sec.label }}</span>
+  <!-- ── Topbar ── -->
+  <div class="topbar">
+    <nav class="tabs">
+      <button *ngFor="let sec of secciones" class="tab" [class.tab--on]="seccionActiva === sec.id" type="button"
+        (click)="irSeccion(sec.id)">
+        <i [class]="sec.icon"></i>
+        <span>{{ sec.label }}</span>
       </button>
     </nav>
-
-    <!-- Botón global de reset -->
-    <button type="button" class="btn btn--reset" (click)="confirmarReset()" title="Nuevo registro / limpiar todo">
-      <i class="ti ti-refresh"></i>
-      <span>Nuevo</span>
+    <button type="button" class="btn btn--ghost" (click)="confirmarReset()" title="Nuevo consulta">
+      <span>Nueva consulta</span>
     </button>
   </div>
 
-  <!-- ── FORMULARIO ─────────────────────────────────────── -->
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+  <!-- ══ SECCIÓN 1 — DATOS ══ -->
+  <section class="sec" [class.sec--on]="seccionActiva === 'datos'">
+    <form [formGroup]="formDatos" (ngSubmit)="onSubmitDatos()" novalidate>
 
-    <!-- ═══════════════════════════════════════════════════
-         SECCIÓN 1 — DATOS PERSONALES
-    ═══════════════════════════════════════════════════ -->
-    <section class="reg-seccion" [class.reg-seccion--visible]="seccionActiva === 'datos'">
-      <div class="reg-seccion__titulo">
-        <i class="ti ti-user"></i> Datos Personales
-      </div>
+      <div class="grid-main">
+        <div class="fields">
 
-      <div class="reg-grid">
-
-        <!-- Columna izquierda -->
-        <div class="reg-campos">
-
-          <!-- CURP -->
-          <div class="campo-grupo">
-            <label class="campo-label campo-label--req">CURP</label>
-            <div class="campo-hint">Escanea el código QR o captura manualmente</div>
-            <div class="campo-input-icon">
-              <input type="text" formControlName="curp" class="campo-input"
-                [class.campo-input--error]="isInvalid('curp')"
-                placeholder="XXXX000000XXXXXX00" maxlength="18"
-                (blur)="onCurpBlur()" />
-              <i class="campo-icono-right ti ti-search"></i>
+          <div class="field">
+            <label class="lbl lbl--req">CURP</label>
+            <div class="hint">Escanea el código QR o captura manualmente</div>
+            <div class="input-icon">
+              <input type="text" formControlName="curp" class="inp" [class.inp--err]="isInvalid(formDatos, 'curp')"
+                placeholder="XXXX000000XXXXXX00" maxlength="18" (blur)="onCurpBlur()" />
+              <i class="ti ti-search icon-r"></i>
             </div>
-            <span class="campo-error" *ngIf="isInvalid('curp')">CURP requerida (18 caracteres)</span>
-            <!-- Badge de estado de búsqueda -->
-            <span class="curp-badge curp-badge--encontrado" *ngIf="curpEncontrado">
-              <i class="ti ti-circle-check"></i> Personal encontrado — campos completados automáticamente
-            </span>
           </div>
 
-          <!-- Nombre -->
-          <div class="campo-grupo">
-            <label class="campo-label">Nombre</label>
-            <div class="campo-hint">Se despliega automáticamente al capturar CURP</div>
-            <input type="text" formControlName="nombre"
-              class="campo-input campo-input--readonly"
-              placeholder="Se completará automáticamente" readonly />
+          <div class="field">
+            <label class="lbl">Nombre</label>
+            <input type="text" formControlName="nombre" class="inp inp--ro" placeholder="Nombre" readonly />
           </div>
 
-          <!-- Motivo -->
-          <div class="campo-grupo">
-            <label class="campo-label campo-label--req campo-label--select">Motivo</label>
-            <select formControlName="motivo"
-              class="campo-select campo-select--primario"
-              [class.campo-select--error]="isInvalid('motivo')"
-              [class.campo-select--readonly]="curpEncontrado">
+          <div class="field">
+            <label class="lbl lbl--req lbl--sel">Motivo</label>
+            <select formControlName="motivo" class="sel sel--green" [class.sel--err]="isInvalid(formDatos, 'motivo')"
+              [class.sel--ro]="curpEncontrado">
               <option value="">-- Selecciona motivo --</option>
               <option *ngFor="let m of motivosOpciones" [value]="m">{{ m }}</option>
             </select>
-            <span class="campo-error" *ngIf="isInvalid('motivo')">Campo requerido</span>
+            <span class="err-msg" *ngIf="isInvalid(formDatos, 'motivo')">Campo requerido</span>
           </div>
 
-          <!-- No. Proveedor y Razón Social — sólo si el motivo lo requiere -->
           <ng-container *ngIf="motivoRequiereProveedor">
-            <div class="campo-grupo">
-              <label class="campo-label">No. Proveedor <span class="campo-opcional">(Opcional)</span></label>
-              <input type="text" formControlName="noProveedor" class="campo-input"
-                placeholder="Número de proveedor" />
+            <div class="field">
+              <label class="lbl">No. Proveedor <span class="opt">(Opcional)</span></label>
+              <input type="text" formControlName="noProveedor" class="inp" placeholder="Número de proveedor" />
             </div>
-
-            <div class="campo-grupo">
-              <label class="campo-label">Razón Social</label>
-              <div class="campo-hint">Si es proveedor se despliega / se captura</div>
-              <input type="text" formControlName="razonSocial" class="campo-input"
-                placeholder="Nombre de la empresa" />
+            <div class="field">
+              <label class="lbl">Razón Social</label>
+              <input type="text" formControlName="razonSocial" class="inp" placeholder="Nombre de la empresa" />
             </div>
           </ng-container>
 
-        </div><!-- /reg-campos -->
+        </div>
 
-        <!-- Columna derecha: foto -->
-        <div class="reg-foto-panel">
-          <div class="foto-label">
-            <i class="ti ti-camera"></i> Foto del empleado
-            <small>Cámara o teléfono</small>
-          </div>
-          <div class="foto-contenedor">
+        <!-- Foto -->
+        <div class="foto-panel">
+          <div class="foto-box">
             <ng-container *ngIf="fotoPreview; else sinFoto">
-              <img [src]="fotoPreview" alt="Foto del empleado" class="foto-preview" />
-              <button type="button" class="btn-foto-eliminar" (click)="eliminarFoto()">
+              <img [src]="fotoPreview" alt="Foto del empleado" class="foto-img" />
+              <button type="button" class="foto-del" (click)="eliminarFoto()">
                 <i class="ti ti-x"></i> Eliminar
               </button>
             </ng-container>
             <ng-template #sinFoto>
-              <div class="foto-placeholder">
-                <i class="ti ti-user-circle"></i>
+              <div class="foto-empty"><i class="ti ti-user-circle"></i>
                 <p>Sin foto</p>
               </div>
             </ng-template>
           </div>
-          <label class="btn btn--secundario btn--block btn--foto">
-            <i class="ti ti-camera-plus"></i> Tomar / Subir Foto
+          <label class="btn btn--sec btn--block">
+            Capturar
             <input type="file" accept="image/*" capture="environment" style="display:none"
               (change)="onFotoCapturada($event)" />
           </label>
         </div>
-
-      </div><!-- /reg-grid -->
-
-      <!-- ── Sub-sección: Veto ────────────────────────── -->
-      <div class="reg-seccion__titulo reg-seccion__titulo--sub">
-        <i class="ti ti-ban"></i> Información de Veto
       </div>
 
-      <!-- Toggle (oculto si ya tiene veto previo y está bloqueado) -->
-      <div class="vetado-toggle" *ngIf="!tieneVetoPrevio">
-        <label class="toggle-switch">
+      <div class="datos-actions">
+        <button type="submit" class="btn btn--pri">
+          Guardar
+        </button>
+      </div>
+
+      <div class="sec-divider"></div>
+
+      <!-- Sin veto previo -->
+      <div *ngIf="!tieneVetoPrevio">
+
+        <label class="toggle">
           <input type="checkbox" formControlName="vetado" />
-          <span class="toggle-slider"></span>
-          <span class="toggle-label">¿Empleado vetado?</span>
+          <span class="toggle-track"></span>
+          <span class="toggle-lbl">Personal vetado</span>
         </label>
+
       </div>
 
-      <!-- Bloque de veto bloqueado (ya venía de BD) -->
-      <div class="veto-bloqueado" *ngIf="tieneVetoPrevio && vetoEstaBlockeado">
-        <div class="veto-bloqueado__info">
-          <i class="ti ti-lock"></i>
+      <!-- Resumen de veto existente -->
+      <div class="veto-card" *ngIf="tieneVetoPrevio && !editandoVeto">
+        <div class="veto-card__header">
           <div>
-            <strong>Veto registrado previamente</strong>
-            <span>Tipo: {{ form.get('tipoBan')?.value }} &nbsp;|&nbsp;
-                  Inicio: {{ form.get('fechaInicio')?.value }}</span>
-            <span *ngIf="!esBanDefinitivo">
-              Término: {{ form.get('fechaTermino')?.value }}
+            <div class="veto-card__title">
+              Información de veto
+            </div>
+            <div class="veto-card__subtitle">
+              Registro actual del visitante
+            </div>
+          </div>
+          <button type="button" class="btn btn--ghost btn--sm" (click)="activarEdicionVeto()">
+            Editar veto
+          </button>
+        </div>
+
+        <div class="veto-info">
+
+          <div class="veto-info__item">
+            <span class="veto-info__label">
+              Tipo
+            </span>
+            <span class="veto-info__value">
+              {{ getDescripcionTipoVeto(formDatos.get('tipoBan')?.value) }}
             </span>
           </div>
+
+          <div class="veto-info__item">
+            <span class="veto-info__label">
+              Fecha inicio
+            </span>
+            <span class="veto-info__value">
+              {{ formDatos.get('fechaInicio')?.value }}
+            </span>
+          </div>
+
+          <div class="veto-info__item" *ngIf="!esBanDefinitivo">
+            <span class="veto-info__label">
+              Fecha término
+            </span>
+            <span class="veto-info__value">
+              {{ formDatos.get('fechaTermino')?.value }}
+            </span>
+          </div>
+
+          <div class="veto-info__item" *ngIf="!esBanDefinitivo">
+            <span class="veto-info__label">
+              Días restantes
+            </span>
+            <span class="veto-info__value veto-info__value--highlight">
+              {{ diasRestantes }}
+            </span>
+          </div>
+
         </div>
-        <button type="button" class="btn btn--advertencia btn--sm" (click)="activarEdicionVeto()">
-          <i class="ti ti-edit"></i> Editar veto
-        </button>
+
       </div>
 
-      <!-- Banner de cancelación de edición -->
-      <div class="veto-edit-banner" *ngIf="tieneVetoPrevio && editandoVeto">
-        <i class="ti ti-pencil"></i> Editando información de veto
-        <button type="button" class="btn btn--ghost btn--sm" (click)="cancelarEdicionVeto()">
-          Cancelar edición
-        </button>
-      </div>
-
-      <!-- Detalle de veto (editable) -->
-      <div class="vetado-detalle"
-           *ngIf="form.get('vetado')?.value && (!tieneVetoPrevio || editandoVeto)">
-        <div class="reg-grid-2col">
-
-          <div class="campo-grupo campo-grupo--span2">
-            <label class="campo-label campo-label--select">Tipo de Veto</label>
-            <select formControlName="tipoBan" class="campo-select campo-select--primario">
-              <option value="">-- Parcial / Definitivo --</option>
-              <option *ngFor="let t of tiposBan" [value]="t">{{ t }}</option>
+      <!-- Alta / edición -->
+      <div *ngIf="
+    (formDatos.get('vetado')?.value && !tieneVetoPrevio)
+    || editandoVeto">
+        <div class="grid-2">
+          <div class="field">
+            <label class="lbl lbl--req">
+              Tipo de veto
+            </label>
+            <select formControlName="tipoBan" class="sel">
+              <option value="">
+                Seleccionar
+              </option>
+              <option *ngFor="let tipo of tiposVetoOpciones" [value]="tipo.lblTipoVeto">
+                {{ tipo.lblDescripcionTipoVeto }}
+              </option>
             </select>
           </div>
 
-          <div class="campo-grupo">
-            <label class="campo-label">Fecha Inicio</label>
-            <input type="date" formControlName="fechaInicio" class="campo-input" />
+          <div class="field">
+            <label class="lbl lbl--req">
+              Fecha inicio
+            </label>
+            <input type="date" formControlName="fechaInicio" class="inp" [min]="fechaMinima" />
           </div>
 
-          <ng-container *ngIf="!esBanDefinitivo">
-            <div class="campo-grupo">
-              <label class="campo-label campo-label--select">Duración (Días)</label>
-              <select formControlName="duracionDias" class="campo-select campo-select--primario">
-                <option value="">-- 30 / 60 / 90 --</option>
-                <option *ngFor="let d of duracionOpciones" [value]="d">{{ d }} días</option>
-              </select>
-            </div>
-            <div class="campo-grupo">
-              <label class="campo-label">Fecha Término</label>
-              <input type="date" formControlName="fechaTermino"
-                class="campo-input campo-input--readonly" readonly />
-            </div>
-            <div class="campo-grupo">
-              <label class="campo-label">Días Restantes</label>
-              <input type="number" formControlName="diasRestantes"
-                class="campo-input campo-input--readonly" readonly />
-            </div>
-          </ng-container>
+          <div class="field" *ngIf="!esBanDefinitivo">
+            <label class="lbl lbl--req">
+              Fecha término
+            </label>
+            <input type="date" formControlName="fechaTermino" class="inp"
+              [min]="formDatos.get('fechaInicio')?.value || fechaMinima" />
+          </div>
 
         </div>
+
+        <div class="veto-actions">
+          <button *ngIf="editandoVeto" type="button" class="btn btn--ghost" (click)="cancelarEdicionVeto()">
+            Cancelar
+          </button>
+          <button type="button" class="btn btn--pri" [disabled]="guardandoVeto" (click)="guardarVeto()">
+            {{ guardandoVeto ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </div>
+
       </div>
 
-      <div class="reg-nav-botones">
-        <button type="button" class="btn btn--primario btn--next" (click)="irSeccion('vehiculo')">
-          Siguiente: Vehículo →
-        </button>
-      </div>
-    </section>
+    </form>
+  </section>
 
-    <!-- ═══════════════════════════════════════════════════
-         SECCIÓN 2 — VEHÍCULO
-    ═══════════════════════════════════════════════════ -->
-    <section class="reg-seccion" [class.reg-seccion--visible]="seccionActiva === 'vehiculo'">
-      <div class="reg-seccion__titulo">
-        <i class="ti ti-truck"></i> Datos del Vehículo
-      </div>
+  <!-- ══ SECCIÓN 2 — VEHÍCULO ══ -->
+  <section class="sec" [class.sec--on]="seccionActiva === 'vehiculo'">
+    <form [formGroup]="formVehiculo" (ngSubmit)="onSubmitVehiculo()" novalidate>
 
-      <div class="reg-grid-2col">
-
-        <div class="campo-grupo campo-grupo--span2">
-          <label class="campo-label campo-label--select">Tipo de Vehículo</label>
-          <select formControlName="tipoVehiculo" class="campo-select campo-select--primario"
-            [class.campo-select--readonly]="curpEncontrado && form.get('tipoVehiculo')?.disabled">
+      <div class="grid-2">
+        <div class="field field--span2">
+          <label class="lbl lbl--sel">Tipo de Vehículo</label>
+          <select formControlName="tipoVehiculo" class="sel sel--green"
+            [class.sel--ro]="curpEncontrado && formVehiculo.get('tipoVehiculo')?.disabled">
             <option value="">-- Sin vehículo / Lista desplegable --</option>
             <option *ngFor="let t of tiposVehiculo" [value]="t">{{ t }}</option>
           </select>
         </div>
 
-        <ng-container *ngIf="form.getRawValue().tipoVehiculo">
-
-          <div class="campo-grupo">
-            <label class="campo-label">Placa</label>
-            <input type="text" formControlName="placa" class="campo-input"
-              [class.campo-input--readonly]="curpEncontrado && form.get('placa')?.disabled"
-              placeholder="ABC-123" />
+        <ng-container *ngIf="formVehiculo.getRawValue().tipoVehiculo">
+          <div class="field">
+            <label class="lbl">Placa</label>
+            <input type="text" formControlName="placa" class="inp"
+              [class.inp--ro]="curpEncontrado && formVehiculo.get('placa')?.disabled" placeholder="ABC-123" />
           </div>
-
-          <div class="campo-grupo">
-            <label class="campo-label">Modelo</label>
-            <input type="text" formControlName="modelo" class="campo-input"
-              [class.campo-input--readonly]="curpEncontrado && form.get('modelo')?.disabled"
-              placeholder="Año o modelo" />
+          <div class="field">
+            <label class="lbl">Modelo</label>
+            <input type="text" formControlName="modelo" class="inp"
+              [class.inp--ro]="curpEncontrado && formVehiculo.get('modelo')?.disabled" placeholder="Año o modelo" />
           </div>
-
-          <div class="campo-grupo campo-grupo--span2">
-            <label class="campo-label">Marca</label>
-            <input type="text" formControlName="marca" class="campo-input"
-              [class.campo-input--readonly]="curpEncontrado && form.get('marca')?.disabled"
+          <div class="field field--span2">
+            <label class="lbl">Marca</label>
+            <input type="text" formControlName="marca" class="inp"
+              [class.inp--ro]="curpEncontrado && formVehiculo.get('marca')?.disabled"
               placeholder="Marca del vehículo" />
           </div>
-
         </ng-container>
 
-        <div class="campo-grupo campo-grupo--span2" *ngIf="!form.getRawValue().tipoVehiculo">
-          <div class="texto-vacio">
+        <div class="field field--span2" *ngIf="!formVehiculo.getRawValue().tipoVehiculo">
+          <div class="empty-state">
             <i class="ti ti-truck-off"></i>
             Personal sin vehículo registrado.
             <span *ngIf="!curpEncontrado">Selecciona un tipo para capturar los datos.</span>
           </div>
         </div>
-
       </div>
 
-      <div class="reg-nav-botones">
-        <button type="button" class="btn btn--terciario" (click)="irSeccion('datos')">← Anterior</button>
-        <button type="button" class="btn btn--primario btn--next" (click)="irSeccion('equipo')">Siguiente: Equipo →</button>
-      </div>
-    </section>
-
-    <!-- ═══════════════════════════════════════════════════
-         SECCIÓN 3 — EQUIPO DE SEGURIDAD
-    ═══════════════════════════════════════════════════ -->
-    <section class="reg-seccion" [class.reg-seccion--visible]="seccionActiva === 'equipo'">
-      <div class="reg-seccion__titulo">
-        <i class="ti ti-shield-check"></i> Equipo de Seguridad
+      <div class="datos-actions">
+        <button type="submit" class="btn btn--pri"> Guardar</button>
       </div>
 
-      <div class="equipo-grid">
-        <label class="equipo-checkbox">
-          <input type="checkbox" formControlName="altaImss" />
-          <span class="equipo-check__box"></span>
-          <span class="equipo-check__label">Alta de IMSS</span>
-        </label>
-        <label class="equipo-checkbox">
-          <input type="checkbox" formControlName="dc3" />
-          <span class="equipo-check__box"></span>
-          <span class="equipo-check__label">DC3</span>
-        </label>
-        <label class="equipo-checkbox">
-          <input type="checkbox" formControlName="chalecoReflejante" />
-          <span class="equipo-check__box"></span>
-          <span class="equipo-check__label">Chaleco Reflejante</span>
-        </label>
-        <label class="equipo-checkbox">
-          <input type="checkbox" formControlName="zapatosSeguridad" />
-          <span class="equipo-check__box"></span>
-          <span class="equipo-check__label">Zapatos de Seguridad</span>
-        </label>
-        <label class="equipo-checkbox">
-          <input type="checkbox" formControlName="pantalonMezclilla" />
-          <span class="equipo-check__box"></span>
-          <span class="equipo-check__label">Pantalón Mezclilla <small>(Azul, Negro, Gris)</small></span>
-        </label>
-        <label class="equipo-checkbox">
-          <input type="checkbox" formControlName="playeraMangaLarga" />
-          <span class="equipo-check__box"></span>
-          <span class="equipo-check__label">Playera Manga Larga</span>
+    </form>
+  </section>
+
+  <!-- ══ SECCIÓN 3 — VALIDACIONES ══ -->
+  <section class="sec" [class.sec--on]="seccionActiva === 'equipo'">
+    <form [formGroup]="formEquipo" novalidate>
+
+      <div class="loading" *ngIf="cargandoEquipo">
+        <i class="ti ti-loader-2 spin"></i> Cargando validaciones…
+      </div>
+
+      <div class="empty-state empty-state--dashed" *ngIf="!cargandoEquipo && validacionesSeguridad.length === 0">
+        <i class="ti ti-info-circle"></i>
+        Busca un visitante por CURP para cargar las validaciones de seguridad.
+      </div>
+
+      <div class="checks" *ngIf="!cargandoEquipo && validacionesSeguridad.length > 0">
+        <label class="check-item" *ngFor="let v of validacionesSeguridad">
+          <input type="checkbox" [formControlName]="v.lblClaveValidacion" />
+          <span class="check-box"></span>
+          <span class="check-lbl">{{ v.lblDescripcionValidacion }}</span>
         </label>
       </div>
 
-      <div class="reg-nav-botones">
-        <button type="button" class="btn btn--terciario" (click)="irSeccion('vehiculo')">← Anterior</button>
-        <button type="button" class="btn btn--primario btn--next" (click)="irSeccion('incidencias')">Siguiente: Incidencias →</button>
-      </div>
-    </section>
+    </form>
+  </section>
 
-    <!-- ═══════════════════════════════════════════════════
-         SECCIÓN 4 — INCIDENCIAS
-    ═══════════════════════════════════════════════════ -->
-    <section class="reg-seccion" [class.reg-seccion--visible]="seccionActiva === 'incidencias'">
-      <div class="reg-seccion__titulo">
-        <i class="ti ti-alert-triangle"></i> Incidencias
-      </div>
+  <!-- ══ SECCIÓN 4 — INCIDENCIAS ══ -->
+  <section class="sec" [class.sec--on]="seccionActiva === 'incidencias'">
+    <form [formGroup]="formIncidencias" (ngSubmit)="onSubmitIncidencias()" novalidate>
 
-      <!-- Formulario fijo -->
-      <div class="form-fijo">
-        <div class="form-fijo__titulo">
-          <i class="ti ti-plus-circle"></i> Nueva Incidencia
-        </div>
-        <div class="reg-grid-3col">
-
-          <div class="campo-grupo">
-            <label class="campo-label campo-label--req">Fecha</label>
-            <input type="date" [formControl]="incFecha" class="campo-input"
-              [class.campo-input--error]="isInvalidSub(nuevaIncidenciaForm, 'fecha')" />
-            <span class="campo-error" *ngIf="isInvalidSub(nuevaIncidenciaForm, 'fecha')">Requerido</span>
-          </div>
-
-          <div class="campo-grupo">
-            <label class="campo-label campo-label--req campo-label--select">Nivel</label>
-            <select [formControl]="incNivel"
-              class="campo-select campo-select--primario"
-              [class.campo-select--error]="isInvalidSub(nuevaIncidenciaForm, 'nivel')">
-              <option value="">-- Nivel --</option>
-              <option *ngFor="let n of nivelesOpciones" [value]="n">{{ n }}</option>
-            </select>
-            <span class="campo-error" *ngIf="isInvalidSub(nuevaIncidenciaForm, 'nivel')">Requerido</span>
-          </div>
-
-          <div class="campo-grupo">
-            <label class="campo-label campo-label--req">
-              Descripción
-              <span class="campo-contador">{{ incDescripcion.value?.length || 0 }}/255</span>
-            </label>
-            <input type="text" [formControl]="incDescripcion" class="campo-input"
-              [class.campo-input--error]="isInvalidSub(nuevaIncidenciaForm, 'descripcion')"
-              placeholder="Describe la incidencia" maxlength="255" />
-            <span class="campo-error" *ngIf="isInvalidSub(nuevaIncidenciaForm, 'descripcion')">Requerido (máx. 255)</span>
-          </div>
-        </div>
-        <div class="form-fijo__actions">
-          <button type="button" class="btn btn--terciario btn--limpiar" (click)="limpiarIncidenciaForm()">
-            <i class="ti ti-eraser"></i> Limpiar
-          </button>
-          <button type="button" class="btn btn--secundario btn--agregar-inline" (click)="agregarIncidencia()">
-            <i class="ti ti-plus"></i> Agregar Incidencia
-          </button>
-        </div>
+      <div class="quick-add">
+        <select *ngIf="!cargandoNiveles" [formControl]="incNivel" class="sel sel--green"
+          [class.sel--err]="isInvalidSub(nuevaIncidenciaForm, 'nivel')">
+          <option value="">Nivel</option>
+          <option *ngFor="let n of nivelesOpciones" [value]="n.clave">{{ n.etiqueta }}</option>
+        </select>
+        <div class="loading" *ngIf="cargandoNiveles"><i class="ti ti-loader-2 spin"></i> Cargando...</div>
+        <input type="text" [formControl]="incDescripcion" class="inp"
+          [class.inp--err]="isInvalidSub(nuevaIncidenciaForm, 'descripcion')" placeholder="Describe la incidencia..."
+          maxlength="255" />
+        <button type="button" class="btn btn--sec btn--sq" (click)="agregarIncidencia()" title="Agregar">
+          <i class="ti ti-plus"></i>
+        </button>
       </div>
 
-      <!-- Tabla -->
-      <div class="tabla-wrapper">
-        <div class="tabla-titulo">
-          <i class="ti ti-list"></i> Incidencias registradas
-          <span class="tabla-badge">{{ incidencias.length }}</span>
-        </div>
-        <div *ngIf="incidencias.length === 0" class="texto-vacio">
-          <i class="ti ti-clipboard-x"></i> No hay incidencias registradas aún.
-        </div>
-        <div *ngIf="incidencias.length > 0" class="tabla-scroll">
-          <table class="tabla">
+      <div class="err-list">
+        <span class="err-msg" *ngIf="isInvalidSub(nuevaIncidenciaForm, 'nivel')">Selecciona un nivel.</span>
+        <span class="err-msg" *ngIf="isInvalidSub(nuevaIncidenciaForm, 'descripcion')">Captura una descripción.</span>
+      </div>
+
+      <div class="tbl-wrap">
+
+        <div class="empty-state" *ngIf="incidencias.length === 0"><i class="ti ti-clipboard-x"></i> No hay incidencias
+          registradas aún.</div>
+        <div class="tbl-scroll" *ngIf="incidencias.length > 0">
+          <table class="tbl">
             <thead>
               <tr>
-                <th class="tabla-th tabla-th--fecha">Fecha</th>
-                <th class="tabla-th tabla-th--nivel">Nivel</th>
-                <th class="tabla-th">Descripción</th>
-                <th class="tabla-th tabla-th--acc">Acción</th>
+                <th class="th th--fecha">Fecha</th>
+                <th class="th th--badge">Nivel</th>
+                <th class="th">Descripción</th>
+                <th class="th th--acc">Acción</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let inc of incidencias.controls; let i = index" class="tabla-tr">
-                <td class="tabla-td tabla-td--fecha">{{ inc.get('fecha')?.value | date:'dd/MM/yyyy' }}</td>
-                <td class="tabla-td tabla-td--nivel">
-                  <span class="nivel-badge" [class]="'nivel-badge--' + getNivelClase(inc.get('nivel')?.value)">
-                    {{ inc.get('nivel')?.value || '—' }}
+              <tr *ngFor="let inc of incidencias.controls; let i = index" class="tr">
+                <td class="td td--fecha">
+                  <span class="truncated" *ngIf="inc.get('fecha')?.value; else sinFechaInc">{{ inc.get('fecha')?.value | date:'dd/MM/yyyy'
+                    }}</span>
+                  <ng-template #sinFechaInc><span class="pending"><i class="ti ti-clock"></i>
+                      Pendiente</span></ng-template>
+                </td>
+                <td class="td td--badge">
+                  <span class="nivel-badge" [style.background-color]="(inc.get('colorNivel')?.value || '#E5E7EB').trim()">
+                    {{ getNivelEtiqueta(inc.get('nivel')?.value) }}
                   </span>
                 </td>
-                <td class="tabla-td tabla-td--desc">
-                  <span class="desc-truncada desc-truncada--clickable"
-                    [title]="inc.get('descripcion')?.value"
+                <td class="td td--desc">
+                  <span class="truncated" [title]="inc.get('descripcion')?.value"
                     (click)="abrirModalDescripcion(inc.get('descripcion')?.value)">
                     {{ inc.get('descripcion')?.value }}
                   </span>
                 </td>
-                <td class="tabla-td tabla-td--acc">
-                  <button type="button" class="btn-eliminar" (click)="eliminarIncidencia(i)" title="Eliminar">
-                    <i class="ti ti-trash"></i>
+                <td class="td td--acc">
+                  <button type="button" class="btn-icon btn-icon--edit" (click)="abrirEditarIncidencia(i)"
+                    title="Editar">
+                    <i class="ti ti-pencil"></i>
                   </button>
                 </td>
               </tr>
@@ -418,151 +351,192 @@
         </div>
       </div>
 
-      <div class="reg-nav-botones">
-        <button type="button" class="btn btn--terciario" (click)="irSeccion('equipo')">← Anterior</button>
-        <button type="button" class="btn btn--primario btn--next" (click)="irSeccion('otros')">Siguiente: Otros →</button>
-      </div>
-    </section>
 
-    <!-- ═══════════════════════════════════════════════════
-         SECCIÓN 5 — OTROS
-    ═══════════════════════════════════════════════════ -->
-    <section class="reg-seccion" [class.reg-seccion--visible]="seccionActiva === 'otros'">
-      <div class="reg-seccion__titulo">
-        <i class="ti ti-package"></i> Ingreso con elementos adicionales (Herramientas / Ropa / Equipos)
-      </div>
+    </form>
+  </section>
 
-      <!-- Formulario fijo -->
-      <div class="form-fijo">
-        <div class="form-fijo__titulo">
-          <i class="ti ti-plus-circle"></i> Nuevo Artículo
-        </div>
-        <div class="reg-grid-3col">
-
-          <div class="campo-grupo">
-            <label class="campo-label campo-label--req">Tipo</label>
-            <input type="text" [formControl]="otrTipo" class="campo-input"
-              [class.campo-input--error]="isInvalidSub(nuevoOtroForm, 'tipo')"
-              placeholder="Herramienta, Ropa, etc." />
-            <span class="campo-error" *ngIf="isInvalidSub(nuevoOtroForm, 'tipo')">Requerido</span>
-          </div>
-
-          <div class="campo-grupo">
-            <label class="campo-label campo-label--req">Cantidad</label>
-            <input type="number" [formControl]="otrCantidad" class="campo-input"
-              [class.campo-input--error]="isInvalidSub(nuevoOtroForm, 'cantidad')"
-              min="1" placeholder="0" />
-            <span class="campo-error" *ngIf="isInvalidSub(nuevoOtroForm, 'cantidad')">Requerido (mín. 1)</span>
-          </div>
-
-          <div class="campo-grupo campo-grupo--span3-mobile">
-            <label class="campo-label">
-              Descripción
-              <span class="campo-contador">{{ otrDescripcion.value?.length || 0 }}/255</span>
-            </label>
-            <input type="text" [formControl]="otrDescripcion" class="campo-input"
-              placeholder="Descripción del artículo" maxlength="255" />
-          </div>
-        </div>
-        <div class="form-fijo__actions">
-          <button type="button" class="btn btn--terciario btn--limpiar" (click)="limpiarOtroForm()">
-            <i class="ti ti-eraser"></i> Limpiar
-          </button>
-          <button type="button" class="btn btn--secundario btn--agregar-inline" (click)="agregarOtro()">
-            <i class="ti ti-plus"></i> Agregar Artículo
-          </button>
-        </div>
+  <!-- ══ SECCIÓN 5 — OTROS ══ -->
+  <section class="sec" [class.sec--on]="seccionActiva === 'otros'">
+    <form [formGroup]="formOtros" novalidate>
+      <div class="quick-add quick-add--otros">
+        <input type="text" [formControl]="otrTipo" class="inp"
+          [class.inp--err]="isInvalidSub(nuevoOtroForm, 'tipo')" placeholder="Tipo de artículo" />
+        <input type="number" [formControl]="otrCantidad" class="inp" placeholder="Cantidad" />
+        <input type="text" [formControl]="otrDescripcion" class="inp"
+          [class.inp--err]="isInvalidSub(nuevoOtroForm, 'descripcion')" placeholder="Descripción" />
+        <button type="button" class="btn btn--sec btn--sq" (click)="agregarOtro()">
+          <i class="ti ti-plus"></i>
+        </button>
       </div>
 
-      <!-- Tabla -->
-      <div class="tabla-wrapper">
-        <div class="tabla-titulo">
-          <i class="ti ti-list"></i> Artículos registrados
-          <span class="tabla-badge">{{ otros.length }}</span>
-        </div>
-        <div *ngIf="otros.length === 0" class="texto-vacio">
-          <i class="ti ti-box-off"></i> No hay artículos registrados aún.
-        </div>
-        <div *ngIf="otros.length > 0" class="tabla-scroll">
-          <table class="tabla">
+      <div class="err-list">
+        <span class="err-msg" *ngIf="isInvalidSub(nuevoOtroForm, 'tipo')">Captura el tipo de artículo.</span>
+        <span class="err-msg" *ngIf="isInvalidSub(nuevoOtroForm, 'descripcion')">
+          Captura una descripción.
+        </span>
+      </div>
+
+      <div class="tbl-wrap">
+        <div class="empty-state" *ngIf="otros.length === 0"><i class="ti ti-box-off"></i> No hay artículos registrados
+          aún.</div>
+        <div class="tbl-scroll" *ngIf="otros.length > 0">
+
+
+          <table class="tbl">
             <thead>
               <tr>
-                <th class="tabla-th">Tipo</th>
-                <th class="tabla-th tabla-th--nivel">Cantidad</th>
-                <th class="tabla-th tabla-th--desc">Descripción</th>
-                <th class="tabla-th tabla-th--acc">Acción</th>
+                <th class="th th--fecha">Tipo</th>
+                <th class="th th--badge">Cantidad</th>
+                <th class="th">Descripción</th>
+                <th class="th th--acc">Acción</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of otros.controls; let i = index" class="tabla-tr">
-                <td class="tabla-td">{{ item.get('tipo')?.value || '—' }}</td>
-                <td class="tabla-td tabla-td--nivel">
-                  <span class="cantidad-badge">{{ item.get('cantidad')?.value ?? '—' }}</span>
+              <tr *ngFor="let item_otros of otros.controls; let i = index" class="tr">
+                <td class="td td--fecha">
+                  <span class="truncated">{{item_otros.get('tipo')?.value || '—' }}</span>
+                  <ng-template #sinFechaInc><span class="pending"><i class="ti ti-clock"></i>
+                      Pendiente</span></ng-template>
                 </td>
-                <td class="tabla-td tabla-td--desc">
-                  <span class="desc-truncada desc-truncada--clickable"
-                    [title]="item.get('descripcion')?.value"
-                    (click)="abrirModalDescripcion(item.get('descripcion')?.value)">
-                    {{ item.get('descripcion')?.value || '—' }}
+                <td class="td td--badge">
+                  <span class="nivel-badge">
+                    <span>{{ item_otros.get('cantidad')?.value ?? '—' }}</span>
                   </span>
                 </td>
-                <td class="tabla-td tabla-td--acc">
-                  <button type="button" class="btn-eliminar" (click)="eliminarOtro(i)" title="Eliminar">
-                    <i class="ti ti-trash"></i>
+                <td class="td td--desc">
+                  <span class="truncated" [title]="item_otros.get('descripcion')?.value"
+                    (click)="abrirModalDescripcion(item_otros.get('descripcion')?.value)">
+                    {{ item_otros.get('descripcion')?.value }}
+                  </span>
+                </td>
+                <td class="td td--acc">
+                  <button type="button" class="btn-icon btn-icon--edit" (click)="abrirEditarOtro(i)" title="Editar">
+                    <i class="ti ti-pencil"></i>
                   </button>
                 </td>
               </tr>
             </tbody>
           </table>
+
         </div>
       </div>
 
-      <div class="reg-nav-botones">
-        <button type="button" class="btn btn--terciario" (click)="irSeccion('incidencias')">← Anterior</button>
-        <button type="submit" class="btn btn--primario btn--guardar">
-          <i class="ti ti-device-floppy"></i> Guardar Registro
-        </button>
-      </div>
-    </section>
+    </form>
+  </section>
 
-  </form>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     MODAL — Descripción completa
-═══════════════════════════════════════════════════ -->
-<div class="modal-overlay" *ngIf="modalDescripcion !== null" (click)="cerrarModal()">
-  <div class="modal-box" (click)="$event.stopPropagation()">
-    <div class="modal-header">
+<!-- ══ MODAL — Descripción ══ -->
+<div class="overlay" *ngIf="modalDescripcion !== null" (click)="cerrarModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-hdr">
       <span><i class="ti ti-file-description"></i> Descripción completa</span>
-      <button type="button" class="modal-cerrar" (click)="cerrarModal()">
-        <i class="ti ti-x"></i>
-      </button>
+      <button type="button" class="modal-close" (click)="cerrarModal()"><i class="ti ti-x"></i></button>
     </div>
     <div class="modal-body">{{ modalDescripcion }}</div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     MODAL — Confirmación de reset
-═══════════════════════════════════════════════════ -->
-<div class="modal-overlay" *ngIf="modalResetVisible" (click)="cancelarReset()">
-  <div class="modal-box modal-box--sm" (click)="$event.stopPropagation()">
-    <div class="modal-header modal-header--advertencia">
-      <span><i class="ti ti-alert-triangle"></i> Nuevo registro</span>
-      <button type="button" class="modal-cerrar" (click)="cancelarReset()">
-        <i class="ti ti-x"></i>
-      </button>
+<!-- ══ MODAL — Reset ══ -->
+<div class="overlay" *ngIf="modalResetVisible" (click)="cancelarReset()">
+  <div class="modal modal--sm" (click)="$event.stopPropagation()">
+    <div class="modal-hdr modal-hdr">
+      <span> Nueva consulta</span>
+      <button type="button" class="modal-close" (click)="cancelarReset()"><i class="ti ti-x"></i></button>
     </div>
     <div class="modal-body">
-      <p>Se borrarán <strong>todos los datos capturados</strong> en todas las secciones.</p>
-      <p>¿Deseas continuar?</p>
+      <p>¿ Realizar una nueva búsqueda de personal ?</p>
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn--terciario" (click)="cancelarReset()">Cancelar</button>
-      <button type="button" class="btn btn--error" (click)="ejecutarReset()">
-        <i class="ti ti-trash"></i> Sí, limpiar todo
-      </button>
+    <div class="modal-ftr">
+      <button type="button" class="btn btn--ghost" (click)="cancelarReset()">Cancelar</button>
+      <button type="button" class="btn btn--pri" (click)="ejecutarReset()">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL — Editar Incidencia ══ -->
+<div class="overlay" *ngIf="modalEditIncidencia !== null" (click)="cerrarEditarIncidencia()">
+  <div class="modal modal--md" (click)="$event.stopPropagation()">
+    <div class="modal-hdr">
+      <span><i class="ti ti-pencil"></i> Editar Incidencia</span>
+      <button type="button" class="modal-close" (click)="cerrarEditarIncidencia()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" *ngIf="modalEditIncidencia">
+      <form [formGroup]="modalEditIncidencia.form" novalidate>
+        <div class="field" style="margin-bottom:1rem">
+          <label class="lbl lbl--req lbl--sel">Nivel</label>
+          <div class="loading" *ngIf="cargandoNiveles"><i class="ti ti-loader-2 spin"></i> Cargando niveles…</div>
+          <select *ngIf="!cargandoNiveles" formControlName="nivel" class="sel sel--green"
+            [class.sel--err]="modalEditIncidencia.form.get('nivel')?.invalid && modalEditIncidencia.form.get('nivel')?.touched">
+            <option value="">-- Nivel --</option>
+            <option *ngFor="let n of nivelesOpciones" [value]="n.clave">{{ n.etiqueta }}</option>
+          </select>
+          <span class="err-msg"
+            *ngIf="modalEditIncidencia.form.get('nivel')?.invalid && modalEditIncidencia.form.get('nivel')?.touched">Requerido</span>
+        </div>
+        <div class="field">
+          <label class="lbl lbl--req">Descripción <span class="counter">{{
+              modalEditIncidencia.form.get('descripcion')?.value?.length || 0 }}/255</span></label>
+          <textarea formControlName="descripcion" class="txta"
+            [class.inp--err]="modalEditIncidencia.form.get('descripcion')?.invalid && modalEditIncidencia.form.get('descripcion')?.touched"
+            placeholder="Describe la incidencia" maxlength="255" rows="4"></textarea>
+          <span class="err-msg"
+            *ngIf="modalEditIncidencia.form.get('descripcion')?.invalid && modalEditIncidencia.form.get('descripcion')?.touched">Requerido
+            (máx. 255)</span>
+        </div>
+      </form>
+    </div>
+    <div class="modal-ftr">
+      <button type="button" class="btn btn--ghost" (click)="cerrarEditarIncidencia()">Cancelar</button>
+      <button type="button" class="btn btn--pri" (click)="guardarEdicionIncidencia()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL — Editar Artículo ══ -->
+<div class="overlay" *ngIf="modalEditOtro !== null" (click)="cerrarEditarOtro()">
+  <div class="modal modal--md" (click)="$event.stopPropagation()">
+    <div class="modal-hdr">
+      <span><i class="ti ti-pencil"></i> Editar Artículo</span>
+      <button type="button" class="modal-close" (click)="cerrarEditarOtro()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" *ngIf="modalEditOtro">
+      <form [formGroup]="modalEditOtro.form" novalidate>
+        <div class="field" style="margin-bottom:1rem">
+          <label class="lbl lbl--req">Tipo</label>
+          <input type="text" formControlName="tipo" class="inp"
+            [class.inp--err]="modalEditOtro.form.get('tipo')?.invalid && modalEditOtro.form.get('tipo')?.touched"
+            placeholder="Herramienta, Ropa, Equipo…" maxlength="100" />
+          <span class="err-msg"
+            *ngIf="modalEditOtro.form.get('tipo')?.invalid && modalEditOtro.form.get('tipo')?.touched">Requerido</span>
+        </div>
+        <div class="field" style="margin-bottom:1rem">
+          <label class="lbl lbl--req">Cantidad</label>
+          <input type="number" formControlName="cantidad" class="inp"
+            [class.inp--err]="modalEditOtro.form.get('cantidad')?.invalid && modalEditOtro.form.get('cantidad')?.touched"
+            placeholder="0" />
+        </div>
+        <div class="field">
+          <label class="lbl">Descripción <span class="counter">{{ modalEditOtro.form.get('descripcion')?.value?.length
+              || 0 }}/255</span></label>
+          <textarea formControlName="descripcion" class="txta" [class.inp--err]="
+    modalEditOtro.form.get('descripcion')?.invalid &&
+    modalEditOtro.form.get('descripcion')?.touched
+  " placeholder="Descripción del artículo" maxlength="255" rows="3">
+</textarea>
+
+          <span class="err-msg" *ngIf="
+    modalEditOtro.form.get('descripcion')?.invalid &&
+    modalEditOtro.form.get('descripcion')?.touched
+  ">
+            Captura una descripción.
+          </span>
+        </div>
+      </form>
+    </div>
+    <div class="modal-ftr">
+      <button type="button" class="btn btn--ghost" (click)="cerrarEditarOtro()">Cancelar</button>
+      <button type="button" class="btn btn--pri" (click)="guardarEdicionOtro()">Guardar cambios</button>
     </div>
   </div>
 </div>
