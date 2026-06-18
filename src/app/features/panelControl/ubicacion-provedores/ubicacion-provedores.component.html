@@ -1,60 +1,148 @@
 <div class="contenedor-principal" (mouseup)="finalizarSeleccion()">
 
-  <header class="seccion-controles">
-    <div class="toolbar">
-
-      <div class="field-info w-small">
-        <label class="label-mini">Proveedor:</label>
-        <input type="text" class="input-filter-notable" [disabled]="modoBloqueoEstructura()"
-          (input)="alCambiarInput($any($event.target).value)" placeholder="Código...">
-      </div>
-
-      <div class="input-wrapper">
-        <button class="btn-action-real blue" [disabled]="false"
-          [class.btn-activo]="tipoAccionColor() === 'pintar'" (click)="prepararSeleccionColor('pintar')">
-          Seleccionar
-        </button>
-      </div>
-
-      <div class="input-wrapper">
-        <button class="btn-action-real blue" (click)="prepararSeleccionColor('borrar')"
-          [class.btn-activo]="tipoAccionColor() === 'borrar'">
-          Deseleccionar
-        </button>
-      </div>
-
-      <div *ngIf="!modoBloqueoEstructura()" [style.background-color]="colorActivo()"
-        style="width: 20px; height: 20px; border-radius: 50%; border: 1px solid #fff;">
-      </div>
-
-      <div class="bloque-accion">
-        <button class="btn-action-real blue" (click)="toggleModoBloqueo()"
-          [class.btn-grabando]="modoBloqueoEstructura()">
-          <span class="icono">{{ modoBloqueoEstructura() ? '✅' : '🔒' }}</span>
-          {{ modoBloqueoEstructura() ? 'FINALIZAR BLOQUEO' : 'BLOQUEAR ESTRUCTURA' }}
-        </button>
-      </div>
-
+  <header class="toolbar">
+    <!-- Sección Bloqueos -->
+    <div class="toolbar-section">
+      <span class="section-title">Bloqueos</span>
+      <span class="badge bloqueo-badge" [class.selected]="proveedorSeleccionado() === '0'"
+        (click)="seleccionarProveedor('0')">
+        Bloquear
+      </span>
     </div>
+
+    <div class="divider"></div>
+
+    <!-- Sección Registro de Proveedor -->
+    <div class="toolbar-section">
+      <span class="section-title">Registro</span>
+      
+      @if (puedeEditar() && !modoEdicion()) {
+      <div class="add-prov-form">
+        <input type="text" class="form-input-sm" placeholder="Nuevo proveedor..." [(ngModel)]="nuevoProveedorId"
+          (keyup.enter)="agregarProveedor()">
+        <app-button type="primary" size="sm" label="Agregar" title="Agregar nuevo proveedor"
+          (clicked)="agregarProveedor()" [disabled]="!nuevoProveedorId()">
+        </app-button>
+      </div>
+      }
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Espaciador flexible para empujar controles a la derecha -->
+    <div class="spacer"></div>
+
+    <!-- Sección Selección/Eliminación/Edición - Visible en modo normal -->
+    @if (!modoEdicion()) {
+    <div class="toolbar-section toolbar-actions">
+      <!-- Mostrar información del proveedor/bloqueo seleccionado -->
+      @if (proveedorSeleccionado()) {
+      <div class="proveedor-seleccionado-info">
+        <span class="section-title">Selección:</span>
+        <span class="badge" [style.background-color]="proveedorSeleccionado() === '0' ? '#fd0b03' : colorActivo()">
+          {{ proveedorSeleccionado() === '0' ? 'Bloqueo' : proveedorSeleccionado() }}
+        </span>
+        @if (puedeEditar()) {
+          @if (proveedorSeleccionado() !== '0') {
+          <app-button type="ghost" size="sm" label="Eliminar" title="Eliminar proveedor"
+            (clicked)="confirmarEliminarProveedor()">
+          </app-button>
+          }
+        <app-button type="primary" size="sm" label="Editar" title="Iniciar edición"
+          (clicked)="activarModoEdicion()">
+        </app-button>
+        }
+      </div>
+      }
+    </div>
+    }
+
+    <!-- Controles de edición - Solo visible en modo edición -->
+    @if (modoEdicion()) {
+    <div class="toolbar-section toolbar-actions">
+      <div class="edit-controls">
+        <div class="proveedor-info">
+          <span class="section-title">Editando:</span>
+          <span class="badge" [style.background-color]="colorActivo()">
+            {{ proveedorSeleccionado() === '0' ? 'Bloqueo' : proveedorActual()?.id }}
+          </span>
+        </div>
+
+        <div class="btn-group">
+          <app-button [type]="accionActual() === 'bloquear' ? 'primary' : 'ghost'" 
+            size="sm" 
+            [label]="proveedorSeleccionado() === '0' ? 'Bloquear' : 'Asignar'"
+            (clicked)="cambiarAccion('bloquear')">
+          </app-button>
+          <app-button [type]="accionActual() === 'desbloquear' ? 'primary' : 'ghost'"
+            size="sm" 
+            [label]="proveedorSeleccionado() === '0' ? 'Desbloquear' : 'Liberar'"
+            (clicked)="cambiarAccion('desbloquear')">
+          </app-button>
+        </div>
+
+        <app-button type="secondary" size="sm" label="Finalizar" title="Salir del modo edición"
+          (clicked)="salirModoEdicion()">
+        </app-button>
+      </div>
+    </div>
+    }
+
+    <!-- Mensaje de error -->
+    @if (errorMensaje()) {
+    <div class="error-msg error-msg-full">
+      {{ errorMensaje() }}
+    </div>
+    }
   </header>
 
-  <main class="seccion-mapa">
+  <!-- Área del mapa -->
+  <main class="mapa-container">
     <div class="grid-wrapper" #gridContainer (mousedown)="iniciarSeleccion($event)"
       (mousemove)="moverSeleccion($event)">
 
-      <div class="marquee-azul" [ngStyle]="rectStyle()"></div>
+      <div class="marquee" [ngStyle]="rectStyle()"></div>
 
-      <div class="grid-layout" [style.grid-template-columns]="'repeat(' + columnas() + ', 1fr)'">
-       @for (celda of celdas(); track celda.id) {
-  <div class="celda" 
-       [attr.data-id]="celda.id" 
-       [style.background-color]="obtenerColorCelda(celda.id)"
-       [class.bloqueada]="celdasBloqueadasFisicas().has(celda.id)"
-       [class.ocupada]="mapaColoresProveedores().has(celda.id)">
-    <span class="label-coordenada">{{ celda.label }}</span>
-  </div>
-}
+      <div class="grid" [style.grid-template-columns]="'repeat(' + columnas() + ', 1fr)'">
+        @for (celda of celdas(); track celda.id) {
+        <div class="celda" [attr.data-id]="celda.id" [style.background-color]="obtenerColorCelda(celda.id)"
+          [class.bloqueada]="celdasBloqueadas().has(celda.id)" [class.propia]="esCeldaOcupada(celda.id)"
+          [class.no-disponible]="modoEdicion() && accionActual() === 'bloquear' && !esCeldaDisponible(celda.id)"
+          [class.seleccionable]="!modoEdicion() && obtenerProveedorEnCelda(celda.id)"
+          [class.modo-edicion]="modoEdicion()" [title]="obtenerTooltipCelda(celda.id)" (click)="onCeldaClick(celda.id)">
+          <span class="coordenada" [style.color]="obtenerColorTextoParaCelda(celda.id)">
+            {{ celda.label }}
+          </span>
+          <span class="proveedor-id" *ngIf="obtenerProveedorEnCelda(celda.id) as provId"
+            [style.color]="obtenerColorTextoParaCelda(celda.id)">
+            {{ provId === '0' ? 'BLQ' : provId }}
+          </span>
+        </div>
+        }
       </div>
     </div>
   </main>
+
+  <!-- Modal confirmar eliminación -->
+  <div class="modal-overlay" *ngIf="mostrarModalEliminar()" (click)="cerrarModalEliminar()">
+    <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Eliminar Proveedor</h3>
+        <app-button type="ghost" size="sm" label="✕" title="Cerrar" (clicked)="cerrarModalEliminar()">
+        </app-button>
+      </div>
+
+      <div class="modal-body text-center">
+        <p>¿Está seguro de eliminar el proveedor <strong>{{ proveedorAEliminar() }}</strong>?</p>
+        <p class="text-muted">Se liberarán todas las celdas asignadas a este proveedor.</p>
+      </div>
+
+      <div class="modal-footer">
+        <app-button type="ghost" size="sm" label="Cancelar" (clicked)="cerrarModalEliminar()">
+        </app-button>
+        <app-button type="error" size="sm" label="Eliminar" (clicked)="eliminarProveedor()">
+        </app-button>
+      </div>
+    </div>
+  </div>
 </div>
