@@ -140,58 +140,54 @@
   transition: background .15s;
 }
 
+.ev-table tbody tr:nth-child(odd) {
+  background: #ffffff;
+}
+
+.ev-table tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
 .ev-table tbody tr:last-child {
   border-bottom: none;
 }
 
 .ev-table tbody tr:hover {
-  background: #f8fafc;
+  background: #eef2f7;
 }
 
 .ev-table tbody td {
-  padding: 9px 12px;
+  padding:  var(--space-xs) var(--space-md);
   color: var(--ev-text);
+  font-size: .82rem;
+  font-weight: 400;
   vertical-align: middle;
 }
 
 .ev-curp {
-  font-family: var(--ev-font-mono);
-  font-size: .73rem;
-  color: var(--ev-text-muted);
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
 }
 
 .ev-empty {
   text-align: center;
   padding: 40px !important;
-  color: var(--ev-text-light);
-  font-style: italic;
+  color: var(--ev-text-muted);
+  font-style: normal;
 }
 
 /* ── Badges ────────────────────────────────────────────────────── */
 .ev-badge {
   display: inline-block;
-  padding: 2px 8px;
-  border-radius: 20px;
-  font-size: .7rem;
-  font-weight: 700;
-  white-space: nowrap;
+  font-size: inherit;
+  font-weight: 500;
+  color: inherit;
+  background: transparent;
+  border: none;
+  padding: 0;
+  border-radius: 0;
 }
-
-.ev-badge--maniobra {
-  background: var(--ev-maniobra-bg);
-  color: var(--ev-maniobra-fg);
-}
-
-.ev-badge--candidato {
-  background: var(--ev-candidato-bg);
-  color: var(--ev-candidato-fg);
-}
-
-.ev-badge--servicio-externo {
-  background: var(--ev-externo-bg);
-  color: var(--ev-externo-fg);
-}
-
 /* ── Action icons ──────────────────────────────────────────────── */
 
 .ev-actions {
@@ -311,15 +307,15 @@
   }
 
   .ev-header__utils {
-    flex-direction: row;      
+    flex-direction: row;
     justify-content: flex-end;
     align-items: center;
-    gap: 12px;                
+    gap: 12px;
     width: 100%;
   }
 
   .ev-count {
-    text-align: right;        
+    text-align: right;
   }
 
   .ev-field-row {

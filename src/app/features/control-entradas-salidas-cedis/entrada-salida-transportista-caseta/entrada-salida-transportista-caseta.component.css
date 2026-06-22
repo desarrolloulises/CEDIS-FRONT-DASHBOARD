@@ -149,24 +149,33 @@
 }
 
 .etc-table tbody tr {
-  border-bottom: 1px solid #f1f5f9;
-  transition: background .15s;
+  border-bottom: 1px solid #eef2f7;
+  transition: background .15s ease;
 }
 
 .etc-table tbody tr:last-child { border-bottom: none; }
 
-.etc-table tbody tr:hover { background: #f8fafc; }
-
-.etc-table tbody td {
-  padding: 9px 12px;
-  color: var(--etc-text);
-  vertical-align: middle;
+.etc-table tbody tr:nth-child(even) {
+  background: #fafbfd;
 }
 
-.etc-curp {
-  font-family: var(--etc-font-mono);
-  font-size: .73rem;
-  color: var(--etc-text-muted);
+.etc-table tbody tr:nth-child(odd) {
+  background: #ffffff;
+}
+
+/* Hover */
+.etc-table tbody tr:hover {
+  background: #f1f5f9;
+}
+
+.etc-table tbody td {
+  padding:  var(--space-xs) var(--space-md);
+  vertical-align: middle;
+
+  font-size: .82rem;
+  font-weight: 400;
+  color: var(--etc-text);
+  line-height: 1.4;
 }
 
 .etc-empty {
@@ -198,21 +207,23 @@
 
 /* ── Chips auxiliares ──────────────────────────────────────────── */
 .etc-unidad-chip {
-  display: inline-block;
-  margin-top: 3px;
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-size: .68rem;
-  background: #f1f5f9;
-  color: var(--etc-text-muted);
-  border: 1px solid var(--etc-border);
+  display: block;
+  margin-top: 2px;
+  padding: 0;
+  background: transparent;
+  border: none;
+
+  font-size: .82rem;
+  font-weight: 400;
+  color: var(--etc-text);
 }
 
+.etc-curp,
 .etc-placas {
-  font-family: var(--etc-font-mono);
-  font-weight: 600;
+  font-family: inherit;
   font-size: .82rem;
-  display: block;
+  font-weight: 400;
+  color: var(--etc-text);
 }
 
 /* ── Badge booleano (remolque) ─────────────────────────────────── */
