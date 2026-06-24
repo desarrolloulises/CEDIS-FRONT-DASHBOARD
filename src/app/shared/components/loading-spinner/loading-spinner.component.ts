@@ -1,6 +1,11 @@
 import {
   Component,
-  input
+  input,
+  OnInit,
+  OnDestroy,
+  ElementRef,
+  Renderer2,
+  inject
 } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
@@ -12,7 +17,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './loading-spinner.component.html',
   styleUrls: ['./loading-spinner.component.css']
 })
-export class LoadingSpinnerComponent {
+export class LoadingSpinnerComponent implements OnInit, OnDestroy {
 
   visible = input<boolean>(false);
 
@@ -30,4 +35,36 @@ export class LoadingSpinnerComponent {
    * Mostrar/ocultar texto.
    */
   showText = input<boolean>(true);
+
+  private elementRef = inject(ElementRef);
+  private renderer = inject(Renderer2);
+  private parentRelativeApplied = false;
+
+  ngOnInit(): void {
+    if (this.overlay()) {
+      this.aplicarRelativeAlPadre();
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Limpiar el estilo aplicado al padre
+    if (this.parentRelativeApplied) {
+      const parent = this.elementRef.nativeElement.parentElement;
+      if (parent) {
+        this.renderer.removeStyle(parent, 'position');
+      }
+    }
+  }
+
+  private aplicarRelativeAlPadre(): void {
+    const parent = this.elementRef.nativeElement.parentElement;
+    if (parent) {
+      const computedStyle = window.getComputedStyle(parent);
+      // Solo aplicar si no tiene ya una posición que cree contexto de apilamiento
+      if (computedStyle.position === 'static') {
+        this.renderer.setStyle(parent, 'position', 'relative');
+        this.parentRelativeApplied = true;
+      }
+    }
+  }
 }

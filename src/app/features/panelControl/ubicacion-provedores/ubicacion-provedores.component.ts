@@ -1,93 +1,24 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, ElementRef, Input, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, OnInit, signal, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
-
-// --- INTERFACES PARA API ---
-
-export interface BloqueoAPI {
-  id: string;
-  nombre: string;
-  celdas: string[];
-}
-
-export interface ProveedorAPI {
-  id: string;
-  color: string;
-  celdas: string[];
-}
-
-export interface ConfiguracionAlmacenAPI {
-  filas: number;
-  columnas: number;
-  proveedores: ProveedorAPI[];
-}
-
-export interface RolUsuario {
-  id: number;
-  tipo: string;
-}
-
-// --- DATOS INICIALES SIMULADOS ---
-
-const CONFIGURACION_INICIAL: ConfiguracionAlmacenAPI = {
-  filas: 12,
-  columnas: 29,
-  proveedores: [
-    {
-      id: '0',
-      color: '#fd0b03',
-      celdas: [
-        '3,1', '3,2', '3,3', '3,4', '3,5', '3,6',  '3,7', '3,8', '3,9', '3,10', '3,11', '3,12', '3,13', '3,14', '3,15', '3,16', '3,17', '3,18', '3,19', '3,20', '3,21', '3,22', '3,23', '3,24', '3,25', '3,26', '3,27', '3,28', '3,29',
-        '7,1', '7,2', '7,3', '7,4', '7,5', '7,6',  '7,7', '7,8', '7,9', '7,10', '7,11', '7,12', '7,13', '7,14', '7,15', '7,16', '7,17', '7,18', '7,19', '7,20', '7,21', '7,22', '7,23', '7,24', '7,25', '7,26', '7,27', '7,28', '7,29',
-        '8,1', '8,2', '8,3', '8,4', '8,5', '8,6',  '8,7', '8,8', '8,9', '8,10', 
-        '9,1', '9,2', '9,3', '9,4', '9,5', '9,6',  '9,7', '9,8', '9,9', '9,10', 
-        '10,1', '10,2', '10,3', '10,4', '10,5', '10,6',  '10,7', '10,8', '10,9', '10,10',
-        '11,1', '11,2', '11,3', '11,4', '11,5', '11,6',  '11,7', '11,8', '11,9', '11,10', 
-        '12,1', '12,2', '12,3', '12,4', '12,5', '12,6',  '12,7', '12,8', '12,9', '12,10', '12,11', '12,12', '12,13', '12,14', '12,15', '12,16', '12,17', '12,18', '12,19', '12,20', '12,21', '12,22', '12,23', '12,24', '12,25', '12,26', '12,27', '12,28', '12,29',
-        '1,10', '2,10', '4,10','5,10', '6,10',
-        '1,14', '2,14', '4,14','5,14', '6,14',  '8,14','9,14','10,14','11,14',
-        '1,18', '2,18', '4,18','5,18', '6,18', '8,18','9,18','10,18','11,18',
-        '1,22', '2,22', '4,22','5,22', '6,22', '8,22','9,22','10,22','11,22',
-        '1,26', '2,26', '4,26','5,26', '6,26', '8,26','9,26','10,26','11,26',
-        '1,29', '2,29', '4,29','5,29', '6,29', '8,29','9,29','10,29','11,29'   
-      ]
-    },
-    {
-      id: '101',
-      color: '#0bfd03',
-      celdas: ['8,11', '9,11', '10,11', '11,11', '8,12', '9,12', '10,12', '11,12', '12,12' , '8,13', '9,13', '10,13', '11,13', '12,13']
-    },
-    {
-      id: '102',
-      color: '#0078d7',
-      celdas: ['1,11', '2,11', '1,12', '2,12']
-    },
-    {
-      id: '103',
-      color: '#6f42c1',
-      celdas: ['4,1', '4,2', '4,3', '5,1', '5,2', '5,3']
-    },
-    {
-      id: '104',
-      color: '#f0ad4e',
-      celdas: ['6,1', '6,2', '4,11', '5,11', '4,12', '5,12']
-    },
-  ]
-};
+import { ToastComponent } from '../../../shared/components/toast/toast.component';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { UbicacionProveedoresService } from './services/ubicacion-proveedores.service';
+import { ProveedorLocal } from './models/ubicacion-proveedores.models';
 
 @Component({
   selector: 'app-ubicacion-provedores',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonComponent],
+  imports: [CommonModule, FormsModule, ButtonComponent, ToastComponent, LoadingSpinnerComponent],
   templateUrl: './ubicacion-provedores.component.html',
   styleUrl: './ubicacion-provedores.component.css'
 })
 export class UbicacionProvedoresComponent implements OnInit {
   @ViewChild('gridContainer') gridContainer!: ElementRef;
-
-  // --- ROL DE USUARIO (Input desde el padre) ---
-  @Input() rolUsuario: RolUsuario | null = null;
+  
+  // Inyectar el servicio de ubicación de proveedores
+  private ubicacionService = inject(UbicacionProveedoresService);
 
   // --- CONFIGURACIÓN ---
   filas = signal(12);
@@ -97,8 +28,8 @@ export class UbicacionProvedoresComponent implements OnInit {
   modoEdicion = signal(false);
   accionActual = signal<'bloquear' | 'desbloquear' | null>(null);
 
-  // --- DATOS DE PROVEEDORES (incluye bloqueos como id '0') ---
-  proveedores = signal<Array<{ id: string, color: string }>>([]);
+  // --- DATOS DE PROVEEDORES (incluye bloqueos como provedor '0') ---
+  proveedores = signal<ProveedorLocal[]>([]);
   mapaProveedores = signal<Map<string, Set<string>>>(new Map());
 
   // El proveedor seleccionado para editar (click en la cuadrícula)
@@ -110,10 +41,21 @@ export class UbicacionProvedoresComponent implements OnInit {
   // --- MODAL CONFIRMAR ELIMINACIÓN ---
   mostrarModalEliminar = signal(false);
   proveedorAEliminar = signal('');
+  accionEliminarDesdeCuadricula = signal(false);
 
   // --- ESTADOS VISUALES ---
   seleccionActual = signal<Set<string>>(new Set());
-  errorMensaje = signal('');
+  cargando = signal(false);
+
+  // --- TOAST ---
+  mostrarToast = signal(false);
+  toastTipo = signal<'success' | 'error'>('success');
+  toastTitulo = signal('');
+  toastMensaje = signal('');
+
+  // --- PERMISOS ---
+  tienePermisoBloqueo = signal(false);
+  verificandoPermisos = signal(false);
 
   // Lógica del rectángulo de selección
   seleccionando = signal(false);
@@ -122,22 +64,30 @@ export class UbicacionProvedoresComponent implements OnInit {
 
   // --- COMPUTED ---
 
-  // Determina si el usuario tiene permisos de edición
+  // Determina si el usuario tiene permisos de edición basado en la API
   puedeEditar = computed(() => {
-    if (!this.rolUsuario) {
+    // Si tiene permiso de bloqueo, puede editar todo
+    if (this.tienePermisoBloqueo()) {
+      return true;
+    }
+    
+    // Si no tiene permiso de bloqueo, puede editar proveedores pero NO el proveedor '0'
+    if (this.proveedorSeleccionado() === '0') {
       return false;
     }
+    
+    return true;
+  });
 
-    const rol = this.rolUsuario.tipo?.toLowerCase() || '';
-    const rolesPermitidos = ['jefe de almacen', 'admin', 'administrador', 'supervisor'];
-    return rolesPermitidos.includes(rol);
+  puedeEditarBloqueos = computed(() => {
+    return this.tienePermisoBloqueo();
   });
 
   celdas = computed(() => {
     const matriz = [];
     for (let f = 1; f <= this.filas(); f++) {
       for (let c = 1; c <= this.columnas(); c++) {
-        matriz.push({ id: `${f},${c}`, label: `(${c},${f})`, tipo: 'almacenaje' });
+        matriz.push({ id: `${f},${c}`, label: `(${f},${c})`, tipo: 'almacenaje' });
       }
     }
     return matriz;
@@ -159,66 +109,94 @@ export class UbicacionProvedoresComponent implements OnInit {
   // --- CICLO DE VIDA ---
 
   ngOnInit(): void {
-    // Si no se proporciona un rol, establecer uno por defecto
-    if (!this.rolUsuario) {
-      this.rolUsuario = { id: 2, tipo: 'admin' };
+    this.cargarDatosIniciales();
+    this.verificarPermisos();
+  }
+
+  // --- MÉTODOS DE CARGA DE DATOS ---
+
+  async cargarDatosIniciales(): Promise<void> {
+    try {
+      this.cargando.set(true);
+      
+      // Cargar dimensiones y lista de proveedores en paralelo usando el servicio
+      const [dimensiones, espaciosResponse] = await Promise.all([
+        this.ubicacionService.obtenerDimensiones(),
+        this.ubicacionService.obtenerEspaciosAsignados()
+      ]);
+
+      // Actualizar dimensiones
+      this.filas.set(dimensiones.filas);
+      this.columnas.set(dimensiones.columnas);
+
+      // Procesar proveedores usando el método del servicio
+      const { proveedores, mapaProveedores } = 
+        this.ubicacionService.procesarProveedores(espaciosResponse.provedores);
+      
+      this.proveedores.set(proveedores);
+      this.mapaProveedores.set(mapaProveedores);
+      
+    } catch (error) {
+      console.error('Error al cargar datos iniciales:', error);
+      this.mostrarNotificacion('error', 'Error de conexión', 'No se pudieron cargar los datos del servidor');
+    } finally {
+      this.cargando.set(false);
     }
-
-    this.cargarConfiguracion(CONFIGURACION_INICIAL);
   }
 
-  // --- MÉTODOS DE API ---
-
-  cargarConfiguracion(config: ConfiguracionAlmacenAPI): void {
-    this.filas.set(config.filas);
-    this.columnas.set(config.columnas);
-    this.cargarProveedores(config.proveedores);
+  async verificarPermisos(): Promise<void> {
+    try {
+      this.verificandoPermisos.set(true);
+      
+      // Usar el método del servicio para verificar permisos
+      const tienePermiso = await this.ubicacionService.verificarPermisos();
+      this.tienePermisoBloqueo.set(tienePermiso);
+      
+    } catch (error) {
+      console.error('Error al verificar permisos:', error);
+      // Por defecto, si hay error, denegar permisos de bloqueo
+      this.tienePermisoBloqueo.set(false);
+    } finally {
+      this.verificandoPermisos.set(false);
+    }
   }
 
-  obtenerConfiguracion(): ConfiguracionAlmacenAPI {
-    return {
-      filas: this.filas(),
-      columnas: this.columnas(),
-      proveedores: this.obtenerProveedores()
-    };
+  // --- MÉTODOS DE NOTIFICACIÓN ---
+
+  mostrarNotificacion(tipo: 'success' | 'error', titulo: string, mensaje: string): void {
+    // Solo mostramos errores 
+    if (tipo === 'success') {
+      return; // En caso de requerirse, podemos mandadar a llamar al metodo Mostrar notificacion 
+              // para mostrar un mensaje de exito
+    }
+    
+    this.toastTipo.set(tipo);
+    this.toastTitulo.set(titulo);
+    this.toastMensaje.set(mensaje);
+    this.mostrarToast.set(true);
   }
 
-  cargarProveedores(proveedores: ProveedorAPI[]): void {
-    const provs: Array<{ id: string, color: string }> = [];
-    const mapaProvs = new Map<string, Set<string>>();
-
-    proveedores.forEach(prov => {
-      provs.push({ id: prov.id, color: prov.color });
-      mapaProvs.set(prov.id, new Set(prov.celdas));
-    });
-
-    this.proveedores.set(provs);
-    this.mapaProveedores.set(mapaProvs);
-  }
-
-  obtenerProveedores(): ProveedorAPI[] {
-    return this.proveedores().map(prov => ({
-      id: prov.id,
-      color: prov.color,
-      celdas: Array.from(this.mapaProveedores().get(prov.id) || [])
-    }));
+  cerrarToast(): void {
+    this.mostrarToast.set(false);
   }
 
   // --- MÉTODOS DE MODO EDICIÓN ---
 
   activarModoEdicion() {
-    if (!this.puedeEditar()) {
-      this.errorMensaje.set('No tiene permisos para editar. Rol actual: ' + (this.rolUsuario?.tipo || 'Sin rol'));
-      return;
-    }
     if (!this.proveedorSeleccionado()) {
-      this.errorMensaje.set('Seleccione un proveedor haciendo clic en sus celdas');
+      this.mostrarNotificacion('error', 'Sin selección', 'Seleccione un proveedor haciendo clic en sus celdas');
       return;
     }
+
+    // Verificar permisos para editar bloqueos
+    if (this.proveedorSeleccionado() === '0' && !this.puedeEditarBloqueos()) {
+      this.mostrarNotificacion('error', 'Sin permisos', 'No tiene permisos para editar bloqueos');
+      return;
+    }
+
     this.limpiarSeleccion();
     this.modoEdicion.set(true);
     this.accionActual.set('bloquear'); // Por defecto inicia en modo asignar/bloquear
-    this.errorMensaje.set('');
   }
 
   cambiarAccion(accion: 'bloquear' | 'desbloquear') {
@@ -229,7 +207,6 @@ export class UbicacionProvedoresComponent implements OnInit {
     this.modoEdicion.set(false);
     this.accionActual.set(null);
     this.limpiarSeleccion();
-    this.errorMensaje.set('');
   }
 
   limpiarSeleccion() {
@@ -242,31 +219,35 @@ export class UbicacionProvedoresComponent implements OnInit {
 
   seleccionarProveedor(id: string) {
     if (!this.modoEdicion()) {
+      // Si intenta seleccionar el proveedor '0' y no tiene permisos de bloqueo, no permite manipular 
+      // este el proveedor 0 "bloqueo"
+      if (id === '0' && !this.puedeEditarBloqueos()) {
+        return;
+      }
       this.proveedorSeleccionado.set(id);
-      this.errorMensaje.set('');
     }
   }
 
   agregarProveedor() {
     if (!this.puedeEditar()) {
-      this.errorMensaje.set('No tiene permisos para agregar proveedores');
+      this.mostrarNotificacion('error', 'Sin permisos', 'No tiene permisos para agregar proveedores');
       return;
     }
 
     const id = this.nuevoProveedorId().trim();
 
     if (!id) {
-      this.errorMensaje.set('El número de proveedor es requerido');
+      this.mostrarNotificacion('error', 'Campo requerido', 'El número de proveedor es requerido');
       return;
     }
 
     if (id === '0') {
-      this.errorMensaje.set('El ID 0 está reservado para bloqueos');
+      this.mostrarNotificacion('error', 'ID no válido', 'El ID 0 está reservado para bloqueos');
       return;
     }
 
     if (this.proveedores().some(p => p.id === id)) {
-      this.errorMensaje.set('Ya existe un proveedor con ese número');
+      this.mostrarNotificacion('error', 'Duplicado', 'Ya existe un proveedor con ese número');
       return;
     }
 
@@ -281,60 +262,73 @@ export class UbicacionProvedoresComponent implements OnInit {
 
     this.proveedorSeleccionado.set(id);
     this.nuevoProveedorId.set('');
-    this.errorMensaje.set('');
   }
-
+  // Colores temporales al crear un provedor en lo que el servidor nos proporciona el color asignado
   generarColorAleatorio(): string {
     const colores = ['#0bfd03', '#0078d7', '#6f42c1', '#f0ad4e', '#c1428c', '#4ed0f0', '#4259c1', '#c5f04e', '#fd7e14', '#20c997'];
     return colores[Math.floor(Math.random() * colores.length)];
   }
 
-  confirmarEliminarProveedor() {
+  confirmarEliminarProveedor(desdeCuadricula: boolean = false) {
     if (!this.puedeEditar()) {
-      this.errorMensaje.set('No tiene permisos para eliminar proveedores');
+      this.mostrarNotificacion('error', 'Sin permisos', 'No tiene permisos para eliminar proveedores');
       return;
     }
 
     const id = this.proveedorSeleccionado();
     if (!id) {
-      this.errorMensaje.set('Seleccione un proveedor primero');
+      this.mostrarNotificacion('error', 'Sin selección', 'Seleccione un proveedor primero');
       return;
     }
     if (id === '0') {
-      this.errorMensaje.set('No se puede eliminar el bloqueo estructural');
+      this.mostrarNotificacion('error', 'No permitido', 'No se puede eliminar el bloqueo estructural');
       return;
     }
+
     this.proveedorAEliminar.set(id);
+    this.accionEliminarDesdeCuadricula.set(desdeCuadricula);
     this.mostrarModalEliminar.set(true);
   }
 
   cerrarModalEliminar() {
     this.mostrarModalEliminar.set(false);
     this.proveedorAEliminar.set('');
+    this.accionEliminarDesdeCuadricula.set(false);
   }
 
-  eliminarProveedor() {
+  async eliminarProveedor() {
     if (!this.puedeEditar()) return;
 
     const id = this.proveedorAEliminar();
     if (!id || id === '0') return;
 
-    this.proveedores.update(provs => provs.filter(p => p.id !== id));
-
-    this.mapaProveedores.update(mapa => {
-      const nuevo = new Map(mapa);
-      nuevo.delete(id);
-      return nuevo;
-    });
-
-    if (this.proveedorSeleccionado() === id) {
-      this.proveedorSeleccionado.set('');
-      if (this.modoEdicion()) {
-        this.salirModoEdicion();
+    try {
+      // Liberar todas las celdas del proveedor antes de eliminarlo
+      const celdasProveedor = this.mapaProveedores().get(id);
+      if (celdasProveedor && celdasProveedor.size > 0) {
+        await this.liberarEspaciosProveedor(id, Array.from(celdasProveedor));
       }
-    }
 
-    this.cerrarModalEliminar();
+      this.proveedores.update(provs => provs.filter(p => p.id !== id));
+
+      this.mapaProveedores.update(mapa => {
+        const nuevo = new Map(mapa);
+        nuevo.delete(id);
+        return nuevo;
+      });
+
+      if (this.proveedorSeleccionado() === id) {
+        this.proveedorSeleccionado.set('');
+        if (this.modoEdicion()) {
+          this.salirModoEdicion();
+        }
+      }
+
+      this.cerrarModalEliminar();
+    } catch (error) {
+      console.error('Error al eliminar proveedor:', error);
+      this.mostrarNotificacion('error', 'Error', 'No se pudo eliminar el proveedor');
+    }
   }
 
   // --- VISUALIZACIÓN DE CELDAS ---
@@ -400,14 +394,14 @@ export class UbicacionProvedoresComponent implements OnInit {
   obtenerColorTextoParaCelda(id: string): string {
     const provId = this.obtenerProveedorEnCelda(id);
     if (provId === this.proveedorSeleccionado() && provId !== '0') {
-      return '#ffffff';
+      return '#000000';
     }
 
     if (this.celdasBloqueadas().has(id)) {
       return '#ffffff';
     }
 
-    return '#333333';
+    return '#5a5959';
   }
 
   obtenerTooltipCelda(id: string): string {
@@ -494,6 +488,10 @@ export class UbicacionProvedoresComponent implements OnInit {
 
     const provId = this.obtenerProveedorEnCelda(id);
     if (provId) {
+      // Si el proveedor es '0' y no tiene permisos, no permitir selección
+      if (provId === '0' && !this.puedeEditarBloqueos()) {
+        return;
+      }
       this.seleccionarProveedor(provId);
     }
   }
@@ -561,47 +559,131 @@ export class UbicacionProvedoresComponent implements OnInit {
     this.seleccionActual.set(tocados);
   }
 
-  finalizarSeleccion() {
+  async finalizarSeleccion() {
     if (!this.seleccionando()) return;
 
-    this.aplicarCambios();
+    await this.aplicarCambios();
     this.limpiarSeleccion();
   }
 
-  aplicarCambios() {
+  async aplicarCambios() {
     if (!this.proveedorSeleccionado() || !this.puedeEditar()) return;
 
     const provId = this.proveedorSeleccionado();
+    const celdasSeleccionadas = Array.from(this.seleccionActual());
+
+    if (celdasSeleccionadas.length === 0) return;
 
     if (this.accionActual() === 'bloquear') {
-      this.mapaProveedores.update(mapa => {
-        const nuevo = new Map(mapa);
-        const celdasProveedor = new Set(nuevo.get(provId) || []);
-
-        this.seleccionActual().forEach(id => {
-          if (this.esCeldaDisponible(id)) {
-            celdasProveedor.add(id);
-          }
-        });
-
-        nuevo.set(provId, celdasProveedor);
-        return nuevo;
-      });
+      if (provId === '0') {
+        // Bloquear celdas
+        await this.bloquearCeldas(celdasSeleccionadas);
+      } else {
+        // Asignar celdas a proveedor
+        await this.asignarEspacioProveedor(provId, celdasSeleccionadas);
+      }
     } else if (this.accionActual() === 'desbloquear') {
+      if (provId === '0') {
+        // Desbloquear celdas
+        await this.liberarBloqueoCeldas(celdasSeleccionadas);
+      } else {
+        // Verificar si se liberarán todas las celdas del proveedor
+        const celdasProveedor = this.mapaProveedores().get(provId);
+        if (celdasProveedor) {
+          const celdasRestantes = new Set(celdasProveedor);
+          celdasSeleccionadas.forEach(coord => celdasRestantes.delete(coord));
+          
+          if (celdasRestantes.size === 0) {
+            // Si se liberan todas las celdas, mostrar modal de eliminación
+            await this.liberarEspaciosProveedor(provId, celdasSeleccionadas);
+            this.confirmarEliminarProveedor(true);
+            return;
+          }
+        }
+        // Liberar celdas de proveedor seleccionado
+        await this.liberarEspaciosProveedor(provId, celdasSeleccionadas);
+      }
+    }
+  }
+
+  // --- MÉTODOS DE API PARA OPERACIONES (USANDO EL SERVICIO) ---
+
+  async bloquearCeldas(coordenadas: string[]): Promise<void> {
+    try {
+      await this.ubicacionService.bloquearCeldas(coordenadas);
+      
+      // Actualizar el mapa local
       this.mapaProveedores.update(mapa => {
         const nuevo = new Map(mapa);
-        const celdasProveedor = new Set(nuevo.get(provId) || []);
-
-        this.seleccionActual().forEach(id => celdasProveedor.delete(id));
-
-        if (celdasProveedor.size > 0) {
-          nuevo.set(provId, celdasProveedor);
-        } else {
-          nuevo.set(provId, new Set());
-        }
-
+        const celdasBloqueo = new Set(nuevo.get('0') || []);
+        coordenadas.forEach(coord => celdasBloqueo.add(coord));
+        nuevo.set('0', celdasBloqueo);
         return nuevo;
       });
+    } catch (error: any) {
+      console.error('Error al bloquear celdas:', error);
+      this.mostrarNotificacion('error', 'Error al bloquear', error.message || 'No se pudieron bloquear las celdas');
+    }
+  }
+
+  async liberarBloqueoCeldas(coordenadas: string[]): Promise<void> {
+    try {
+      await this.ubicacionService.liberarBloqueoCeldas(coordenadas);
+      
+      // Actualizar el mapa local
+      this.mapaProveedores.update(mapa => {
+        const nuevo = new Map(mapa);
+        const celdasBloqueo = new Set(nuevo.get('0') || []);
+        coordenadas.forEach(coord => celdasBloqueo.delete(coord));
+        nuevo.set('0', celdasBloqueo);
+        return nuevo;
+      });
+    } catch (error: any) {
+      console.error('Error al desbloquear celdas:', error);
+      this.mostrarNotificacion('error', 'Error al desbloquear', error.message || 'No se pudieron desbloquear las celdas');
+    }
+  }
+
+  async asignarEspacioProveedor(proveedor: string, coordenadas: string[]): Promise<void> {
+    try {
+      const response = await this.ubicacionService.asignarEspacioProveedor(proveedor, coordenadas);
+      
+      // Actualizar el color si la respuesta incluye uno nuevo
+      if (response.Color) {
+        this.proveedores.update(provs => 
+          provs.map(p => p.id === proveedor ? { ...p, color: response.Color } : p)
+        );
+      }
+
+      // Actualizar el mapa local
+      this.mapaProveedores.update(mapa => {
+        const nuevo = new Map(mapa);
+        const celdasProveedor = new Set(nuevo.get(proveedor) || []);
+        coordenadas.forEach(coord => celdasProveedor.add(coord));
+        nuevo.set(proveedor, celdasProveedor);
+        return nuevo;
+      });
+    } catch (error: any) {
+      console.error('Error al asignar espacio:', error);
+      this.mostrarNotificacion('error', 'Error al asignar', error.message || 'No se pudo asignar el espacio');
+    }
+  }
+
+  async liberarEspaciosProveedor(proveedor: string, coordenadas: string[]): Promise<void> {
+    try {
+      await this.ubicacionService.liberarEspaciosProveedor(proveedor, coordenadas);
+      
+      // Actualizar el mapa local
+      this.mapaProveedores.update(mapa => {
+        const nuevo = new Map(mapa);
+        const celdasProveedor = new Set(nuevo.get(proveedor) || []);
+        coordenadas.forEach(coord => celdasProveedor.delete(coord));
+        nuevo.set(proveedor, celdasProveedor);
+        return nuevo;
+      });
+    } catch (error: any) {
+      console.error('Error al liberar espacio:', error);
+      this.mostrarNotificacion('error', 'Error al liberar', error.message || 'No se pudo liberar el espacio');
     }
   }
 }

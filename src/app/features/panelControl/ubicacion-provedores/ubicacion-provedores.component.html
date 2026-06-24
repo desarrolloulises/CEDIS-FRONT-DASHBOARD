@@ -1,7 +1,14 @@
 <div class="contenedor-principal" (mouseup)="finalizarSeleccion()">
+  <!-- Spinner de carga -->
+  <app-loading-spinner 
+    [visible]="cargando()"
+    [overlay]="true"
+    [texto]="'Cargando datos del almacén...'">
+  </app-loading-spinner>
 
   <header class="toolbar">
-    <!-- Sección Bloqueos -->
+    <!-- Sección Bloqueos - Solo visible si tiene permisos -->
+    @if (puedeEditarBloqueos()) {
     <div class="toolbar-section">
       <span class="section-title">Bloqueos</span>
       <span class="badge bloqueo-badge" [class.selected]="proveedorSeleccionado() === '0'"
@@ -11,6 +18,7 @@
     </div>
 
     <div class="divider"></div>
+    }
 
     <!-- Sección Registro de Proveedor -->
     <div class="toolbar-section">
@@ -26,8 +34,6 @@
       </div>
       }
     </div>
-
-    <div class="divider"></div>
 
     <!-- Espaciador flexible para empujar controles a la derecha -->
     <div class="spacer"></div>
@@ -87,13 +93,6 @@
       </div>
     </div>
     }
-
-    <!-- Mensaje de error -->
-    @if (errorMensaje()) {
-    <div class="error-msg error-msg-full">
-      {{ errorMensaje() }}
-    </div>
-    }
   </header>
 
   <!-- Área del mapa -->
@@ -133,8 +132,13 @@
       </div>
 
       <div class="modal-body text-center">
-        <p>¿Está seguro de eliminar el proveedor <strong>{{ proveedorAEliminar() }}</strong>?</p>
-        <p class="text-muted">Se liberarán todas las celdas asignadas a este proveedor.</p>
+        @if (accionEliminarDesdeCuadricula()) {
+          <p>Al liberar todas las celdas del proveedor <strong>{{ proveedorAEliminar() }}</strong>, este quedará sin espacios asignados.</p>
+          <p class="text-muted">¿Desea eliminar completamente el proveedor <strong>{{ proveedorAEliminar() }}</strong>?</p>
+        } @else {
+          <p>¿Está seguro de eliminar el proveedor <strong>{{ proveedorAEliminar() }}</strong>?</p>
+          <p class="text-muted">Se liberarán todas las celdas asignadas a este proveedor en el servidor.</p>
+        }
       </div>
 
       <div class="modal-footer">
@@ -145,4 +149,15 @@
       </div>
     </div>
   </div>
+
+  <!-- Toast de notificaciones -->
+  @if (mostrarToast()) {
+    <app-toast
+      [tipo]="toastTipo()"
+      [titulo]="toastTitulo()"
+      [mensaje]="toastMensaje()"
+      [duracion]="4000"
+      (cerrar)="cerrarToast()">
+    </app-toast>
+  }
 </div>
