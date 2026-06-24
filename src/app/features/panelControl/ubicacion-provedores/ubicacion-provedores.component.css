@@ -6,7 +6,6 @@
 }
 
 :host {
-  /* ── Tokens, alineados al componente de referencia ── */
   --up-bg: #f4f6f9;
   --up-surface: #ffffff;
   --up-border: #e2e6ea;
@@ -19,6 +18,8 @@
   --up-primary-dark: #1d4ed8;
   --up-danger: #ef4444;
   --up-danger-dark: #dc2626;
+  --up-success: #10b981;
+  --up-success-light: #d1fae5;
 
   --up-radius: 6px;
   --up-radius-lg: 10px;
@@ -57,7 +58,6 @@
   gap: 18px;
   flex-wrap: wrap;
   flex-shrink: 0;
-  z-index: 100;
   position: relative;
 }
 
@@ -196,24 +196,6 @@
   gap: 10px;
 }
 
-/* Mensaje de error */
-.error-msg {
-  background: #fef2f2;
-  color: var(--up-danger-dark);
-  padding: 7px 12px;
-  border-radius: var(--up-radius);
-  font-size: .75rem;
-  font-weight: 600;
-  border: 1px solid #fecaca;
-}
-
-/* Mensaje de error a ancho completo */
-.error-msg-full {
-  width: 100%;
-  flex-basis: 100%;
-  order: 10;
-}
-
 /* ─── MAPA ─── */
 .mapa-container {
   flex: 1;
@@ -317,7 +299,7 @@
 }
 
 .coordenada {
-  font-size: 7px;
+  font-size: 8px;
   user-select: none;
   pointer-events: none;
   line-height: 1;
@@ -326,7 +308,7 @@
 }
 
 .proveedor-id {
-  font-size: 8px;
+  font-size: 8.3px;
   font-weight: 700;
   user-select: none;
   pointer-events: none;
@@ -335,7 +317,7 @@
   transition: color 0.2s;
 }
 
-/* ─── SCROLLBAR ESTILIZADA ─── */
+/* ─── SCROLLBAR ─── */
 .grid-wrapper::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -408,7 +390,6 @@
   font-weight: 700;
 }
 
-/* Ajuste para el botón de cierre en modal */
 .modal-header app-button ::ng-deep .btn {
   padding: 4px 8px;
   min-height: unset;
