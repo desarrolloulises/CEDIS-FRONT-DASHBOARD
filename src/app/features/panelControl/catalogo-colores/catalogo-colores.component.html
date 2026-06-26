@@ -1,61 +1,60 @@
-<div class="dashboard-wrapper">
+<app-loading-spinner [visible]="cargando()" [overlay]="true" texto="Cargando catálogo..."></app-loading-spinner>
 
-  <section class="glass-card">
-    <div class="field-info w-large">
-      <h2 class="titulo">Catálogo de colores</h2>
-    </div>
+<section class="ev-wrapper">
 
-    <div class="grid-operation">
+  <!-- ── Agregar ──────────────────────────────────────────────────────────── -->
+  <div class="ev-header">
+    <input id="nuevo-color" class="agregar__input-color" type="color" [ngModel]="nuevoColor()"
+      (ngModelChange)="nuevoColor.set($event)" />
+    <span class="agregar__hex">{{ nuevoColor() }}</span>
+    <app-button type="primary" , label="Agregar" , size="sm" , (clicked)="agregarColor()" [disabled]="guardandoNuevo()">
+    </app-button>
+  </div>
 
+  <!-- ── Tabla ─────────────────────────────────────────────────────────────── -->
+  <div class="wrapper">
 
-      <div class="field-info w-small">
-        <label class="label-mini">Color</label>
-        <div class="recuadro-disparador" [style.background-color]="colorTemporal" (click)="nuevoPicker.click()">
-          <input #escanearcajaInput type="text" name="folio" class="input-filter-notable ">
-        </div>
-
-        <input #nuevoPicker type="color" [(ngModel)]="colorTemporal" (change)="confirmarNuevoColor(nuevoPicker.value)"
-          style="display: none;">
-      </div>
-    </div>
-  </section>
-
-  <section class=" tabla-scroll-container">
-
-    @if (isWaiting()) {
-    <div class="loading-overlay">
-      <div class="spinner-formal"></div>
-      <span class="bold-dark">Cargando datos...</span>
-    </div>
-    }
-
-    <table class="table-approved custom-table">
+    <table class="table" *ngIf="colores().length > 0 || !cargando()">
       <thead>
         <tr>
-          <th class="col-clave">Clave</th>
-          <th class="col-color">Color</th>
-          <th class="col-activo">Activo</th>
+          <th>#</th>
+          <th>Color</th>
+          <th>Hex</th>
+          <th>Disponible</th>
         </tr>
       </thead>
       <tbody>
-        @for (item of listaColores(); track item.clave) {
-        <tr>
-          <td class="txt-centro">{{ item.clave }}</td>
-          <td>
-            <div class="recuadro-color" [style.background-color]="item.colorHex" (click)="picker.click()">
-            </div>
-            <input #picker type="color" [value]="item.colorHex" (change)="cambiarColor(item.clave, picker.value)"
-              style="display: none;">
-          </td>
-          <td class="txt-centro cursor-pointer" (click)="toggleActivo(item.clave)">
-            {{ item.activo ? '[X]' : '[ ]' }}
+        <tr *ngIf="colores().length === 0 && !cargando()">
+          <td class="empty" colspan="4">
+            No hay colores en el catálogo. Agrega el primero.
           </td>
         </tr>
-        }
+
+        <tr *ngFor="let item of colores(); let i = index" [class.fila-inactiva]="item.lblBandera === '0'"
+          (dblclick)="abrirPaleta(item, colorPicker)">
+          <td>{{ item.lblIdColor }}</td>
+
+          <td>
+            <!-- Swatch visible; input oculto activado desde el componente -->
+            <span class="color-swatch" [style.background]="item.lblColor" title="Doble clic para editar"></span>
+            <input #colorPicker type="color" [value]="item.lblColor" class="color-picker-hidden"
+              (change)="guardarColorDirecto(item, colorPicker.value)" />
+          </td>
+
+          <td><code>{{ item.lblColor }}</code></td>
+
+          <td>
+            <label class="checkbox-wrap" (click)="$event.stopPropagation()">
+              <input type="checkbox" [checked]="item.lblBandera === '1'" (change)="toggleBandera(item)" />
+            </label>
+          </td>
+        </tr>
       </tbody>
     </table>
+  </div>
 
-  </section>
+</section>
 
-
-</div>
+<!-- ── Toast ───────────────────────────────────────────────────────────────── -->
+<app-toast *ngIf="toast().visible" [tipo]="toast().tipo" [titulo]="toast().titulo" [mensaje]="toast().mensaje"
+  (cerrar)="cerrarToast()"></app-toast>
