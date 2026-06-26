@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -146,6 +146,20 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
 
   ngOnInit(): void { this.visitas = MOCK.map(v => ({ ...v })); }
 
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'F1') {
+      event.preventDefault();
+      if (!this.showAlta && !this.showCURP && !this.showQR) {
+        this.openAlta();
+      }
+    }
+    if (event.key === 'F2') {
+      event.preventDefault();
+      document.querySelector<HTMLInputElement>('.ev-search-container input')?.focus();
+    }
+  }
+
   // ── Tabla ───────────────────────────────────────────────────────────────
   get visitasFiltradas(): Visita[] {
     const q = this.filtro.toLowerCase();
@@ -165,7 +179,7 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
       if (!this.manejarRespuestaAPI(respuestaSimulada, 'Salida registrada correctamente')) return;
 
       this.visitas = this.visitas.filter(v => v.id !== id);
-    },700);
+    }, 700);
   }
 
   imprimir(v: Visita): void {
