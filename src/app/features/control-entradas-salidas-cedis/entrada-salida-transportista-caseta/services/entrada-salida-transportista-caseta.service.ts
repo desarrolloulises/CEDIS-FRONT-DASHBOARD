@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { url } from '../../../../variables';
 
 import {
   ITransportista,
@@ -19,7 +20,7 @@ import {
   IApiErrorResponse,
 } from '../models/entrada-salida-transportista-caseta.model';
 
-const API_URL = 'http://192.168.101.9:8088/cedis/transportistas';
+const API_URL = `${url}/cedis/transportistas`;
 
 @Injectable({ providedIn: 'root' })
 export class TransportistaService {

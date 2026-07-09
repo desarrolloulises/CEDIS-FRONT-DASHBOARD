@@ -16,7 +16,7 @@ import { ProveedorLocal } from './models/ubicacion-proveedores.models';
 })
 export class UbicacionProvedoresComponent implements OnInit {
   @ViewChild('gridContainer') gridContainer!: ElementRef;
-  
+
   // Inyectar el servicio de ubicación de proveedores
   private ubicacionService = inject(UbicacionProveedoresService);
 
@@ -70,12 +70,12 @@ export class UbicacionProvedoresComponent implements OnInit {
     if (this.tienePermisoBloqueo()) {
       return true;
     }
-    
+
     // Si no tiene permiso de bloqueo, puede editar proveedores pero NO el proveedor '0'
     if (this.proveedorSeleccionado() === '0') {
       return false;
     }
-    
+
     return true;
   });
 
@@ -118,7 +118,7 @@ export class UbicacionProvedoresComponent implements OnInit {
   async cargarDatosIniciales(): Promise<void> {
     try {
       this.cargando.set(true);
-      
+
       // Cargar dimensiones y lista de proveedores en paralelo usando el servicio
       const [dimensiones, espaciosResponse] = await Promise.all([
         this.ubicacionService.obtenerDimensiones(),
@@ -130,12 +130,12 @@ export class UbicacionProvedoresComponent implements OnInit {
       this.columnas.set(dimensiones.columnas);
 
       // Procesar proveedores usando el método del servicio
-      const { proveedores, mapaProveedores } = 
+      const { proveedores, mapaProveedores } =
         this.ubicacionService.procesarProveedores(espaciosResponse.provedores);
-      
+
       this.proveedores.set(proveedores);
       this.mapaProveedores.set(mapaProveedores);
-      
+
     } catch (error) {
       console.error('Error al cargar datos iniciales:', error);
       this.mostrarNotificacion('error', 'Error de conexión', 'No se pudieron cargar los datos del servidor');
@@ -147,11 +147,11 @@ export class UbicacionProvedoresComponent implements OnInit {
   async verificarPermisos(): Promise<void> {
     try {
       this.verificandoPermisos.set(true);
-      
+
       // Usar el método del servicio para verificar permisos
       const tienePermiso = await this.ubicacionService.verificarPermisos();
       this.tienePermisoBloqueo.set(tienePermiso);
-      
+
     } catch (error) {
       console.error('Error al verificar permisos:', error);
       // Por defecto, si hay error, denegar permisos de bloqueo
@@ -167,9 +167,9 @@ export class UbicacionProvedoresComponent implements OnInit {
     // Solo mostramos errores 
     if (tipo === 'success') {
       return; // En caso de requerirse, podemos mandadar a llamar al metodo Mostrar notificacion 
-              // para mostrar un mensaje de exito
+      // para mostrar un mensaje de exito
     }
-    
+
     this.toastTipo.set(tipo);
     this.toastTitulo.set(titulo);
     this.toastMensaje.set(mensaje);
@@ -228,7 +228,9 @@ export class UbicacionProvedoresComponent implements OnInit {
     }
   }
 
-  agregarProveedor() {
+  // En ubicacion-provedores.component.ts
+
+  async agregarProveedor() {
     if (!this.puedeEditar()) {
       this.mostrarNotificacion('error', 'Sin permisos', 'No tiene permisos para agregar proveedores');
       return;
@@ -251,18 +253,48 @@ export class UbicacionProvedoresComponent implements OnInit {
       return;
     }
 
-    const color = this.generarColorAleatorio();
+    try {
+      this.cargando.set(true);
 
-    this.proveedores.update(provs => [...provs, { id, color }]);
-    this.mapaProveedores.update(mapa => {
-      const nuevo = new Map(mapa);
-      nuevo.set(id, new Set());
-      return nuevo;
-    });
+      // Obtener el color del servidor
+      const response = await this.ubicacionService.obtenerColorProveedor(id);
 
-    this.proveedorSeleccionado.set(id);
-    this.nuevoProveedorId.set('');
+      // Validar que la respuesta tenga un color válido
+      if (!response.Color) {
+        throw new Error('El servidor no proporcionó un color válido');
+      }
+
+      // Usar el color proporcionado por el servidor
+      const color = response.Color;
+
+      // Agregar el proveedor con el color del servidor
+      this.proveedores.update(provs => [...provs, { id, color }]);
+      this.mapaProveedores.update(mapa => {
+        const nuevo = new Map(mapa);
+        nuevo.set(id, new Set());
+        return nuevo;
+      });
+
+      this.proveedorSeleccionado.set(id);
+      this.nuevoProveedorId.set('');
+
+    } catch (error: any) {
+      console.error('Error al agregar proveedor:', error);
+
+      const mensajeError = error.message || 'No se pudo obtener el color del servidor';
+
+      this.mostrarNotificacion(
+        'error',
+        'Error al agregar proveedor',
+        mensajeError  
+      );
+
+      
+    } finally {
+      this.cargando.set(false);
+    }
   }
+
   // Colores temporales al crear un provedor en lo que el servidor nos proporciona el color asignado
   generarColorAleatorio(): string {
     const colores = ['#0bfd03', '#0078d7', '#6f42c1', '#f0ad4e', '#c1428c', '#4ed0f0', '#4259c1', '#c5f04e', '#fd7e14', '#20c997'];
@@ -366,7 +398,7 @@ export class UbicacionProvedoresComponent implements OnInit {
       if (provId !== this.proveedorSeleccionado() && provId !== '0' && celdas.has(id)) {
         const proveedor = this.proveedores().find(p => p.id === provId);
         if (proveedor) {
-          return this.hexToRgba(proveedor.color, 0.3);
+          return this.hexToRgba(proveedor.color, 0.9);
         }
       }
     }
@@ -401,7 +433,7 @@ export class UbicacionProvedoresComponent implements OnInit {
       return '#ffffff';
     }
 
-    return '#5a5959';
+    return '#393939';
   }
 
   obtenerTooltipCelda(id: string): string {
@@ -592,7 +624,7 @@ export class UbicacionProvedoresComponent implements OnInit {
         if (celdasProveedor) {
           const celdasRestantes = new Set(celdasProveedor);
           celdasSeleccionadas.forEach(coord => celdasRestantes.delete(coord));
-          
+
           if (celdasRestantes.size === 0) {
             // Si se liberan todas las celdas, mostrar modal de eliminación
             await this.liberarEspaciosProveedor(provId, celdasSeleccionadas);
@@ -611,7 +643,7 @@ export class UbicacionProvedoresComponent implements OnInit {
   async bloquearCeldas(coordenadas: string[]): Promise<void> {
     try {
       await this.ubicacionService.bloquearCeldas(coordenadas);
-      
+
       // Actualizar el mapa local
       this.mapaProveedores.update(mapa => {
         const nuevo = new Map(mapa);
@@ -629,7 +661,7 @@ export class UbicacionProvedoresComponent implements OnInit {
   async liberarBloqueoCeldas(coordenadas: string[]): Promise<void> {
     try {
       await this.ubicacionService.liberarBloqueoCeldas(coordenadas);
-      
+
       // Actualizar el mapa local
       this.mapaProveedores.update(mapa => {
         const nuevo = new Map(mapa);
@@ -647,10 +679,10 @@ export class UbicacionProvedoresComponent implements OnInit {
   async asignarEspacioProveedor(proveedor: string, coordenadas: string[]): Promise<void> {
     try {
       const response = await this.ubicacionService.asignarEspacioProveedor(proveedor, coordenadas);
-      
+
       // Actualizar el color si la respuesta incluye uno nuevo
       if (response.Color) {
-        this.proveedores.update(provs => 
+        this.proveedores.update(provs =>
           provs.map(p => p.id === proveedor ? { ...p, color: response.Color } : p)
         );
       }
@@ -672,7 +704,7 @@ export class UbicacionProvedoresComponent implements OnInit {
   async liberarEspaciosProveedor(proveedor: string, coordenadas: string[]): Promise<void> {
     try {
       await this.ubicacionService.liberarEspaciosProveedor(proveedor, coordenadas);
-      
+
       // Actualizar el mapa local
       this.mapaProveedores.update(mapa => {
         const nuevo = new Map(mapa);

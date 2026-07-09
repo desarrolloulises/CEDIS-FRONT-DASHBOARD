@@ -2,8 +2,8 @@
 //export const url ='http://192.168.101.9:8085' //Para servidar WMS-DES
 
 //export const url ='http://localhost:5242' //Para servidor LOCAL
-//export const url ='http://192.168.101.9:8088' //Para servidar DESAROLLO
-export const url ='http://192.168.101.10:80' //Para servidar PRODUCCION
+export const url ='http://192.168.101.9:8088' //Para servidar DESAROLLO
+//export const url ='http://192.168.101.10:80' //Para servidar PRODUCCION
 //export const url ='http://192.168.101.10:82' //Para servidar dasboartd PRODUCCION
 
 

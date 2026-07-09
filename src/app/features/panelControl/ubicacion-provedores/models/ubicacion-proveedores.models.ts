@@ -7,6 +7,19 @@ export interface DimensionesCuadriculaResponse {
   Coordenadas: string[];
 }
 
+export interface ObtenerColorProveedorRequest {
+  proveedor: string;
+}
+
+export interface ObtenerColorProveedorResponse {
+  error: string;
+  DesError: string;
+  Color: string;
+  Renglon: string;
+  Columna: string;
+  Coordenadas: string[];
+}
+
 export interface ProveedorAPI {
   provedor: string;
   color: string;
