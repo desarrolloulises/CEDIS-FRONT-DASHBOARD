@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { url } from '../../../../variables';
 
 export interface ElementoAdicionalResponse {
   errId: number;
@@ -31,7 +32,7 @@ export interface ModificarElementoPayload {
 @Injectable({ providedIn: 'root' })
 export class ElementosAdicionalesService {
 
-  private readonly base = 'http://localhost:5242/cedis/entrada-elementos-adicionales';
+  private readonly base = `${url}/cedis/entrada-elementos-adicionales`;
 
   constructor(private http: HttpClient) {}
 

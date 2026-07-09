@@ -37,7 +37,11 @@ export class SidebarComponent {
 
   cargarMenu(body: any) {
     this.service.getVerMenu(body).subscribe({
-      next: (res) => this.modulos.set(res)
+
+      next: (res) => {
+        const menuFiltrado = res.filter((item: any) => item.Opcion < 1000);
+        this.modulos.set(menuFiltrado);
+      }
     });
   }
 

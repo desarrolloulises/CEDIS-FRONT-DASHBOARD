@@ -10,6 +10,7 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { url } from '../../../variables';
 
 interface ColorItem {
   errId: number;
@@ -44,7 +45,7 @@ interface ToastState {
 export class CatalogoColoresComponent implements OnInit {
 
   private http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:5242/cedis/espacios-asignados/colores';
+  private readonly baseUrl = `${url}/cedis/espacios-asignados/colores`;
 
   // ── Estado principal ──────────────────────────────────────────────────────
   colores = signal<ColorItem[]>([]);

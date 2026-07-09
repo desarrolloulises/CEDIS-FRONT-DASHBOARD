@@ -6,6 +6,8 @@ import {
   DimensionesCuadriculaResponse,
   EspaciosAsignadosResponse,
   CoordenadasRequest,
+  ObtenerColorProveedorResponse,
+  ObtenerColorProveedorRequest,
   AsignarEspacioRequest,
   LiberarEspacioRequest,
   ApiResponse,
@@ -15,6 +17,8 @@ import {
   Dimensiones
 } from '../models/ubicacion-proveedores.models';
 
+import {url} from '../../../../variables'
+
 @Injectable({
   providedIn: 'root'
 })
@@ -22,8 +26,8 @@ export class UbicacionProveedoresService {
   private http = inject(HttpClient);
   private datosService = inject(DatosService);
 
-  private readonly API_URL = 'http://localhost:5242/cedis/espacios-asignados';
-  private readonly PERMISOS_URL = 'http://192.168.101.10/cedis/PERFIL';
+  private readonly API_URL = `${url}/cedis/espacios-asignados`;
+  private readonly PERMISOS_URL = `${url}/cedis/PERFIL`;
 
   // --- OBTENER DIMENSIONES ---
 
@@ -74,7 +78,7 @@ export class UbicacionProveedoresService {
   async verificarPermisos(): Promise<boolean> {
     try {
       const usuario = this.datosService.usuarioSignal();
-      
+
       if (!usuario) {
         console.warn('No hay usuario definido, permisos denegados por defecto');
         return false;
@@ -144,8 +148,43 @@ export class UbicacionProveedoresService {
 
   // --- OPERACIONES DE PROVEEDORES ---
 
+async obtenerColorProveedor(proveedor: string): Promise<ObtenerColorProveedorResponse> {
+  try {
+    const request: ObtenerColorProveedorRequest = { proveedor };
+    
+    const response = await lastValueFrom(
+      this.http.post<ObtenerColorProveedorResponse>(
+        `${this.API_URL}/obtener-color-provedor`,
+        request
+      )
+    );
+
+    if (!response || response.error !== '0') {
+      throw new Error(response?.DesError || 'Error al obtener el color del proveedor');
+    }
+
+    return response;
+  } catch (error: any) {
+    console.error('Error al obtener color del proveedor:', error);
+    
+    // Si es un HttpErrorResponse, intentar extraer el mensaje del cuerpo
+    if (error?.status && error?.error) {
+      const mensajeServidor = error.error.DesError || error.error.message || error.message;
+      throw new Error(mensajeServidor);
+    }
+    
+    // Si ya es un Error con mensaje personalizado, relanzarlo
+    if (error instanceof Error) {
+      throw error;
+    }
+    
+    // Error genérico
+    throw new Error('Error de conexión al obtener el color del proveedor');
+  }
+}
+
   async asignarEspacioProveedor(
-    proveedor: string, 
+    proveedor: string,
     coordenadas: string[]
   ): Promise<ApiResponse> {
     try {
@@ -153,7 +192,7 @@ export class UbicacionProveedoresService {
         proveedor,
         coordenadas
       };
-      
+
       const response = await lastValueFrom(
         this.http.post<ApiResponse>(
           `${this.API_URL}/asignar-espacio-proveedor`,
@@ -173,7 +212,7 @@ export class UbicacionProveedoresService {
   }
 
   async liberarEspaciosProveedor(
-    proveedor: string, 
+    proveedor: string,
     coordenadas: string[]
   ): Promise<ApiResponse> {
     try {
@@ -181,7 +220,7 @@ export class UbicacionProveedoresService {
         proveedor,
         coordenadas
       };
-      
+
       const response = await lastValueFrom(
         this.http.post<ApiResponse>(
           `${this.API_URL}/liberar-espacio-proveedor`,
