@@ -2,6 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { url } from '../../../../variables';
 
 // validaciones-seguridad.service.ts
 export interface ValidacionSeguridad {
@@ -22,7 +23,7 @@ export interface ToggleValidacionRequest {
 @Injectable({ providedIn: 'root' })
 export class ValidacionesSeguridadService {
 
-  private readonly base = 'http://localhost:5242/cedis';
+  private readonly base = `${url}/cedis`;
 
   constructor(private http: HttpClient) {}
 

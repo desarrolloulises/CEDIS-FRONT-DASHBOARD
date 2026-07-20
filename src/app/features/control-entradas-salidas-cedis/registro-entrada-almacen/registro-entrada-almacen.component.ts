@@ -25,6 +25,11 @@ import {
   VetoService,
   TipoVetoResponse,
 } from './services/veto.service';
+import {
+  ImagenesService,
+  ImagenResponse
+} from './services/imagenes.service';
+
 
 // ── Interfaces ────────────────────────────────────────────
 export interface Incidencia {
@@ -106,6 +111,13 @@ export class RegistroEntradaAlmacenComponent implements OnInit {
   fotoPreview: string | null = null;
   seccionActiva = 'datos';
 
+  // Propiedades para gestión de imágenes
+  imagenId: number | null = null;
+  imagenSeleccionada: File | null = null;
+  imagenPreviewUrl: string | null = null;
+  cargandoImagen = false;
+  errorImagen: string | null = null;
+
   curpEncontrado = false;
   editandoVeto = false;
 
@@ -156,6 +168,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit {
     private validacionesSeguridadService: ValidacionesSeguridadService,
     private elementosAdicionalesService: ElementosAdicionalesService,
     private vetoService: VetoService,
+    private imagenesService: ImagenesService,
   ) { }
 
   ngOnInit(): void {
@@ -257,6 +270,200 @@ export class RegistroEntradaAlmacenComponent implements OnInit {
       descripcion: ['', [Validators.required, Validators.maxLength(255)]],
       cantidad: [null],
     });
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  GESTIÓN DE IMÁGENES
+  // ═══════════════════════════════════════════════════════
+
+  private obtenerIdImagenSimulada(curp: string): number | null {
+    // Mapeo temporal de CURP a ID de imagen
+    const imagenSimuladaMap: Record<string, number> = {
+      'MEGA780615HDFLML08': 5,
+      'GOAM850515MDFNRL08': 3,
+      'RAHN780320HCSNVR05': 2,
+      'SALD920711MDFRRN09': 1,
+    };
+
+    return imagenSimuladaMap[curp] || null;
+  }
+
+  /**
+   * Maneja la selección de archivo para subir/actualizar imagen
+   */
+  onArchivoSeleccionado(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    if (input.files && input.files.length > 0) {
+      const archivo = input.files[0];
+
+      // Validar tipo de archivo
+      if (!archivo.type.startsWith('image/')) {
+        this.errorImagen = 'El archivo debe ser una imagen';
+        return;
+      }
+
+      // Validar tamaño (máximo 5MB)
+      if (archivo.size > 50 * 1024 * 1024) {
+        this.errorImagen = 'La imagen no debe superar los 5MB';
+        return;
+      }
+
+      this.imagenSeleccionada = archivo;
+      this.errorImagen = null;
+
+      // Crear preview local
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.imagenPreviewUrl = e.target?.result as string;
+      };
+      reader.readAsDataURL(archivo);
+    }
+  }
+
+  /**
+   * Consulta los metadatos de una imagen por ID
+   */
+  consultarImagen(id: number): void {
+    this.cargandoImagen = true;
+    this.errorImagen = null;
+
+    this.imagenesService.obtenerImagen(id).subscribe({
+      next: (response: ImagenResponse) => {
+        console.log('Metadatos de imagen:', response);
+        this.imagenId = response.id;
+        this.cargarPreviewImagen(response.id);
+      },
+      error: (error) => {
+        console.error('Error al consultar imagen:', error);
+        this.errorImagen = 'No se pudo cargar la información de la imagen';
+        this.cargandoImagen = false;
+      }
+    });
+  }
+
+  /**
+   * Carga el preview de la imagen desde el servidor
+   */
+  private cargarPreviewImagen(id: number): void {
+    this.imagenesService.obtenerImagenArchivo(id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        this.imagenPreviewUrl = url;
+        this.cargandoImagen = false;
+      },
+      error: (error) => {
+        console.error('Error al cargar preview:', error);
+        this.errorImagen = 'No se pudo cargar la imagen';
+        this.cargandoImagen = false;
+      }
+    });
+  }
+
+  /**
+   * Sube una nueva imagen al servidor
+   */
+  subirImagen(): void {
+    if (!this.imagenSeleccionada) {
+      this.errorImagen = 'Selecciona una imagen primero';
+      return;
+    }
+
+    this.cargandoImagen = true;
+    this.errorImagen = null;
+
+    this.imagenesService.subirImagen(this.imagenSeleccionada).subscribe({
+      next: (response: ImagenResponse) => {
+        console.log('Imagen subida exitosamente:', response);
+        this.imagenId = response.id;
+        this.cargarPreviewImagen(response.id);
+
+        // Aquí puedes guardar el ID de la imagen en el formulario
+        // this.formDatos.patchValue({ fotoId: response.id });
+
+        alert('Imagen subida correctamente');
+      },
+      error: (error) => {
+        console.error('Error al subir imagen:', error);
+        this.errorImagen = 'No se pudo subir la imagen';
+        this.cargandoImagen = false;
+      }
+    });
+  }
+
+  /**
+   * Actualiza una imagen existente
+   */
+  actualizarImagen(): void {
+    if (!this.imagenId || !this.imagenSeleccionada) {
+      this.errorImagen = 'Selecciona una imagen y asegúrate de que exista un ID';
+      return;
+    }
+
+    this.cargandoImagen = true;
+    this.errorImagen = null;
+
+    this.imagenesService.actualizarImagen(this.imagenId, this.imagenSeleccionada).subscribe({
+      next: (response: ImagenResponse) => {
+        console.log('Imagen actualizada:', response);
+        this.cargarPreviewImagen(response.id);
+        alert('Imagen actualizada correctamente');
+      },
+      error: (error) => {
+        console.error('Error al actualizar imagen:', error);
+        this.errorImagen = 'No se pudo actualizar la imagen';
+        this.cargandoImagen = false;
+      }
+    });
+  }
+
+  /**
+   * Elimina una imagen del servidor
+   */
+  eliminarImagenServidor(): void {
+    if (!this.imagenId) {
+      this.errorImagen = 'No hay imagen para eliminar';
+      return;
+    }
+
+    if (!confirm('¿Estás seguro de eliminar esta imagen?')) {
+      return;
+    }
+
+    this.cargandoImagen = true;
+    this.errorImagen = null;
+
+    this.imagenesService.eliminarImagen(this.imagenId).subscribe({
+      next: (response) => {
+        console.log('Imagen eliminada:', response);
+        this.limpiarEstadoImagen();
+        alert('Imagen eliminada correctamente');
+      },
+      error: (error) => {
+        console.error('Error al eliminar imagen:', error);
+        this.errorImagen = 'No se pudo eliminar la imagen';
+        this.cargandoImagen = false;
+      }
+    });
+  }
+
+  /**
+   * Limpia el estado de la imagen
+   */
+  private limpiarEstadoImagen(): void {
+    this.imagenId = null;
+    this.imagenSeleccionada = null;
+    this.imagenPreviewUrl = null;
+    this.cargandoImagen = false;
+    this.errorImagen = null;
+  }
+
+  /**
+   * Inicializa la carga de imagen para un usuario simulado
+   * Esto es temporal hasta que tengas la tabla de asociación
+   */
+  cargarImagenUsuario(idImagenSimulada: number): void {
+    this.consultarImagen(idImagenSimulada);
   }
 
   // ═══════════════════════════════════════════════════════
@@ -411,6 +618,11 @@ export class RegistroEntradaAlmacenComponent implements OnInit {
         noProveedor: datos.noProveedor,
         razonSocial: datos.razonSocial,
       });
+
+      const idImagenSimulada = this.obtenerIdImagenSimulada(curp);
+      if (idImagenSimulada) {
+        this.cargarImagenUsuario(idImagenSimulada);
+      }
 
       if (datos.vehiculo) {
         this.formVehiculo.patchValue(datos.vehiculo);

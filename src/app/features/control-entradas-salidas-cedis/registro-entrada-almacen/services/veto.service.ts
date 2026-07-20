@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { url } from '../../../../variables';
 
 export interface TipoVetoResponse {
   errId: number;
@@ -22,7 +23,7 @@ export interface VetoPayload {
 
 @Injectable({ providedIn: 'root' })
 export class VetoService {
-  private base = 'http://localhost:5242/cedis/vetos';
+  private base = `${url}/cedis/vetos`;
 
   constructor(private http: HttpClient) {}
 
