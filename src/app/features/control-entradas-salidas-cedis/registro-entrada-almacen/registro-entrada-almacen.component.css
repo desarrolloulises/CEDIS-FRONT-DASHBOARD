@@ -1112,4 +1112,39 @@
     justify-content: center;
   }
 
+  /* ══ IMAGEN CONTROLS ══ */
+  .foto-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    width: 100%;
+    margin-top: var(--space-sm);
+  }
+
+  .foto-controls .btn {
+    font-size: 0.82rem;
+    padding: 8px var(--space-md);
+  }
+
+  /* Mejora visual para la imagen */
+  .foto-box {
+    position: relative;
+    transition: all var(--transition-fast);
+  }
+
+  .foto-box:hover {
+    border-color: var(--secundario);
+  }
+
+  /* Indicador de carga dentro de la foto */
+  .foto-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 1;
+  }
+
 }

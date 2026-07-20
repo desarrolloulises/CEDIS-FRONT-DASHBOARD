@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { url } from '../../../../variables';
 
 export interface IncidenciaResponse {
   errId:          number;
@@ -30,7 +31,7 @@ export interface ModificarIncidenciaRequest {
 @Injectable({ providedIn: 'root' })
 export class IncidenciasService {
 
-  private readonly base = 'http://localhost:5242/cedis';
+  private readonly base = `${url}/cedis`;
 
   constructor(private http: HttpClient) {}
 

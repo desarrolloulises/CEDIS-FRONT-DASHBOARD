@@ -61,25 +61,58 @@
 
         <!-- Foto -->
         <div class="foto-panel">
+          <!-- Estado de carga -->
+          <div *ngIf="cargandoImagen" class="loading">
+            <i class="ti ti-loader-2 spin"></i> Procesando imagen...
+          </div>
+
+          <!-- Error -->
+          <div *ngIf="errorImagen" class="err-msg">{{ errorImagen }}</div>
+
           <div class="foto-box">
-            <ng-container *ngIf="fotoPreview; else sinFoto">
-              <img [src]="fotoPreview" alt="Foto del empleado" class="foto-img" />
-              <button type="button" class="foto-del" (click)="eliminarFoto()">
-                <i class="ti ti-x"></i> Eliminar
-              </button>
+            <ng-container *ngIf="imagenPreviewUrl || fotoPreview; else sinFoto">
+              <img [src]="imagenPreviewUrl || fotoPreview" alt="Foto" class="foto-img" />
             </ng-container>
             <ng-template #sinFoto>
-              <div class="foto-empty"><i class="ti ti-user-circle"></i>
+              <div class="foto-empty">
+                <i class="ti ti-user-circle"></i>
                 <p>Sin foto</p>
               </div>
             </ng-template>
           </div>
-          <label class="btn btn--sec btn--block">
-            Capturar
-            <input type="file" accept="image/*" capture="environment" style="display:none"
-              (change)="onFotoCapturada($event)" />
-          </label>
+
+          <!-- Controles de imagen -->
+          <div class="foto-controls">
+            <!-- Capturar nueva imagen -->
+            <label class="btn btn--sec btn--block">
+              <i class="ti ti-camera"></i> Capturar
+              <input type="file" accept="image/*" capture="environment" style="display:none"
+                (change)="onArchivoSeleccionado($event)" />
+            </label>
+
+            <!-- Botones de acción (visible cuando hay imagen seleccionada) -->
+            <ng-container *ngIf="imagenSeleccionada || imagenId">
+              <!-- Subir nueva imagen -->
+              <button *ngIf="!imagenId" type="button" class="btn btn--pri btn--block" (click)="subirImagen()"
+                [disabled]="cargandoImagen">
+                <i class="ti ti-upload"></i> Subir imagen
+              </button>
+
+              <!-- Actualizar imagen existente -->
+              <button *ngIf="imagenId && imagenSeleccionada" type="button" class="btn btn--pri btn--block"
+                (click)="actualizarImagen()" [disabled]="cargandoImagen">
+                <i class="ti ti-refresh"></i> Actualizar
+              </button>
+
+              <!-- Eliminar imagen -->
+              <button *ngIf="imagenId" type="button" class="btn btn--danger btn--block"
+                (click)="eliminarImagenServidor()" [disabled]="cargandoImagen">
+                <i class="ti ti-trash"></i> Eliminar
+              </button>
+            </ng-container>
+          </div>
         </div>
+
       </div>
 
       <div class="datos-actions">
@@ -323,13 +356,15 @@
             <tbody>
               <tr *ngFor="let inc of incidencias.controls; let i = index" class="tr">
                 <td class="td td--fecha">
-                  <span class="truncated" *ngIf="inc.get('fecha')?.value; else sinFechaInc">{{ inc.get('fecha')?.value | date:'dd/MM/yyyy'
+                  <span class="truncated" *ngIf="inc.get('fecha')?.value; else sinFechaInc">{{ inc.get('fecha')?.value |
+                    date:'dd/MM/yyyy'
                     }}</span>
                   <ng-template #sinFechaInc><span class="pending"><i class="ti ti-clock"></i>
                       Pendiente</span></ng-template>
                 </td>
                 <td class="td td--badge">
-                  <span class="nivel-badge" [style.background-color]="(inc.get('colorNivel')?.value || '#E5E7EB').trim()">
+                  <span class="nivel-badge"
+                    [style.background-color]="(inc.get('colorNivel')?.value || '#E5E7EB').trim()">
                     {{ getNivelEtiqueta(inc.get('nivel')?.value) }}
                   </span>
                 </td>
@@ -359,8 +394,8 @@
   <section class="sec" [class.sec--on]="seccionActiva === 'otros'">
     <form [formGroup]="formOtros" novalidate>
       <div class="quick-add quick-add--otros">
-        <input type="text" [formControl]="otrTipo" class="inp"
-          [class.inp--err]="isInvalidSub(nuevoOtroForm, 'tipo')" placeholder="Tipo de artículo" />
+        <input type="text" [formControl]="otrTipo" class="inp" [class.inp--err]="isInvalidSub(nuevoOtroForm, 'tipo')"
+          placeholder="Tipo de artículo" />
         <input type="number" [formControl]="otrCantidad" class="inp" placeholder="Cantidad" />
         <input type="text" [formControl]="otrDescripcion" class="inp"
           [class.inp--err]="isInvalidSub(nuevoOtroForm, 'descripcion')" placeholder="Descripción" />
