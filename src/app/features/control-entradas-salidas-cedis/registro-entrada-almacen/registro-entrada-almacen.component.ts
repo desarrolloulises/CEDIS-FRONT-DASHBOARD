@@ -1,1145 +1,805 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { IconButtonComponent } from '../../../shared/components/icon-button/icon-button.component';
+import { InputComponent } from '../../../shared/components/input/input.component';
+import { SelectComponent, ISelectOption } from '../../../shared/components/select/select.component';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { ToastComponent } from '../../../shared/components/toast/toast.component';
+import { ModalComponent } from '../../../shared/components/modal/modal.component';
+
 import {
-  ReactiveFormsModule,
-  FormBuilder,
-  FormGroup,
-  FormArray,
-  FormControl,
-  Validators,
-} from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
-import {
-  IncidenciasService,
-  IncidenciaResponse,
-} from './services/incidencias.service';
-import {
-  ValidacionesSeguridadService,
+  AplicarVetoPayload,
+  ElementoAdicional,
+  Incidencia,
+  NivelIncidenciaCatalogo,
+  TipoVeto,
   ValidacionSeguridad,
-} from './services/validaciones-seguridad.service';
-import {
-  ElementosAdicionalesService,
-  ElementoAdicionalResponse,
-} from './services/elementos-adicionales.service';
-import {
-  VetoService,
-  TipoVetoResponse,
-} from './services/veto.service';
-import {
-  ImagenesService,
-  ImagenResponse
-} from './services/imagenes.service';
+  VetoExistente
+} from './models/registro-entrada-almacen.models';
+import { RegistroEntradaAlmacenService } from './services/registro-entrada-almacen.service';
 
-
-// ── Interfaces ────────────────────────────────────────────
-export interface Incidencia {
-  fecha: string;
-  nivel: number | null;
-  descripcion: string;
+interface Apartado {
+  id: string;
+  titulo: string;
 }
 
-export interface OtroItem {
-  tipo: string;
-  descripcion: string;
-  cantidad: number | null;
-}
-
-interface DatosCurp {
+interface DatosForm {
+  curp: string;
   nombre: string;
+  apellidoP: string;
+  apellidoM: string;
   motivo: string;
   noProveedor: string;
   razonSocial: string;
-  vehiculo: {
-    tipoVehiculo: string;
-    placa: string;
-    modelo: string;
-    marca: string;
-  } | null;
 }
 
-// ── Catálogo simulado ────────────────────────────────────
-const CURP_DB: Record<string, DatosCurp> = {
-  MEGA780615HDFLML08: {
-    nombre: 'ALEJANDRO MERCADO GONZALES',
-    motivo: 'Chofer',
-    noProveedor: '',
-    razonSocial: '',
-    vehiculo: { tipoVehiculo: 'Camión', placa: 'ABC-123', modelo: '2020', marca: 'Kenworth' },
-  },
-  GOAM850515MDFNRL08: {
-    nombre: 'María González Arce',
-    motivo: 'Maniobra',
-    noProveedor: 'PROV-0042',
-    razonSocial: 'Transportes González S.A.',
-    vehiculo: { tipoVehiculo: 'Camioneta', placa: 'XYZ-456', modelo: '2021', marca: 'Ford' },
-  },
-  RAHN780320HCSNVR05: {
-    nombre: 'Hernán Ramos Nieto',
-    motivo: 'Encargado',
-    noProveedor: 'PROV-0099',
-    razonSocial: 'Fletes Ramos S.C.',
-    vehiculo: { tipoVehiculo: 'Camión', placa: 'PQR-789', modelo: '2019', marca: 'Freightliner' },
-  },
-  SALD920711MDFRRN09: {
-    nombre: 'Daniela Salinas Reyes',
-    motivo: 'Visita',
-    noProveedor: '',
-    razonSocial: '',
-    vehiculo: null,
-  },
-};
+interface NuevoVetoForm {
+  tipoVeto: string;
+  fechaInicio: string;
+  fechaTermino: string;
+}
 
-// ── Motivos que muestran campos de proveedor ──────────────
-const MOTIVOS_CON_PROVEEDOR = new Set(['Chofer', 'Maniobra', 'Encargado']);
+interface NuevaIncidenciaForm {
+  nivel: string;
+  descripcion: string;
+}
+
+interface EdicionIncidenciaForm {
+  nivel: string;
+  descripcion: string;
+}
+
+interface NuevoElementoForm {
+  tipoElemento: string;
+  descripcionElemento: string;
+  cantidad: string;
+}
+
+interface EdicionElementoForm {
+  tipoElemento: string;
+  descripcionElemento: string;
+  cantidad: string;
+}
+
+interface ToastState {
+  visible: boolean;
+  tipo: 'success' | 'error';
+  titulo: string;
+  mensaje: string;
+}
 
 @Component({
-  selector: 'app-registro-visitante',
+  selector: 'app-registro-entrada-almacen',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HttpClientModule],
+  imports: [
+    CommonModule,
+    ButtonComponent,
+    IconButtonComponent,
+    InputComponent,
+    SelectComponent,
+    LoadingSpinnerComponent,
+    ToastComponent,
+    ModalComponent
+  ],
   templateUrl: './registro-entrada-almacen.component.html',
-  styleUrls: ['./registro-entrada-almacen.component.css'],
+  styleUrls: ['./registro-entrada-almacen.component.css']
 })
 export class RegistroEntradaAlmacenComponent implements OnInit {
 
-  // ── Formularios independientes por sección ─────────────
-  formDatos!: FormGroup;
-  formVehiculo!: FormGroup;
-  formEquipo!: FormGroup;
-  formIncidencias!: FormGroup;
-  formOtros!: FormGroup;
-
-  fotoPreview: string | null = null;
-  seccionActiva = 'datos';
-
-  // Propiedades para gestión de imágenes
-  imagenId: number | null = null;
-  imagenSeleccionada: File | null = null;
-  imagenPreviewUrl: string | null = null;
-  cargandoImagen = false;
-  errorImagen: string | null = null;
-
-  curpEncontrado = false;
-  editandoVeto = false;
-
-  // Modal descripción
-  modalDescripcion: string | null = null;
-  // Modal confirmación reset
-  modalResetVisible = false;
-  // Modal edición de incidencia
-  modalEditIncidencia: { index: number; form: FormGroup } | null = null;
-  // Modal edición de otros
-  modalEditOtro: { index: number; form: FormGroup } | null = null;
-
-  motivosOpciones = ['Chofer', 'Maniobra', 'Encargado', 'Visita'];
-  tiposVehiculo = ['Camión', 'Camioneta', 'Automóvil', 'Motocicleta', 'Otro'];
-
-  // ── Niveles desde catálogo (tipo 4) ─────────────────────
-  nivelesOpciones: { clave: string; etiqueta: string }[] = [];
-  cargandoNiveles = false;
-
-  // ── Tipos de veto desde API ─────────────────────────────
-  tiposVetoOpciones: TipoVetoResponse[] = [];
-  cargandoTiposVeto = false;
-  guardandoVeto = false;
-  diasRestantes = '';
-  fechaMinima = new Date().toISOString().split('T')[0];
-
-  // ── Validaciones de seguridad desde API ─────────────────
-  validacionesSeguridad: ValidacionSeguridad[] = [];
-  cargandoEquipo = false;
-
-  // Usuario activo
-  usuarioActual = '500011';
-
-  secciones = [
-    { id: 'datos', label: 'Datos', icon: 'ti ti-user' },
-    { id: 'vehiculo', label: 'Vehículo', icon: 'ti ti-truck' },
-    { id: 'equipo', label: 'Validaciones', icon: 'ti ti-shield-check' },
-    { id: 'incidencias', label: 'Incidencias', icon: 'ti ti-alert-triangle' },
-    { id: 'otros', label: 'Otros', icon: 'ti ti-package' },
+  // Lista de apartados: para agregar o quitar uno, solo edita este arreglo
+  apartados: Apartado[] = [
+    { id: 'datos', titulo: 'Datos' },
+    { id: 'vehiculo', titulo: 'Vehículo' },
+    { id: 'validaciones', titulo: 'Validaciones' },
+    { id: 'incidencias', titulo: 'Incidencias' },
+    { id: 'otros', titulo: 'Otros' }
   ];
 
-  nuevaIncidenciaForm!: FormGroup;
-  nuevoOtroForm!: FormGroup;
+  // Apartado activo (por defecto, el primero)
+  apartadoActivo: string = this.apartados[0].id;
 
-  constructor(
-    private fb: FormBuilder,
-    private incidenciasService: IncidenciasService,
-    private validacionesSeguridadService: ValidacionesSeguridadService,
-    private elementosAdicionalesService: ElementosAdicionalesService,
-    private vetoService: VetoService,
-    private imagenesService: ImagenesService,
-  ) { }
+  // Spinner único compartido por todos los apartados
+  cargando = false;
+
+  // TODO: obtener del servicio de sesión/autenticación real
+  private usuarioActual = '406991';
+
+  constructor(private cedisService: RegistroEntradaAlmacenService) { }
 
   ngOnInit(): void {
-    this.buildForms();
+    this.cargarCatalogoTiposVeto();
     this.cargarCatalogoNiveles();
-    this.cargarTiposVeto();
   }
 
-  // ═══════════════════════════════════════════════════════
-  //  CATÁLOGO DE NIVELES (tipo 4)
-  // ═══════════════════════════════════════════════════════
-  private cargarCatalogoNiveles(): void {
-    this.cargandoNiveles = true;
+  // ─────────────────────────────────────────────────────────
+  // Toast: instancia única compartida por todo el componente.
+  // ─────────────────────────────────────────────────────────
+  toast: ToastState = {
+    visible: false,
+    tipo: 'success',
+    titulo: '',
+    mensaje: ''
+  };
 
-    this.incidenciasService.obtenerNiveles().subscribe({
-      next: (items: IncidenciaResponse[]) => {
-        this.nivelesOpciones = items.map(i => ({
-          clave: i.lblDescripcionNivel,
-          etiqueta: i.lblDescripcion,
-        }));
-        this.cargandoNiveles = false;
-      },
-      error: () => {
-        this.nivelesOpciones = Array.from({ length: 10 }, (_, i) => ({
-          clave: String(i + 1),
-          etiqueta: `Nivel ${i + 1}`,
-        }));
-        this.cargandoNiveles = false;
-      },
-    });
+  mostrarToast(tipo: 'success' | 'error', titulo: string, mensaje: string): void {
+    this.toast = { visible: true, tipo, titulo, mensaje };
   }
 
-  // ═══════════════════════════════════════════════════════
-  //  CATÁLOGO DE TIPOS DE VETO
-  // ═══════════════════════════════════════════════════════
-  private cargarTiposVeto(): void {
-    this.cargandoTiposVeto = true;
-
-    this.vetoService.obtenerTiposVeto().subscribe({
-      next: (items) => {
-        this.tiposVetoOpciones = items;
-        this.cargandoTiposVeto = false;
-      },
-      error: () => {
-        this.tiposVetoOpciones = [];
-        this.cargandoTiposVeto = false;
-      },
-    });
+  cerrarToast(): void {
+    this.toast.visible = false;
   }
 
-  // ═══════════════════════════════════════════════════════
-  //  CONSTRUCCIÓN DE FORMULARIOS
-  // ═══════════════════════════════════════════════════════
-  private buildForms(): void {
+  // ─────────────────────────────────────────────────────────
+  // Apartado "Datos": formulario principal
+  // ─────────────────────────────────────────────────────────
+  motivoOptions: ISelectOption[] = [
+    { label: 'Visita', value: 'Visita' },
+    { label: 'Maniobra', value: 'Maniobra' },
+    { label: 'Encargado', value: 'Encargado' }
+  ];
 
-    // ── 1. DATOS ──────────────────────────────────────────
-    this.formDatos = this.fb.group({
-      curp: ['', [Validators.required, Validators.minLength(18), Validators.maxLength(18)]],
-      nombre: [{ value: '', disabled: true }],
-      motivo: ['', Validators.required],
-      noProveedor: [''],
-      razonSocial: [''],
-      foto: [null],
-      vetado: [false],
-      tipoBan: [''],
-      fechaInicio: [''],
-      fechaTermino: [''],
-    });
+  private datosFormInicial: DatosForm = {
+    curp: '',
+    nombre: '',
+    apellidoP: '',
+    apellidoM: '',
+    motivo: '',
+    noProveedor: '',
+    razonSocial: ''
+  };
 
-    // ── 2. VEHÍCULO ───────────────────────────────────────
-    this.formVehiculo = this.fb.group({
-      tipoVehiculo: [''],
-      placa: [''],
-      modelo: [''],
-      marca: [''],
-    });
+  datosForm: DatosForm = { ...this.datosFormInicial };
 
-    // ── 3. EQUIPO ─────────────────────────────────────────
-    this.formEquipo = this.fb.group({});
-
-    // ── 4. INCIDENCIAS ────────────────────────────────────
-    this.formIncidencias = this.fb.group({
-      incidencias: this.fb.array([]),
-    });
-
-    // ── 5. OTROS ──────────────────────────────────────────
-    this.formOtros = this.fb.group({
-      otros: this.fb.array([]),
-    });
-
-    // ── Sub-formularios de alta ───────────────────────────
-    this.nuevaIncidenciaForm = this.fb.group({
-      nivel: ['1'],
-      descripcion: ['', [Validators.required, Validators.maxLength(255)]],
-    });
-
-    this.nuevoOtroForm = this.fb.group({
-      tipo: ['', Validators.required],
-      descripcion: ['', [Validators.required, Validators.maxLength(255)]],
-      cantidad: [null],
-    });
+  /**
+   * Se dispara al perder el foco el campo CURP. A partir de aquí
+   * se consultan validaciones, veto e incidencias para ese CURP.
+   */
+  onCurpBlur(): void {
+    const curp = this.obtenerCurpNormalizado();
+    if (!curp) {
+      return;
+    }
+    this.consultarValidaciones(curp);
+    this.consultarVeto(curp);
+    this.consultarIncidencias(curp);
+    this.consultarElementosAdicionales(curp);
   }
 
-  // ═══════════════════════════════════════════════════════
-  //  GESTIÓN DE IMÁGENES
-  // ═══════════════════════════════════════════════════════
+  private obtenerCurpNormalizado(): string {
+    return (this.datosForm.curp || '').trim().toLowerCase();
+  }
 
-  private obtenerIdImagenSimulada(curp: string): number | null {
-    // Mapeo temporal de CURP a ID de imagen
-    const imagenSimuladaMap: Record<string, number> = {
-      'MEGA780615HDFLML08': 5,
-      'GOAM850515MDFNRL08': 3,
-      'RAHN780320HCSNVR05': 2,
-      'SALD920711MDFRRN09': 1,
+  // ─────────────────────────────────────────────────────────
+  // Imagen: visualizar, subir, eliminar, editar
+  // ─────────────────────────────────────────────────────────
+  imagenUrl: string | null = null;
+  imagenNombre = '';
+  imagenAmpliada = false;
+
+  onSeleccionarImagen(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files && input.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      this.mostrarToast('error', 'Archivo inválido', 'El archivo seleccionado no es una imagen.');
+      input.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      this.imagenUrl = reader.result as string;
+      this.imagenNombre = file.name;
+      this.mostrarToast('success', 'Imagen cargada', `Se cargó "${file.name}" correctamente.`);
     };
 
-    return imagenSimuladaMap[curp] || null;
+    reader.onerror = () => {
+      this.mostrarToast('error', 'Error al leer archivo', 'No se pudo leer la imagen seleccionada.');
+    };
+
+    reader.readAsDataURL(file);
+    input.value = '';
   }
 
-  /**
-   * Maneja la selección de archivo para subir/actualizar imagen
-   */
-  onArchivoSeleccionado(event: Event): void {
-    const input = event.target as HTMLInputElement;
-
-    if (input.files && input.files.length > 0) {
-      const archivo = input.files[0];
-
-      // Validar tipo de archivo
-      if (!archivo.type.startsWith('image/')) {
-        this.errorImagen = 'El archivo debe ser una imagen';
-        return;
-      }
-
-      // Validar tamaño (máximo 5MB)
-      if (archivo.size > 50 * 1024 * 1024) {
-        this.errorImagen = 'La imagen no debe superar los 5MB';
-        return;
-      }
-
-      this.imagenSeleccionada = archivo;
-      this.errorImagen = null;
-
-      // Crear preview local
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.imagenPreviewUrl = e.target?.result as string;
-      };
-      reader.readAsDataURL(archivo);
+  verImagenAmpliada(): void {
+    if (this.imagenUrl) {
+      this.imagenAmpliada = true;
     }
   }
 
-  /**
-   * Consulta los metadatos de una imagen por ID
-   */
-  consultarImagen(id: number): void {
-    this.cargandoImagen = true;
-    this.errorImagen = null;
-
-    this.imagenesService.obtenerImagen(id).subscribe({
-      next: (response: ImagenResponse) => {
-        console.log('Metadatos de imagen:', response);
-        this.imagenId = response.id;
-        this.cargarPreviewImagen(response.id);
-      },
-      error: (error) => {
-        console.error('Error al consultar imagen:', error);
-        this.errorImagen = 'No se pudo cargar la información de la imagen';
-        this.cargandoImagen = false;
-      }
-    });
+  cerrarImagenAmpliada(): void {
+    this.imagenAmpliada = false;
   }
 
-  /**
-   * Carga el preview de la imagen desde el servidor
-   */
-  private cargarPreviewImagen(id: number): void {
-    this.imagenesService.obtenerImagenArchivo(id).subscribe({
-      next: (blob: Blob) => {
-        const url = window.URL.createObjectURL(blob);
-        this.imagenPreviewUrl = url;
-        this.cargandoImagen = false;
-      },
-      error: (error) => {
-        console.error('Error al cargar preview:', error);
-        this.errorImagen = 'No se pudo cargar la imagen';
-        this.cargandoImagen = false;
-      }
-    });
+  eliminarImagen(): void {
+    this.imagenUrl = null;
+    this.imagenNombre = '';
+    this.imagenAmpliada = false;
+    this.mostrarToast('success', 'Imagen eliminada', 'La imagen fue eliminada correctamente.');
   }
 
-  /**
-   * Sube una nueva imagen al servidor
-   */
-  subirImagen(): void {
-    if (!this.imagenSeleccionada) {
-      this.errorImagen = 'Selecciona una imagen primero';
-      return;
-    }
+  // ─────────────────────────────────────────────────────────
+  // Apartado "Validaciones"
+  // ─────────────────────────────────────────────────────────
+  validaciones: ValidacionSeguridad[] = [];
+  validacionesCargadas = false;
 
-    this.cargandoImagen = true;
-    this.errorImagen = null;
+  consultarValidaciones(curp: string): void {
+    this.cargando = true;
 
-    this.imagenesService.subirImagen(this.imagenSeleccionada).subscribe({
-      next: (response: ImagenResponse) => {
-        console.log('Imagen subida exitosamente:', response);
-        this.imagenId = response.id;
-        this.cargarPreviewImagen(response.id);
-
-        // Aquí puedes guardar el ID de la imagen en el formulario
-        // this.formDatos.patchValue({ fotoId: response.id });
-
-        alert('Imagen subida correctamente');
-      },
-      error: (error) => {
-        console.error('Error al subir imagen:', error);
-        this.errorImagen = 'No se pudo subir la imagen';
-        this.cargandoImagen = false;
-      }
-    });
-  }
-
-  /**
-   * Actualiza una imagen existente
-   */
-  actualizarImagen(): void {
-    if (!this.imagenId || !this.imagenSeleccionada) {
-      this.errorImagen = 'Selecciona una imagen y asegúrate de que exista un ID';
-      return;
-    }
-
-    this.cargandoImagen = true;
-    this.errorImagen = null;
-
-    this.imagenesService.actualizarImagen(this.imagenId, this.imagenSeleccionada).subscribe({
-      next: (response: ImagenResponse) => {
-        console.log('Imagen actualizada:', response);
-        this.cargarPreviewImagen(response.id);
-        alert('Imagen actualizada correctamente');
-      },
-      error: (error) => {
-        console.error('Error al actualizar imagen:', error);
-        this.errorImagen = 'No se pudo actualizar la imagen';
-        this.cargandoImagen = false;
-      }
-    });
-  }
-
-  /**
-   * Elimina una imagen del servidor
-   */
-  eliminarImagenServidor(): void {
-    if (!this.imagenId) {
-      this.errorImagen = 'No hay imagen para eliminar';
-      return;
-    }
-
-    if (!confirm('¿Estás seguro de eliminar esta imagen?')) {
-      return;
-    }
-
-    this.cargandoImagen = true;
-    this.errorImagen = null;
-
-    this.imagenesService.eliminarImagen(this.imagenId).subscribe({
-      next: (response) => {
-        console.log('Imagen eliminada:', response);
-        this.limpiarEstadoImagen();
-        alert('Imagen eliminada correctamente');
-      },
-      error: (error) => {
-        console.error('Error al eliminar imagen:', error);
-        this.errorImagen = 'No se pudo eliminar la imagen';
-        this.cargandoImagen = false;
-      }
-    });
-  }
-
-  /**
-   * Limpia el estado de la imagen
-   */
-  private limpiarEstadoImagen(): void {
-    this.imagenId = null;
-    this.imagenSeleccionada = null;
-    this.imagenPreviewUrl = null;
-    this.cargandoImagen = false;
-    this.errorImagen = null;
-  }
-
-  /**
-   * Inicializa la carga de imagen para un usuario simulado
-   * Esto es temporal hasta que tengas la tabla de asociación
-   */
-  cargarImagenUsuario(idImagenSimulada: number): void {
-    this.consultarImagen(idImagenSimulada);
-  }
-
-  // ═══════════════════════════════════════════════════════
-  //  EQUIPO DE SEGURIDAD
-  // ═══════════════════════════════════════════════════════
-  cargarValidacionesSeguridad(curp: string): void {
-    Object.keys(this.formEquipo.controls).forEach(k =>
-      this.formEquipo.removeControl(k)
-    );
-    this.validacionesSeguridad = [];
-
-    if (!curp || curp.length < 18) return;
-
-    this.cargandoEquipo = true;
-
-    this.validacionesSeguridadService.obtener(curp).subscribe({
-      next: (lista) => {
-        this.validacionesSeguridad = lista;
-
-        lista.forEach(v => {
-          const ctrl = this.fb.control(v.estadoValidacion === 1);
-          this.formEquipo.addControl(v.lblClaveValidacion, ctrl);
-
-          ctrl.valueChanges.subscribe((activa: boolean | null) => {
-            this.onToggleValidacion(v.lblClaveValidacion, !!activa);
-          });
-        });
-
-        this.cargandoEquipo = false;
+    this.cedisService.obtenerValidaciones(curp).subscribe({
+      next: (data) => {
+        this.validaciones = data ?? [];
+        this.validacionesCargadas = true;
+        this.cargando = false;
       },
       error: () => {
-        console.warn('No se pudieron cargar validaciones para:', curp);
-        this.cargandoEquipo = false;
-      },
+        this.validaciones = [];
+        this.validacionesCargadas = true;
+        this.cargando = false;
+        this.mostrarToast(
+          'error',
+          'Validaciones no disponibles',
+          'No se pudieron obtener las validaciones de seguridad para este CURP.'
+        );
+      }
     });
   }
 
-  onToggleValidacion(clave: string, activa: boolean): void {
-    const curp = (this.formDatos.get('curp')?.value ?? '').trim().toUpperCase();
+  toggleValidacion(item: ValidacionSeguridad, activa: boolean): void {
+    const curp = this.obtenerCurpNormalizado();
 
-    this.validacionesSeguridadService.toggle({
-      curp,
-      clave,
-      activa,
-      usuario: this.usuarioActual,
-    }).subscribe({
-      next: (res) => {
-        if (res.errId !== 0) {
-          console.error('Error al actualizar validación:', res.errMsg);
-          this.formEquipo.get(clave)?.setValue(!activa, { emitEvent: false });
-        }
-      },
-      error: () => {
-        console.error('Error de red al actualizar validación');
-        this.formEquipo.get(clave)?.setValue(!activa, { emitEvent: false });
-      },
-    });
-  }
-
-  private limpiarEquipo(): void {
-    Object.keys(this.formEquipo.controls).forEach(k =>
-      this.formEquipo.removeControl(k)
-    );
-    this.validacionesSeguridad = [];
-  }
-
-  // ═══════════════════════════════════════════════════════
-  //  GETTERS DE TIPADO
-  // ═══════════════════════════════════════════════════════
-  asControl(group: FormGroup, name: string): FormControl {
-    const ctrl = group.get(name);
-    if (!ctrl) throw new Error(`Control "${name}" no encontrado`);
-    return ctrl as FormControl;
-  }
-
-  get incNivel(): FormControl { return this.asControl(this.nuevaIncidenciaForm, 'nivel'); }
-  get incDescripcion(): FormControl { return this.asControl(this.nuevaIncidenciaForm, 'descripcion'); }
-  get otrTipo(): FormControl { return this.asControl(this.nuevoOtroForm, 'tipo'); }
-  get otrCantidad(): FormControl { return this.asControl(this.nuevoOtroForm, 'cantidad'); }
-  get otrDescripcion(): FormControl { return this.asControl(this.nuevoOtroForm, 'descripcion'); }
-
-  // ═══════════════════════════════════════════════════════
-  //  GETTERS DE ESTADO
-  // ═══════════════════════════════════════════════════════
-  get esBanDefinitivo(): boolean {
-    return this.formDatos.get('tipoBan')?.value === '2';
-  }
-
-  get motivoRequiereProveedor(): boolean {
-    return MOTIVOS_CON_PROVEEDOR.has(this.formDatos.get('motivo')?.value ?? '');
-  }
-
-  get tieneVetoPrevio(): boolean {
-    return this.curpEncontrado && !!this.formDatos.get('vetado')?.value;
-  }
-
-  get vetoEstaBlockeado(): boolean {
-    return this.tieneVetoPrevio && !this.editandoVeto;
-  }
-
-  getDescripcionTipoVeto(tipo: string): string {
-    const found = this.tiposVetoOpciones.find(t => t.lblTipoVeto === tipo);
-    return found ? found.lblDescripcionTipoVeto : tipo;
-  }
-
-  // ═══════════════════════════════════════════════════════
-  //  COLOR PARA TABLA DE INCIDENCIAS
-  // ═══════════════════════════════════════════════════════  
-  getColorNivel(inc: any): string {
-    return (inc.get('colorNivel')?.value ?? '').trim();
-  }
-
-  // ═══════════════════════════════════════════════════════
-  //  FOTO
-  // ═══════════════════════════════════════════════════════
-  onFotoCapturada(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files?.[0]) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.fotoPreview = e.target?.result as string;
-        this.formDatos.patchValue({ foto: input.files![0] });
-      };
-      reader.readAsDataURL(input.files[0]);
+    if (!curp) {
+      this.mostrarToast('error', 'CURP requerido', 'Captura el CURP en el apartado de Datos.');
+      return;
     }
-  }
 
-  eliminarFoto(): void {
-    this.fotoPreview = null;
-    this.formDatos.patchValue({ foto: null });
-  }
+    const estadoAnterior = item.estadoValidacion;
+    // Actualización optimista de la UI
+    item.estadoValidacion = activa ? 1 : 0;
 
-  // ═══════════════════════════════════════════════════════
-  //  BÚSQUEDA POR CURP
-  // ═══════════════════════════════════════════════════════
-  onCurpBlur(): void {
-    const curp = (this.formDatos.get('curp')?.value ?? '').trim().toUpperCase();
-    if (curp.length < 18) return;
-
-    const datos: DatosCurp | undefined = CURP_DB[curp];
-    this.editandoVeto = false;
-
-    if (datos) {
-      this.curpEncontrado = true;
-
-      this.formDatos.get('nombre')?.setValue(datos.nombre);
-      this.formDatos.get('motivo')?.setValue(datos.motivo);
-      this.formDatos.get('nombre')?.disable();
-      this.formDatos.get('motivo')?.disable();
-
-      this.formDatos.patchValue({
-        noProveedor: datos.noProveedor,
-        razonSocial: datos.razonSocial,
-      });
-
-      const idImagenSimulada = this.obtenerIdImagenSimulada(curp);
-      if (idImagenSimulada) {
-        this.cargarImagenUsuario(idImagenSimulada);
-      }
-
-      if (datos.vehiculo) {
-        this.formVehiculo.patchValue(datos.vehiculo);
-        this.disableVehiculo();
-      } else {
-        this.formVehiculo.patchValue({ tipoVehiculo: '', placa: '', modelo: '', marca: '' });
-        this.enableVehiculo();
-      }
-
-      // Veto: se consulta directamente al endpoint
-      this.consultarVeto(curp);
-
-      this.cargarValidacionesSeguridad(curp);
-
-      // Incidencias
-      this.incidencias.clear();
-      this.incidenciasService.obtener(curp).subscribe({
-        next: (lista: IncidenciaResponse[]) => {
-          lista.forEach(inc => {
-            this.incidencias.push(
-              this.fb.group({
-                id: [inc.lblId],
-                fecha: [inc.lblFecha],
-                nivel: [inc.lblClaveNivel],
-                colorNivel: [inc.lblColor],
-                descripcion: [inc.lblDescripcion, [Validators.required, Validators.maxLength(255)]],
-              })
-            );
-          });
+    this.cedisService
+      .actualizarValidacion({
+        curp,
+        clave: item.lblClaveValidacion,
+        activa,
+        usuario: this.usuarioActual
+      })
+      .subscribe({
+        next: () => {
+          this.mostrarToast(
+            'success',
+            'Validación actualizada',
+            `"${item.lblDescripcionValidacion}" se actualizó correctamente.`
+          );
         },
-        error: () => console.warn('No se pudieron cargar incidencias para:', curp),
+        error: () => {
+          // Se revierte el cambio si la API falla
+          item.estadoValidacion = estadoAnterior;
+          this.mostrarToast(
+            'error',
+            'Error al actualizar',
+            `No se pudo actualizar "${item.lblDescripcionValidacion}".`
+          );
+        }
       });
+  }
 
-      // Otros (elementos adicionales)
-      this.recargarOtros(curp);
+  // ─────────────────────────────────────────────────────────
+  // Apartado "Datos" → sección Veto
+  // ─────────────────────────────────────────────────────────
+  catalogoTiposVeto: TipoVeto[] = [];
+  tipoVetoOptions: ISelectOption[] = [];
 
-    } else {
-      this.curpEncontrado = false;
-      this.formDatos.get('nombre')?.enable();
-      this.formDatos.get('motivo')?.enable();
-      this.enableVehiculo();
-      this.formDatos.get('nombre')?.setValue('');
-      this.formDatos.patchValue({ motivo: '', noProveedor: '', razonSocial: '' });
-      this.formDatos.patchValue({
-        vetado: false, tipoBan: '', fechaInicio: '', fechaTermino: '',
-      });
-      this.incidencias.clear();
-      this.otros.clear();
-      this.limpiarEquipo();
+  /** null = sin veto registrado; se llena tras consultarVeto() */
+  vetoExistente: VetoExistente | null = null;
+  /** indica si ya se realizó la consulta para el CURP actual */
+  vetoConsultado = false;
+  /** true cuando el usuario presiona "Modificar" para reemplazar un veto existente */
+  editandoVeto = false;
+
+  private nuevoVetoInicial: NuevoVetoForm = {
+    tipoVeto: '',
+    fechaInicio: '',
+    fechaTermino: ''
+  };
+
+  nuevoVeto: NuevoVetoForm = { ...this.nuevoVetoInicial };
+
+  private cargarCatalogoTiposVeto(): void {
+    this.cedisService.obtenerCatalogoTiposVeto().subscribe({
+      next: (catalogo) => {
+        this.catalogoTiposVeto = catalogo ?? [];
+        this.tipoVetoOptions = this.catalogoTiposVeto.map((t) => ({
+          label: t.lblDescripcionTipoVeto,
+          value: t.lblTipoVeto
+        }));
+      },
+      error: () => {
+        this.mostrarToast(
+          'error',
+          'Catálogo no disponible',
+          'No se pudo cargar el catálogo de tipos de veto.'
+        );
+      }
+    });
+  }
+
+  consultarVeto(curp: string): void {
+    this.cargando = true;
+
+    this.cedisService.obtenerVetoPorCurp(curp).subscribe({
+      next: (veto) => {
+        // Si el CURP no tiene veto, algunas APIs regresan un objeto vacío
+        // en lugar de un 404; por eso se valida que traiga tipo de veto.
+        this.vetoExistente = veto && veto.lblTipoVeto ? veto : null;
+        this.vetoConsultado = true;
+        this.editandoVeto = false;
+        this.cargando = false;
+      },
+      error: () => {
+        // Sin veto registrado para este CURP
+        this.vetoExistente = null;
+        this.vetoConsultado = true;
+        this.editandoVeto = false;
+        this.cargando = false;
+      }
+    });
+  }
+
+  /** true si el tipo de veto seleccionado en el formulario es "Definitivo" */
+  get tipoVetoSeleccionadoEsDefinitivo(): boolean {
+    const tipo = this.catalogoTiposVeto.find(
+      (t) => t.lblTipoVeto === this.nuevoVeto.tipoVeto
+    );
+    return !!tipo && tipo.lblDescripcionTipoVeto.trim().toLowerCase() === 'definitivo';
+  }
+
+  onTipoVetoChange(valor: string): void {
+    this.nuevoVeto.tipoVeto = valor;
+
+    // Si es Definitivo no se le pide fecha de término al usuario
+    if (this.tipoVetoSeleccionadoEsDefinitivo) {
+      this.nuevoVeto.fechaTermino = '';
     }
   }
 
-  private recargarIncidencias(curp: string): void {
-    this.incidencias.clear();
-    this.incidenciasService.obtener(curp).subscribe({
-      next: (lista: IncidenciaResponse[]) => {
-        lista.forEach(inc => {
-          this.incidencias.push(
-            this.fb.group({
-              id: [inc.lblId],
-              fecha: [inc.lblFecha],
-              nivel: [inc.lblClaveNivel],
-              colorNivel: [inc.lblColor],
-              descripcion: [inc.lblDescripcion, [Validators.required, Validators.maxLength(255)]],
-            })
-          );
-        });
-      },
-      error: () => console.warn('No se pudieron recargar incidencias para:', curp),
-    });
+  /** Habilita el formulario para reemplazar el veto ya existente */
+  iniciarEdicionVeto(): void {
+    if (!this.vetoExistente) {
+      return;
+    }
+    this.editandoVeto = true;
+    this.nuevoVeto = {
+      tipoVeto: this.vetoExistente.lblTipoVeto,
+      fechaInicio: '',
+      fechaTermino: ''
+    };
   }
-
-  private recargarOtros(curp: string): void {
-    this.otros.clear();
-    this.elementosAdicionalesService.obtener(curp).subscribe({
-      next: (lista: ElementoAdicionalResponse[]) => {
-        lista.forEach(el => {
-          this.otros.push(
-            this.fb.group({
-              id: [el.lblId],
-              tipo: [el.lblClasifica, Validators.required],
-              descripcion: [el.lblDescripcion, Validators.maxLength(255)],
-              cantidad: [el.lblCantidad],
-            })
-          );
-        });
-      },
-      error: () => console.warn('No se pudieron cargar elementos adicionales para:', curp),
-    });
-  }
-
-  private disableVehiculo(): void {
-    ['tipoVehiculo', 'placa', 'modelo', 'marca'].forEach(f =>
-      this.formVehiculo.get(f)?.disable()
-    );
-  }
-
-  private enableVehiculo(): void {
-    ['tipoVehiculo', 'placa', 'modelo', 'marca'].forEach(f =>
-      this.formVehiculo.get(f)?.enable()
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════
-  //  VETO
-  // ═══════════════════════════════════════════════════════
-  activarEdicionVeto(): void { this.editandoVeto = true; }
 
   cancelarEdicionVeto(): void {
     this.editandoVeto = false;
-    this.onCurpBlur();
+    this.nuevoVeto = { ...this.nuevoVetoInicial };
   }
 
-  /**
-   * Consulta si el CURP tiene un veto vigente y rellena el formulario.
-   * Si la API responde sin err_id = 0 o sin lbl_TipoVeto, se asume sin veto.
-   */
-  private consultarVeto(curp: string): void {
-    this.diasRestantes = ''
-    this.formDatos.patchValue({
-      vetado: false, tipoBan: '', fechaInicio: '', fechaTermino: '',
-    });
+  aplicarVeto(): void {
+    const curp = this.obtenerCurpNormalizado();
 
-    this.vetoService.consultarVeto(curp).subscribe({
-      next: (res) => {
-        if (res.errId === 0 && res.lblTipoVeto) {
-
-          this.diasRestantes = res.lblDiasRestantes ?? '';
-
-          this.formDatos.patchValue({
-            vetado: true,
-            tipoBan: res.lblTipoVeto,
-            fechaInicio: this.convertirAInputDate(res.lblFechaInicio),
-            fechaTermino: this.convertirAInputDate(res.lblFechaTermino),
-          });
-
-        }
-      },
-      error: () => {
-        // Sin veto registrado o error de consulta: se deja el formulario sin veto
-      },
-    });
-  }
-
-  /**
-   * Convierte una fecha "MM/DD/YYYY HH:mm:ss" (formato de la API) a
-   * "YYYY-MM-DD" (formato requerido por <input type="date">).
-   */
-  private convertirAInputDate(fecha: string): string {
-    if (!fecha) return '';
-    const soloFecha = fecha.split(' ')[0];
-    const partes = soloFecha.split('/');
-    if (partes.length !== 3) return '';
-    const [mes, dia, anio] = partes;
-    return `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-  }
-
-  /**
-   * Convierte una fecha "YYYY-MM-DD" (formato de <input type="date">) a
-   * "YYYY-MM-DD" para el endpoint (mismo formato, se deja explícito por claridad).
-   */
-  private convertirAApiDate(fecha: string): string {
-    return fecha;
-  }
-
-  /**
-   * Guarda o edita el veto. Para "Definitivo" el usuario solo captura
-   * fecha de inicio; internamente se suma 1 día y se envía como fechaTermino.
-   */
-  guardarVeto(): void {
-    const curp = (this.formDatos.get('curp')?.value ?? '').trim().toUpperCase();
-    const tipoVeto = this.formDatos.get('tipoBan')?.value;
-    const fechaInicio = this.formDatos.get('fechaInicio')?.value;
-
-    if (!tipoVeto || !fechaInicio) {
-      this.formDatos.markAllAsTouched();
+    if (!curp) {
+      this.mostrarToast('error', 'CURP requerido', 'Captura el CURP en el apartado de Datos antes de aplicar un veto.');
       return;
     }
 
-    let fechaTermino: string;
-
-    if (this.esBanDefinitivo) {
-      const inicio = new Date(fechaInicio);
-      inicio.setDate(inicio.getDate() + 1);
-      fechaTermino = inicio.toISOString().split('T')[0];
-    } else {
-      fechaTermino = this.formDatos.get('fechaTermino')?.value;
-      if (!fechaTermino) {
-        this.formDatos.markAllAsTouched();
-        return;
-      }
+    if (!this.nuevoVeto.tipoVeto || !this.nuevoVeto.fechaInicio) {
+      this.mostrarToast('error', 'Datos incompletos', 'Selecciona el tipo de veto y la fecha de inicio.');
+      return;
     }
 
-    this.guardandoVeto = true;
+    let fechaTermino = this.nuevoVeto.fechaTermino;
 
-    this.vetoService.guardarVeto({
+    if (this.tipoVetoSeleccionadoEsDefinitivo) {
+      // El endpoint exige fechaTermino aunque el veto sea Definitivo,
+      // así que se envía automáticamente fechaInicio + 1 día.
+      fechaTermino = this.sumarUnDia(this.nuevoVeto.fechaInicio);
+    } else if (!fechaTermino) {
+      this.mostrarToast('error', 'Datos incompletos', 'Captura la fecha de término del veto.');
+      return;
+    }
+
+    const payload: AplicarVetoPayload = {
       curp,
-      tipoVeto,
-      fechaInicio: this.convertirAApiDate(fechaInicio),
-      fechaTermino: this.convertirAApiDate(fechaTermino),
-      usuario: this.usuarioActual,
-    }).subscribe({
-      next: (res) => {
-        this.guardandoVeto = false;
-        if (res.errId !== 0) {
-          alert(`Error al guardar el veto: ${res.errMsg}`);
-          return;
-        }
-        this.editandoVeto = false;
-        this.consultarVeto(curp);
-        alert('Veto guardado correctamente');
+      tipoVeto: this.nuevoVeto.tipoVeto,
+      fechaInicio: this.nuevoVeto.fechaInicio,
+      fechaTermino,
+      usuario: this.usuarioActual
+    };
+
+    this.cargando = true;
+
+    // El mismo endpoint POST se usa para crear o reemplazar el veto:
+    // si el CURP ya tenía uno, el backend simplemente lo sustituye.
+    this.cedisService.aplicarVeto(payload).subscribe({
+      next: () => {
+        this.cargando = false;
+        this.mostrarToast('success', 'Veto aplicado', 'El veto se registró correctamente.');
+        this.nuevoVeto = { ...this.nuevoVetoInicial };
+        this.consultarVeto(curp); // refresca el estado con el veto recién creado/reemplazado
       },
       error: () => {
-        this.guardandoVeto = false;
-        alert('No se pudo guardar el veto. Intenta de nuevo.');
-      },
+        this.cargando = false;
+        this.mostrarToast('error', 'Error al aplicar veto', 'No se pudo registrar el veto.');
+      }
     });
   }
 
-  // ═══════════════════════════════════════════════════════
-  //  INCIDENCIAS
-  // ═══════════════════════════════════════════════════════
-  get incidencias(): FormArray {
-    return this.formIncidencias.get('incidencias') as FormArray;
+  private sumarUnDia(fechaIso: string): string {
+    const fecha = new Date(`${fechaIso}T00:00:00`);
+    fecha.setDate(fecha.getDate() + 1);
+
+    const yyyy = fecha.getFullYear();
+    const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+    const dd = String(fecha.getDate()).padStart(2, '0');
+
+    return `${yyyy}-${mm}-${dd}`;
   }
 
-  agregarIncidencia(): void {
-    if (this.nuevaIncidenciaForm.invalid) {
-      this.nuevaIncidenciaForm.markAllAsTouched();
+  // ─────────────────────────────────────────────────────────
+  // Apartado "Incidencias"
+  // ─────────────────────────────────────────────────────────
+  incidencias: Incidencia[] = [];
+  incidenciasCargadas = false;
+
+  catalogoNiveles: NivelIncidenciaCatalogo[] = [];
+  nivelOptions: ISelectOption[] = [];
+
+  private nuevaIncidenciaInicial: NuevaIncidenciaForm = {
+    nivel: '',
+    descripcion: ''
+  };
+
+  nuevaIncidencia: NuevaIncidenciaForm = { ...this.nuevaIncidenciaInicial };
+
+  private cargarCatalogoNiveles(): void {
+    this.cedisService.obtenerCatalogoNiveles().subscribe({
+      next: (catalogo) => {
+        this.catalogoNiveles = catalogo ?? [];
+        // OJO: en este catálogo lblDescripcionNivel trae la clave ("1","2","3")
+        // y lblDescripcion trae la etiqueta ("Bajo","Medio","Alto").
+        this.nivelOptions = this.catalogoNiveles.map((n) => ({
+          label: n.lblDescripcion,
+          value: n.lblDescripcionNivel
+        }));
+      },
+      error: () => {
+        this.mostrarToast(
+          'error',
+          'Catálogo no disponible',
+          'No se pudo cargar el catálogo de niveles de incidencia.'
+        );
+      }
+    });
+  }
+
+  consultarIncidencias(curp: string): void {
+    this.cargando = true;
+
+    this.cedisService.obtenerIncidencias(curp).subscribe({
+      next: (data) => {
+        this.incidencias = data ?? [];
+        this.incidenciasCargadas = true;
+        this.cargando = false;
+      },
+      error: () => {
+        this.incidencias = [];
+        this.incidenciasCargadas = true;
+        this.cargando = false;
+        this.mostrarToast(
+          'error',
+          'Incidencias no disponibles',
+          'No se pudieron obtener las incidencias para este CURP.'
+        );
+      }
+    });
+  }
+
+  crearIncidencia(): void {
+    const curp = this.obtenerCurpNormalizado();
+
+    if (!curp) {
+      this.mostrarToast('error', 'CURP requerido', 'Captura el CURP en el apartado de Datos.');
       return;
     }
 
-    const curp = (this.formDatos.get('curp')?.value ?? '').trim().toUpperCase();
-    const val = this.nuevaIncidenciaForm.value;
+    if (!this.nuevaIncidencia.nivel || !this.nuevaIncidencia.descripcion.trim()) {
+      this.mostrarToast('error', 'Datos incompletos', 'Selecciona un nivel y describe la incidencia.');
+      return;
+    }
 
-    this.incidenciasService.agregar({
-      CURP: curp,
-      Nivel: String(val.nivel),
-      Descripcion: val.descripcion,
-      Usuario: this.usuarioActual,
-    }).subscribe({
-      next: (res: IncidenciaResponse) => {
-        if (res.errId !== 0) {
-          alert(`Error al guardar: ${res.errMsg}`);
-          return;
+    this.cargando = true;
+
+    this.cedisService
+      .crearIncidencia({
+        curp,
+        nivel: this.nuevaIncidencia.nivel,
+        descripcion: this.nuevaIncidencia.descripcion.trim(),
+        usuario: this.usuarioActual
+      })
+      .subscribe({
+        next: () => {
+          this.cargando = false;
+          this.mostrarToast('success', 'Incidencia registrada', 'La incidencia se agregó correctamente.');
+          this.nuevaIncidencia = { ...this.nuevaIncidenciaInicial };
+          this.consultarIncidencias(curp);
+        },
+        error: () => {
+          this.cargando = false;
+          this.mostrarToast('error', 'Error al registrar', 'No se pudo registrar la incidencia.');
         }
-        this.incidencias.push(
-          this.fb.group({
-            id: [res.lblId],
-            fecha: [res.lblFecha],
-            nivel: [res.lblClaveNivel || String(val.nivel)],
-            descripcion: [
-              res.lblDescripcion || val.descripcion,
-              [Validators.required, Validators.maxLength(255)],
-            ],
-          })
-        );
-        this.limpiarIncidenciaForm();
-        this.recargarIncidencias(curp);
-      },
-      error: () => alert('No se pudo guardar la incidencia. Intenta de nuevo.'),
-    });
+      });
   }
 
-  limpiarIncidenciaForm(): void {
-    this.nuevaIncidenciaForm.reset({ nivel: '', descripcion: '' });
-    this.nuevaIncidenciaForm.markAsUntouched();
-    this.nuevaIncidenciaForm.markAsPristine();
+  /** MM/DD/YYYY HH:mm:ss -> DD/MM/YYYY */
+  formatearFechaIncidencia(fechaApi: string): string {
+    const soloFecha = (fechaApi || '').split(' ')[0];
+    const partes = soloFecha.split('/');
+
+    if (partes.length !== 3) {
+      return fechaApi;
+    }
+
+    const [mm, dd, yyyy] = partes;
+    return `${dd}/${mm}/${yyyy}`;
   }
 
-  abrirEditarIncidencia(index: number): void {
-    const inc = this.incidencias.at(index) as FormGroup;
-    this.modalEditIncidencia = {
-      index,
-      form: this.fb.group({
-        nivel: [inc.get('nivel')?.value, Validators.required],
-        descripcion: [inc.get('descripcion')?.value, [Validators.required, Validators.maxLength(255)]],
-      }),
+  // ─────────────────────────────────────────────────────────
+  // Edición de incidencias (modal)
+  // ─────────────────────────────────────────────────────────
+  modalEdicionIncidenciaVisible = false;
+  incidenciaEnEdicion: Incidencia | null = null;
+  edicionIncidenciaForm: EdicionIncidenciaForm = { nivel: '', descripcion: '' };
+
+  abrirEdicionIncidencia(item: Incidencia): void {
+    this.incidenciaEnEdicion = item;
+    this.edicionIncidenciaForm = {
+      nivel: item.lblClaveNivel,
+      descripcion: item.lblDescripcion
     };
+    this.modalEdicionIncidenciaVisible = true;
+  }
+
+  cerrarEdicionIncidencia(): void {
+    this.modalEdicionIncidenciaVisible = false;
+    this.incidenciaEnEdicion = null;
+    this.edicionIncidenciaForm = { nivel: '', descripcion: '' };
   }
 
   guardarEdicionIncidencia(): void {
-    if (!this.modalEditIncidencia) return;
-    if (this.modalEditIncidencia.form.invalid) {
-      this.modalEditIncidencia.form.markAllAsTouched();
+    const curp = this.obtenerCurpNormalizado();
+
+    if (!this.incidenciaEnEdicion || !curp) {
       return;
     }
 
-    const { index, form } = this.modalEditIncidencia;
-    const inc = this.incidencias.at(index) as FormGroup;
-    const curp = (this.formDatos.get('curp')?.value ?? '').trim().toUpperCase();
-
-    this.incidenciasService.modificar({
-      Id: Number(inc.get('id')?.value ?? 0),
-      CURP: curp,
-      Nivel: String(form.get('nivel')?.value),
-      Descripcion: form.get('descripcion')?.value,
-    }).subscribe({
-      next: (res: IncidenciaResponse) => {
-        if (res.errId !== 0) {
-          alert(`Error al modificar: ${res.errMsg}`);
-          return;
-        }
-        inc.patchValue({
-          nivel: res.lblClaveNivel || form.get('nivel')?.value,
-          descripcion: res.lblDescripcion || form.get('descripcion')?.value,
-        });
-        this.cerrarEditarIncidencia();
-        this.recargarIncidencias(curp);
-      },
-      error: () => alert('No se pudo modificar la incidencia. Intenta de nuevo.'),
-    });
-  }
-
-  cerrarEditarIncidencia(): void {
-    this.modalEditIncidencia = null;
-  }
-
-  getNivelEtiqueta(clave: string | number): string {
-    const found = this.nivelesOpciones.find(n => n.clave === String(clave));
-    return found ? found.etiqueta : String(clave);
-  }
-
-  // ═══════════════════════════════════════════════════════
-  //  OTROS (elementos adicionales)
-  // ═══════════════════════════════════════════════════════
-  get otros(): FormArray {
-    return this.formOtros.get('otros') as FormArray;
-  }
-
-  agregarOtro(): void {
-    if (this.nuevoOtroForm.invalid) {
-      this.nuevoOtroForm.markAllAsTouched();
+    if (!this.edicionIncidenciaForm.nivel || !this.edicionIncidenciaForm.descripcion.trim()) {
+      this.mostrarToast('error', 'Datos incompletos', 'Selecciona un nivel y describe la incidencia.');
       return;
     }
 
-    const curp = (this.formDatos.get('curp')?.value ?? '').trim().toUpperCase();
-    const val = this.nuevoOtroForm.value;
+    this.cargando = true;
 
-    this.elementosAdicionalesService.agregar({
-      tipoElemento: val.tipo,
-      descripcionElemento: val.descripcion ?? '',
-      cantidad:
-        val.cantidad === null ||
-          val.cantidad === undefined ||
-          val.cantidad === ''
-          ? ''
-          : String(val.cantidad),
-      curp,
-      usuario: this.usuarioActual,
-    }).subscribe({
-      next: (res: ElementoAdicionalResponse) => {
-        if (res.errId !== 0) {
-          alert(`Error al guardar: ${res.errMsg}`);
-          return;
+    this.cedisService
+      .actualizarIncidencia({
+        id: Number(this.incidenciaEnEdicion.lblId),
+        curp,
+        nivel: this.edicionIncidenciaForm.nivel,
+        descripcion: this.edicionIncidenciaForm.descripcion.trim()
+      })
+      .subscribe({
+        next: () => {
+          this.cargando = false;
+          this.mostrarToast('success', 'Incidencia actualizada', 'Los cambios se guardaron correctamente.');
+          this.cerrarEdicionIncidencia();
+          this.consultarIncidencias(curp);
+        },
+        error: () => {
+          this.cargando = false;
+          this.mostrarToast('error', 'Error al actualizar', 'No se pudo actualizar la incidencia.');
         }
-        this.limpiarOtroForm();
-        this.recargarOtros(curp);
+      });
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // Apartado "Otros": elementos adicionales de entrada
+  // ─────────────────────────────────────────────────────────
+  elementosAdicionales: ElementoAdicional[] = [];
+  elementosAdicionalesCargados = false;
+
+  private nuevoElementoInicial: NuevoElementoForm = {
+    tipoElemento: '',
+    descripcionElemento: '',
+    cantidad: ''
+  };
+
+  nuevoElemento: NuevoElementoForm = { ...this.nuevoElementoInicial };
+
+  consultarElementosAdicionales(curp: string): void {
+    this.cargando = true;
+
+    this.cedisService.obtenerElementosAdicionales(curp).subscribe({
+      next: (data) => {
+        this.elementosAdicionales = data ?? [];
+        this.elementosAdicionalesCargados = true;
+        this.cargando = false;
       },
-      error: () => alert('No se pudo guardar el artículo. Intenta de nuevo.'),
+      error: () => {
+        this.elementosAdicionales = [];
+        this.elementosAdicionalesCargados = true;
+        this.cargando = false;
+        this.mostrarToast(
+          'error',
+          'Elementos no disponibles',
+          'No se pudieron obtener los elementos adicionales para este CURP.'
+        );
+      }
     });
   }
 
-  limpiarOtroForm(): void {
-    this.nuevoOtroForm.reset({ tipo: '', descripcion: '', cantidad: null });
-    this.nuevoOtroForm.markAsUntouched();
-    this.nuevoOtroForm.markAsPristine();
+  crearElementoAdicional(): void {
+    const curp = this.obtenerCurpNormalizado();
+
+    if (!curp) {
+      this.mostrarToast('error', 'CURP requerido', 'Captura el CURP en el apartado de Datos.');
+      return;
+    }
+
+    if (!this.nuevoElemento.tipoElemento.trim() || !this.nuevoElemento.descripcionElemento.trim()) {
+      this.mostrarToast('error', 'Datos incompletos', 'Captura el tipo y la descripción del elemento.');
+      return;
+    }
+
+    this.cargando = true;
+
+    this.cedisService
+      .crearElementoAdicional({
+        tipoElemento: this.nuevoElemento.tipoElemento.trim(),
+        descripcionElemento: this.nuevoElemento.descripcionElemento.trim(),
+        cantidad: this.nuevoElemento.cantidad || '0',
+        curp,
+        usuario: this.usuarioActual
+      })
+      .subscribe({
+        next: () => {
+          this.cargando = false;
+          this.mostrarToast('success', 'Elemento registrado', 'El elemento se agregó correctamente.');
+          this.nuevoElemento = { ...this.nuevoElementoInicial };
+          this.consultarElementosAdicionales(curp);
+        },
+        error: () => {
+          this.cargando = false;
+          this.mostrarToast('error', 'Error al registrar', 'No se pudo registrar el elemento.');
+        }
+      });
   }
 
-  abrirEditarOtro(index: number): void {
-    const item = this.otros.at(index) as FormGroup;
-    this.modalEditOtro = {
-      index,
-      form: this.fb.group({
-        tipo: [item.get('tipo')?.value, Validators.required],
-        descripcion: [
-          item.get('descripcion')?.value,
-          [Validators.required, Validators.maxLength(255)]
-        ],
-        cantidad: [item.get('cantidad')?.value ?? null],
-      }),
+  // ─────────────────────────────────────────────────────────
+  // Edición de elementos adicionales (modal)
+  // ─────────────────────────────────────────────────────────
+  modalEdicionElementoVisible = false;
+  elementoEnEdicion: ElementoAdicional | null = null;
+  edicionElementoForm: EdicionElementoForm = {
+    tipoElemento: '',
+    descripcionElemento: '',
+    cantidad: ''
+  };
+
+  abrirEdicionElemento(item: ElementoAdicional): void {
+    this.elementoEnEdicion = item;
+    this.edicionElementoForm = {
+      tipoElemento: item.lblClasifica,
+      descripcionElemento: item.lblDescripcion,
+      cantidad: item.lblCantidad
     };
+    this.modalEdicionElementoVisible = true;
   }
 
-  guardarEdicionOtro(): void {
-    if (!this.modalEditOtro) return;
-    if (this.modalEditOtro.form.invalid) {
-      this.modalEditOtro.form.markAllAsTouched();
+  cerrarEdicionElemento(): void {
+    this.modalEdicionElementoVisible = false;
+    this.elementoEnEdicion = null;
+    this.edicionElementoForm = { tipoElemento: '', descripcionElemento: '', cantidad: '' };
+  }
+
+  guardarEdicionElemento(): void {
+    const curp = this.obtenerCurpNormalizado();
+
+    if (!this.elementoEnEdicion || !curp) {
       return;
     }
 
-    const { index, form } = this.modalEditOtro;
-    const item = this.otros.at(index) as FormGroup;
-    const curp = (this.formDatos.get('curp')?.value ?? '').trim().toUpperCase();
+    if (!this.edicionElementoForm.tipoElemento.trim() || !this.edicionElementoForm.descripcionElemento.trim()) {
+      this.mostrarToast('error', 'Datos incompletos', 'Captura el tipo y la descripción del elemento.');
+      return;
+    }
 
-    this.elementosAdicionalesService.modificar({
-      idElemento: item.get('id')?.value ?? '',
-      tipoElemento: form.get('tipo')?.value,
-      descripcionElemento: form.get('descripcion')?.value ?? '',
-      cantidad:
-        form.get('cantidad')?.value === null ||
-          form.get('cantidad')?.value === undefined ||
-          form.get('cantidad')?.value === ''
-          ? ''
-          : String(form.get('cantidad')?.value),
-      curp,
-      usuario: this.usuarioActual,
-    }).subscribe({
-      next: (res: ElementoAdicionalResponse) => {
-        if (res.errId !== 0) {
-          alert(`Error al modificar: ${res.errMsg}`);
-          return;
+    this.cargando = true;
+
+    this.cedisService
+      .actualizarElementoAdicional({
+        idElemento: this.elementoEnEdicion.lblId,
+        tipoElemento: this.edicionElementoForm.tipoElemento.trim(),
+        descripcionElemento: this.edicionElementoForm.descripcionElemento.trim(),
+        cantidad: this.edicionElementoForm.cantidad || '0',
+        curp,
+        usuario: this.usuarioActual
+      })
+      .subscribe({
+        next: () => {
+          this.cargando = false;
+          this.mostrarToast('success', 'Elemento actualizado', 'Los cambios se guardaron correctamente.');
+          this.cerrarEdicionElemento();
+          this.consultarElementosAdicionales(curp);
+        },
+        error: () => {
+          this.cargando = false;
+          this.mostrarToast('error', 'Error al actualizar', 'No se pudo actualizar el elemento.');
         }
-        item.patchValue({
-          tipo: form.get('tipo')?.value,
-          descripcion: form.get('descripcion')?.value,
-          cantidad: form.get('cantidad')?.value,
-        });
-        this.cerrarEditarOtro();
-        this.recargarOtros(curp);
-      },
-      error: () => alert('No se pudo modificar el artículo. Intenta de nuevo.'),
-    });
+      });
   }
 
-  cerrarEditarOtro(): void {
-    this.modalEditOtro = null;
+  // ─────────────────────────────────────────────────────────
+  // Navegación entre apartados
+  // ─────────────────────────────────────────────────────────
+  seleccionarApartado(id: string): void {
+    this.apartadoActivo = id;
+
+    const curp = this.obtenerCurpNormalizado();
+
+    if (id === 'validaciones' && curp && !this.validacionesCargadas) {
+      this.consultarValidaciones(curp);
+    }
+
+    if (id === 'incidencias' && curp && !this.incidenciasCargadas) {
+      this.consultarIncidencias(curp);
+    }
+
+    if (id === 'otros' && curp && !this.elementosAdicionalesCargados) {
+      this.consultarElementosAdicionales(curp);
+    }
   }
 
-  // ═══════════════════════════════════════════════════════
-  //  MODAL DESCRIPCIÓN
-  // ═══════════════════════════════════════════════════════
-  abrirModalDescripcion(texto: string): void {
-    this.modalDescripcion = texto;
-  }
+  // ─────────────────────────────────────────────────────────
+  // Reset general: limpia todos los apartados del componente
+  // ─────────────────────────────────────────────────────────
+  resetFormulario(): void {
+    this.datosForm = { ...this.datosFormInicial };
+    this.imagenUrl = null;
+    this.imagenNombre = '';
+    this.imagenAmpliada = false;
 
-  cerrarModal(): void {
-    this.modalDescripcion = null;
-  }
+    this.validaciones = [];
+    this.validacionesCargadas = false;
 
-  // ═══════════════════════════════════════════════════════
-  //  RESET GLOBAL
-  // ═══════════════════════════════════════════════════════
-  confirmarReset(): void { this.modalResetVisible = true; }
-  cancelarReset(): void { this.modalResetVisible = false; }
-
-  ejecutarReset(): void {
-    this.incidencias.clear();
-    this.otros.clear();
-    this.limpiarEquipo();
-
-    this.formDatos.reset({
-      curp: '', nombre: '', motivo: '', noProveedor: '', razonSocial: '', foto: null,
-      vetado: false, tipoBan: '', fechaInicio: '', fechaTermino: '',
-    });
-    this.formDatos.get('nombre')?.enable();
-    this.formDatos.get('motivo')?.enable();
-
-    this.formVehiculo.reset({ tipoVehiculo: '', placa: '', modelo: '', marca: '' });
-    this.enableVehiculo();
-
-    this.limpiarIncidenciaForm();
-    this.limpiarOtroForm();
-
-    this.fotoPreview = null;
-    this.curpEncontrado = false;
+    this.vetoExistente = null;
+    this.vetoConsultado = false;
     this.editandoVeto = false;
-    this.diasRestantes = '';
-    this.seccionActiva = 'datos';
-    this.modalResetVisible = false;
-    this.modalEditIncidencia = null;
-    this.modalEditOtro = null;
+    this.nuevoVeto = { ...this.nuevoVetoInicial };
 
-    [this.formDatos, this.formVehiculo, this.formEquipo,
-    this.formIncidencias, this.formOtros].forEach(f => {
-      f.markAsUntouched();
-      f.markAsPristine();
-    });
-  }
+    this.incidencias = [];
+    this.incidenciasCargadas = false;
+    this.nuevaIncidencia = { ...this.nuevaIncidenciaInicial };
+    this.cerrarEdicionIncidencia();
 
-  // ═══════════════════════════════════════════════════════
-  //  SUBMIT POR SECCIÓN
-  // ═══════════════════════════════════════════════════════
-  onSubmitDatos(): void {
-    if (this.formDatos.invalid) { this.formDatos.markAllAsTouched(); return; }
-    console.log('POST /api/datos', this.formDatos.getRawValue());
-    alert('Datos personales guardados');
-  }
+    this.elementosAdicionales = [];
+    this.elementosAdicionalesCargados = false;
+    this.nuevoElemento = { ...this.nuevoElementoInicial };
+    this.cerrarEdicionElemento();
 
-  onSubmitVehiculo(): void {
-    console.log('POST /api/vehiculo', this.formVehiculo.getRawValue());
-    alert('Vehículo guardado');
-  }
-
-  onSubmitEquipo(): void {
-    console.log('Equipo (estado actual)', this.formEquipo.getRawValue());
-    alert('Equipo de seguridad guardado');
-  }
-
-  onSubmitIncidencias(): void {
-    this.irSeccion('otros');
-  }
-
-  // ═══════════════════════════════════════════════════════
-  //  HELPERS
-  // ═══════════════════════════════════════════════════════
-  irSeccion(id: string): void {
-    this.seccionActiva = id;
-  }
-
-  isInvalid(form: FormGroup, campo: string): boolean {
-    const c = form.get(campo);
-    return !!(c?.invalid && c?.touched);
-  }
-
-  isInvalidSub(form: FormGroup, campo: string): boolean {
-    const c = form.get(campo);
-    return !!(c?.invalid && c?.touched);
+    this.mostrarToast('success', 'Formulario reiniciado', 'Todos los campos fueron restablecidos.');
   }
 }
