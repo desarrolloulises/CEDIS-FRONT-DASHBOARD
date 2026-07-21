@@ -1,577 +1,590 @@
-<div class="rw">
+<div class="registro-entrada-almacen">
 
-  <!-- ── Topbar ── -->
-  <div class="topbar">
-    <nav class="tabs">
-      <button *ngFor="let sec of secciones" class="tab" [class.tab--on]="seccionActiva === sec.id" type="button"
-        (click)="irSeccion(sec.id)">
-        <i [class]="sec.icon"></i>
-        <span>{{ sec.label }}</span>
-      </button>
-    </nav>
-    <button type="button" class="btn btn--ghost" (click)="confirmarReset()" title="Nuevo consulta">
-      <span>Nueva consulta</span>
-    </button>
+  <!-- Toast: instancia única para todo el componente -->
+  <app-toast
+    *ngIf="toast.visible"
+    [tipo]="toast.tipo"
+    [titulo]="toast.titulo"
+    [mensaje]="toast.mensaje"
+    (cerrar)="cerrarToast()">
+  </app-toast>
+
+  <!-- Barra superior: navegación + reset general -->
+  <div class="barra-superior">
+
+    <div class="botones-nav">
+      <app-button
+        *ngFor="let apartado of apartados"
+        [label]="apartado.titulo"
+        [type]="apartadoActivo === apartado.id ? 'primary' : 'ghost'"
+        size="sm"
+        (clicked)="seleccionarApartado(apartado.id)">
+      </app-button>
+    </div>
+
+    <app-button
+      label="Restablecer"
+      type="ghost"
+      size="sm"
+      icon="ti ti-refresh"
+      (clicked)="resetFormulario()">
+    </app-button>
+
   </div>
 
-  <!-- ══ SECCIÓN 1 — DATOS ══ -->
-  <section class="sec" [class.sec--on]="seccionActiva === 'datos'">
-    <form [formGroup]="formDatos" (ngSubmit)="onSubmitDatos()" novalidate>
+  <!-- Contenido según el apartado seleccionado -->
+  <div class="contenido-wrapper">
 
-      <div class="grid-main">
-        <div class="fields">
+    <app-loading-spinner
+      [visible]="cargando"
+      [overlay]="true">
+    </app-loading-spinner>
 
-          <div class="field">
-            <label class="lbl lbl--req">CURP</label>
-            <div class="hint">Escanea el código QR o captura manualmente</div>
-            <div class="input-icon">
-              <input type="text" formControlName="curp" class="inp" [class.inp--err]="isInvalid(formDatos, 'curp')"
-                placeholder="XXXX000000XXXXXX00" maxlength="18" (blur)="onCurpBlur()" />
-              <i class="ti ti-search icon-r"></i>
+    <div class="contenido" [ngSwitch]="apartadoActivo">
+
+      <!-- ============================================= -->
+      <!-- APARTADO: DATOS -->
+      <!-- ============================================= -->
+      <div *ngSwitchCase="'datos'" class="apartado-datos">
+
+        <div class="datos-grid">
+
+          <!-- Formulario de datos -->
+          <div class="datos-form">
+
+            <app-input
+              label="CURP"
+              [value]="datosForm.curp"
+              (valueChange)="datosForm.curp = $event"
+              (inputBlur)="onCurpBlur()">
+            </app-input>
+
+            <app-input
+              label="Nombre"
+              [value]="datosForm.nombre"
+              (valueChange)="datosForm.nombre = $event">
+            </app-input>
+
+            <div class="fila-doble">
+              <app-input
+                label="Apellido paterno"
+                [value]="datosForm.apellidoP"
+                (valueChange)="datosForm.apellidoP = $event">
+              </app-input>
+
+              <app-input
+                label="Apellido materno"
+                [value]="datosForm.apellidoM"
+                (valueChange)="datosForm.apellidoM = $event">
+              </app-input>
             </div>
+
+            <div class="campo-select">
+              <label class="campo-label">Motivo</label>
+              <app-select
+                [options]="motivoOptions"
+                placeholder="Seleccione un motivo"
+                [value]="datosForm.motivo"
+                (valueChange)="datosForm.motivo = $event">
+              </app-select>
+            </div>
+
+            <div class="fila-doble">
+              <app-input
+                label="No. Proveedor"
+                [value]="datosForm.noProveedor"
+                (valueChange)="datosForm.noProveedor = $event">
+              </app-input>
+
+              <app-input
+                label="Razón social"
+                [value]="datosForm.razonSocial"
+                (valueChange)="datosForm.razonSocial = $event">
+              </app-input>
+            </div>
+
           </div>
 
-          <div class="field">
-            <label class="lbl">Nombre</label>
-            <input type="text" formControlName="nombre" class="inp inp--ro" placeholder="Nombre" readonly />
+          <!-- Gestión de imagen -->
+          <div class="imagen-panel">
+
+            <span class="campo-label">Imagen</span>
+
+            <div class="imagen-preview">
+              <img
+                *ngIf="imagenUrl"
+                [src]="imagenUrl"
+                [alt]="imagenNombre"
+                (click)="verImagenAmpliada()">
+
+              <div *ngIf="!imagenUrl" class="imagen-vacia">
+                <i class="ti ti-photo"></i>
+                <span>Sin imagen</span>
+              </div>
+            </div>
+
+            <span class="imagen-nombre" *ngIf="imagenNombre">{{ imagenNombre }}</span>
+
+            <div class="imagen-acciones">
+              <app-icon-button
+                icon="ti ti-eye"
+                type="secondary"
+                title="Visualizar"
+                [disabled]="!imagenUrl"
+                (clicked)="verImagenAmpliada()">
+              </app-icon-button>
+
+              <app-icon-button
+                icon="ti ti-upload"
+                type="primary"
+                title="Subir"
+                (clicked)="inputImagen.click()">
+              </app-icon-button>
+
+              <app-icon-button
+                icon="ti ti-edit"
+                type="secondary"
+                title="Editar"
+                [disabled]="!imagenUrl"
+                (clicked)="inputImagen.click()">
+              </app-icon-button>
+
+              <app-icon-button
+                icon="ti ti-trash"
+                type="error"
+                title="Eliminar"
+                [disabled]="!imagenUrl"
+                (clicked)="eliminarImagen()">
+              </app-icon-button>
+            </div>
+
+            <input
+              #inputImagen
+              type="file"
+              accept="image/*"
+              hidden
+              (change)="onSeleccionarImagen($event)">
+
           </div>
 
-          <div class="field">
-            <label class="lbl lbl--req lbl--sel">Motivo</label>
-            <select formControlName="motivo" class="sel sel--green" [class.sel--err]="isInvalid(formDatos, 'motivo')"
-              [class.sel--ro]="curpEncontrado">
-              <option value="">-- Selecciona motivo --</option>
-              <option *ngFor="let m of motivosOpciones" [value]="m">{{ m }}</option>
-            </select>
-            <span class="err-msg" *ngIf="isInvalid(formDatos, 'motivo')">Campo requerido</span>
+        </div>
+
+        <!-- Veto: consulta el estado actual del CURP y permite aplicar/reemplazar -->
+        <div class="veto-section">
+
+          <h4 class="veto-titulo">Veto</h4>
+
+          <div *ngIf="!datosForm.curp" class="aviso">
+            Captura el CURP para consultar si existe un veto.
           </div>
 
-          <ng-container *ngIf="motivoRequiereProveedor">
-            <div class="field">
-              <label class="lbl">No. Proveedor <span class="opt">(Opcional)</span></label>
-              <input type="text" formControlName="noProveedor" class="inp" placeholder="Número de proveedor" />
+          <ng-container *ngIf="datosForm.curp && vetoConsultado">
+
+            <!-- Ya existe un veto registrado y no se está editando -->
+            <div *ngIf="vetoExistente && !editandoVeto" class="veto-existente-wrapper">
+
+              <div class="veto-existente">
+                <div class="veto-dato">
+                  <span class="campo-label">Tipo</span>
+                  <span>{{ vetoExistente.lblDescripcionTipoVeto }}</span>
+                </div>
+                <div class="veto-dato">
+                  <span class="campo-label">Fecha inicio</span>
+                  <span>{{ vetoExistente.lblFechaInicio || '—' }}</span>
+                </div>
+                <div class="veto-dato">
+                  <span class="campo-label">Fecha término</span>
+                  <span>{{ vetoExistente.lblFechaTermino || '—' }}</span>
+                </div>
+                <div class="veto-dato">
+                  <span class="campo-label">Días restantes</span>
+                  <span>{{ vetoExistente.lblDiasRestantes || '—' }}</span>
+                </div>
+              </div>
+
+              <app-icon-button
+                icon="ti ti-edit"
+                type="secondary"
+                size="sm"
+                title="Modificar"
+                (clicked)="iniciarEdicionVeto()">
+              </app-icon-button>
+
             </div>
-            <div class="field">
-              <label class="lbl">Razón Social</label>
-              <input type="text" formControlName="razonSocial" class="inp" placeholder="Nombre de la empresa" />
+
+            <!-- No tiene veto, o se está reemplazando uno existente -->
+            <div *ngIf="!vetoExistente || editandoVeto" class="veto-grid">
+
+              <div class="campo-select">
+                <label class="campo-label">Tipo de veto</label>
+                <app-select
+                  [options]="tipoVetoOptions"
+                  placeholder="Seleccione un tipo"
+                  [value]="nuevoVeto.tipoVeto"
+                  (valueChange)="onTipoVetoChange($event)">
+                </app-select>
+              </div>
+
+              <app-input
+                label="Fecha inicio"
+                type="date"
+                [value]="nuevoVeto.fechaInicio"
+                (valueChange)="nuevoVeto.fechaInicio = $event">
+              </app-input>
+
+              <app-input
+                *ngIf="!tipoVetoSeleccionadoEsDefinitivo"
+                label="Fecha término"
+                type="date"
+                [value]="nuevoVeto.fechaTermino"
+                (valueChange)="nuevoVeto.fechaTermino = $event">
+              </app-input>
+
+              <span *ngIf="tipoVetoSeleccionadoEsDefinitivo" class="veto-nota">
+                Al ser definitivo, no se solicita fecha de término.
+              </span>
+
+              <div class="veto-aplicar">
+                <app-button
+                  label="Cancelar"
+                  type="ghost"
+                  size="sm"
+                  *ngIf="editandoVeto"
+                  (clicked)="cancelarEdicionVeto()">
+                </app-button>
+
+                <app-button
+                  label="Aplicar veto"
+                  type="warning"
+                  size="sm"
+                  (clicked)="aplicarVeto()">
+                </app-button>
+              </div>
+
             </div>
+
           </ng-container>
 
         </div>
 
-        <!-- Foto -->
-        <div class="foto-panel">
-          <!-- Estado de carga -->
-          <div *ngIf="cargandoImagen" class="loading">
-            <i class="ti ti-loader-2 spin"></i> Procesando imagen...
-          </div>
-
-          <!-- Error -->
-          <div *ngIf="errorImagen" class="err-msg">{{ errorImagen }}</div>
-
-          <div class="foto-box">
-            <ng-container *ngIf="imagenPreviewUrl || fotoPreview; else sinFoto">
-              <img [src]="imagenPreviewUrl || fotoPreview" alt="Foto" class="foto-img" />
-            </ng-container>
-            <ng-template #sinFoto>
-              <div class="foto-empty">
-                <i class="ti ti-user-circle"></i>
-                <p>Sin foto</p>
-              </div>
-            </ng-template>
-          </div>
-
-          <!-- Controles de imagen -->
-          <div class="foto-controls">
-            <!-- Capturar nueva imagen -->
-            <label class="btn btn--sec btn--block">
-              <i class="ti ti-camera"></i> Capturar
-              <input type="file" accept="image/*" capture="environment" style="display:none"
-                (change)="onArchivoSeleccionado($event)" />
-            </label>
-
-            <!-- Botones de acción (visible cuando hay imagen seleccionada) -->
-            <ng-container *ngIf="imagenSeleccionada || imagenId">
-              <!-- Subir nueva imagen -->
-              <button *ngIf="!imagenId" type="button" class="btn btn--pri btn--block" (click)="subirImagen()"
-                [disabled]="cargandoImagen">
-                <i class="ti ti-upload"></i> Subir imagen
-              </button>
-
-              <!-- Actualizar imagen existente -->
-              <button *ngIf="imagenId && imagenSeleccionada" type="button" class="btn btn--pri btn--block"
-                (click)="actualizarImagen()" [disabled]="cargandoImagen">
-                <i class="ti ti-refresh"></i> Actualizar
-              </button>
-
-              <!-- Eliminar imagen -->
-              <button *ngIf="imagenId" type="button" class="btn btn--danger btn--block"
-                (click)="eliminarImagenServidor()" [disabled]="cargandoImagen">
-                <i class="ti ti-trash"></i> Eliminar
-              </button>
-            </ng-container>
-          </div>
-        </div>
-
       </div>
 
-      <div class="datos-actions">
-        <button type="submit" class="btn btn--pri">
-          Guardar
-        </button>
+      <div *ngSwitchCase="'vehiculo'">
+        <!-- Contenido de Vehículo (pendiente) -->
       </div>
 
-      <div class="sec-divider"></div>
+      <!-- ============================================= -->
+      <!-- APARTADO: VALIDACIONES -->
+      <!-- ============================================= -->
+      <div *ngSwitchCase="'validaciones'" class="apartado-validaciones">
 
-      <!-- Sin veto previo -->
-      <div *ngIf="!tieneVetoPrevio">
-
-        <label class="toggle">
-          <input type="checkbox" formControlName="vetado" />
-          <span class="toggle-track"></span>
-          <span class="toggle-lbl">Personal vetado</span>
-        </label>
-
-      </div>
-
-      <!-- Resumen de veto existente -->
-      <div class="veto-card" *ngIf="tieneVetoPrevio && !editandoVeto">
-        <div class="veto-card__header">
-          <div>
-            <div class="veto-card__title">
-              Información de veto
-            </div>
-            <div class="veto-card__subtitle">
-              Registro actual del visitante
-            </div>
-          </div>
-          <button type="button" class="btn btn--ghost btn--sm" (click)="activarEdicionVeto()">
-            Editar veto
-          </button>
+        <div *ngIf="!datosForm.curp" class="aviso">
+          Captura el CURP en el apartado de Datos para consultar las validaciones.
         </div>
 
-        <div class="veto-info">
+        <ng-container *ngIf="datosForm.curp">
 
-          <div class="veto-info__item">
-            <span class="veto-info__label">
-              Tipo
-            </span>
-            <span class="veto-info__value">
-              {{ getDescripcionTipoVeto(formDatos.get('tipoBan')?.value) }}
-            </span>
+          <div class="seccion-header">
+            <h4 class="seccion-titulo">Validaciones de seguridad</h4>
+            <app-icon-button
+              icon="ti ti-refresh"
+              type="ghost"
+              size="xs"
+              title="Actualizar"
+              (clicked)="consultarValidaciones(datosForm.curp.trim().toLowerCase())">
+            </app-icon-button>
           </div>
 
-          <div class="veto-info__item">
-            <span class="veto-info__label">
-              Fecha inicio
-            </span>
-            <span class="veto-info__value">
-              {{ formDatos.get('fechaInicio')?.value }}
-            </span>
+          <div *ngIf="validacionesCargadas && validaciones.length === 0" class="aviso">
+            No se encontraron validaciones para este CURP.
           </div>
 
-          <div class="veto-info__item" *ngIf="!esBanDefinitivo">
-            <span class="veto-info__label">
-              Fecha término
-            </span>
-            <span class="veto-info__value">
-              {{ formDatos.get('fechaTermino')?.value }}
-            </span>
-          </div>
+          <ul class="lista-validaciones" *ngIf="validaciones.length">
+            <li *ngFor="let item of validaciones" class="validacion-item">
+              <label class="validacion-check">
+                <input
+                  type="checkbox"
+                  [checked]="item.estadoValidacion === 1"
+                  (change)="toggleValidacion(item, $any($event.target).checked)">
+                <span>{{ item.lblDescripcionValidacion }}</span>
+              </label>
+            </li>
+          </ul>
 
-          <div class="veto-info__item" *ngIf="!esBanDefinitivo">
-            <span class="veto-info__label">
-              Días restantes
-            </span>
-            <span class="veto-info__value veto-info__value--highlight">
-              {{ diasRestantes }}
-            </span>
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- Alta / edición -->
-      <div *ngIf="
-    (formDatos.get('vetado')?.value && !tieneVetoPrevio)
-    || editandoVeto">
-        <div class="grid-2">
-          <div class="field">
-            <label class="lbl lbl--req">
-              Tipo de veto
-            </label>
-            <select formControlName="tipoBan" class="sel">
-              <option value="">
-                Seleccionar
-              </option>
-              <option *ngFor="let tipo of tiposVetoOpciones" [value]="tipo.lblTipoVeto">
-                {{ tipo.lblDescripcionTipoVeto }}
-              </option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label class="lbl lbl--req">
-              Fecha inicio
-            </label>
-            <input type="date" formControlName="fechaInicio" class="inp" [min]="fechaMinima" />
-          </div>
-
-          <div class="field" *ngIf="!esBanDefinitivo">
-            <label class="lbl lbl--req">
-              Fecha término
-            </label>
-            <input type="date" formControlName="fechaTermino" class="inp"
-              [min]="formDatos.get('fechaInicio')?.value || fechaMinima" />
-          </div>
-
-        </div>
-
-        <div class="veto-actions">
-          <button *ngIf="editandoVeto" type="button" class="btn btn--ghost" (click)="cancelarEdicionVeto()">
-            Cancelar
-          </button>
-          <button type="button" class="btn btn--pri" [disabled]="guardandoVeto" (click)="guardarVeto()">
-            {{ guardandoVeto ? 'Guardando...' : 'Guardar' }}
-          </button>
-        </div>
-
-      </div>
-
-    </form>
-  </section>
-
-  <!-- ══ SECCIÓN 2 — VEHÍCULO ══ -->
-  <section class="sec" [class.sec--on]="seccionActiva === 'vehiculo'">
-    <form [formGroup]="formVehiculo" (ngSubmit)="onSubmitVehiculo()" novalidate>
-
-      <div class="grid-2">
-        <div class="field field--span2">
-          <label class="lbl lbl--sel">Tipo de Vehículo</label>
-          <select formControlName="tipoVehiculo" class="sel sel--green"
-            [class.sel--ro]="curpEncontrado && formVehiculo.get('tipoVehiculo')?.disabled">
-            <option value="">-- Sin vehículo / Lista desplegable --</option>
-            <option *ngFor="let t of tiposVehiculo" [value]="t">{{ t }}</option>
-          </select>
-        </div>
-
-        <ng-container *ngIf="formVehiculo.getRawValue().tipoVehiculo">
-          <div class="field">
-            <label class="lbl">Placa</label>
-            <input type="text" formControlName="placa" class="inp"
-              [class.inp--ro]="curpEncontrado && formVehiculo.get('placa')?.disabled" placeholder="ABC-123" />
-          </div>
-          <div class="field">
-            <label class="lbl">Modelo</label>
-            <input type="text" formControlName="modelo" class="inp"
-              [class.inp--ro]="curpEncontrado && formVehiculo.get('modelo')?.disabled" placeholder="Año o modelo" />
-          </div>
-          <div class="field field--span2">
-            <label class="lbl">Marca</label>
-            <input type="text" formControlName="marca" class="inp"
-              [class.inp--ro]="curpEncontrado && formVehiculo.get('marca')?.disabled"
-              placeholder="Marca del vehículo" />
-          </div>
         </ng-container>
 
-        <div class="field field--span2" *ngIf="!formVehiculo.getRawValue().tipoVehiculo">
-          <div class="empty-state">
-            <i class="ti ti-truck-off"></i>
-            Personal sin vehículo registrado.
-            <span *ngIf="!curpEncontrado">Selecciona un tipo para capturar los datos.</span>
+      </div>
+
+      <!-- ============================================= -->
+      <!-- APARTADO: INCIDENCIAS -->
+      <!-- ============================================= -->
+      <div *ngSwitchCase="'incidencias'" class="apartado-incidencias">
+
+        <div *ngIf="!datosForm.curp" class="aviso">
+          Captura el CURP en el apartado de Datos para consultar las incidencias.
+        </div>
+
+        <ng-container *ngIf="datosForm.curp">
+
+          <!-- Formulario para agregar una nueva incidencia -->
+          <div class="incidencia-form">
+
+            <div class="incidencia-form-nivel">
+              <app-select
+                [options]="nivelOptions"
+                placeholder="Nivel"
+                [value]="nuevaIncidencia.nivel"
+                (valueChange)="nuevaIncidencia.nivel = $event">
+              </app-select>
+            </div>
+
+            <div class="incidencia-form-descripcion">
+              <app-input
+                placeholder="Describe la incidencia..."
+                [value]="nuevaIncidencia.descripcion"
+                (valueChange)="nuevaIncidencia.descripcion = $event"
+                (enter)="crearIncidencia()">
+              </app-input>
+            </div>
+
+            <app-icon-button
+              icon="ti ti-plus"
+              type="primary"
+              size="md"
+              title="Agregar incidencia"
+              (clicked)="crearIncidencia()">
+            </app-icon-button>
+
           </div>
+
+          <div *ngIf="incidenciasCargadas && incidencias.length === 0" class="aviso">
+            No se encontraron incidencias para este CURP.
+          </div>
+
+          <!-- Tabla de incidencias -->
+          <div class="tabla-wrapper" *ngIf="incidencias.length">
+            <table class="tabla-registros">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Nivel</th>
+                  <th>Descripción</th>
+                  <th class="col-accion">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of incidencias">
+                  <td>{{ formatearFechaIncidencia(item.lblFecha) }}</td>
+                  <td>
+                    <span class="nivel-badge" [style.background-color]="item.lblColor.trim()">
+                      {{ item.lblDescripcionNivel }}
+                    </span>
+                  </td>
+                  <td>{{ item.lblDescripcion }}</td>
+                  <td class="col-accion">
+                    <app-icon-button
+                      icon="ti ti-edit"
+                      type="secondary"
+                      size="sm"
+                      title="Editar"
+                      (clicked)="abrirEdicionIncidencia(item)">
+                    </app-icon-button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </ng-container>
+
+      </div>
+
+      <div *ngSwitchCase="'otros'" class="apartado-otros">
+
+        <div *ngIf="!datosForm.curp" class="aviso">
+          Captura el CURP en el apartado de Datos para consultar los elementos adicionales.
         </div>
+
+        <ng-container *ngIf="datosForm.curp">
+
+          <!-- Formulario para agregar un nuevo elemento -->
+          <div class="elemento-form">
+
+            <div class="elemento-form-tipo">
+              <app-input
+                placeholder="Tipo / clasificación"
+                [value]="nuevoElemento.tipoElemento"
+                (valueChange)="nuevoElemento.tipoElemento = $event">
+              </app-input>
+            </div>
+
+            <div class="elemento-form-descripcion">
+              <app-input
+                placeholder="Descripción del elemento..."
+                [value]="nuevoElemento.descripcionElemento"
+                (valueChange)="nuevoElemento.descripcionElemento = $event"
+                (enter)="crearElementoAdicional()">
+              </app-input>
+            </div>
+
+            <div class="elemento-form-cantidad">
+              <app-input
+                type="number"
+                placeholder="Cantidad"
+                [value]="nuevoElemento.cantidad"
+                (valueChange)="nuevoElemento.cantidad = $event"
+                (enter)="crearElementoAdicional()">
+              </app-input>
+            </div>
+
+            <app-icon-button
+              icon="ti ti-plus"
+              type="primary"
+              size="md"
+              title="Agregar elemento"
+              (clicked)="crearElementoAdicional()">
+            </app-icon-button>
+
+          </div>
+
+          <div *ngIf="elementosAdicionalesCargados && elementosAdicionales.length === 0" class="aviso">
+            No se encontraron elementos adicionales para este CURP.
+          </div>
+
+          <!-- Tabla de elementos adicionales -->
+          <div class="tabla-wrapper" *ngIf="elementosAdicionales.length">
+            <table class="tabla-registros">
+              <thead>
+                <tr>
+                  <th>Clasificación</th>
+                  <th>Descripción</th>
+                  <th class="col-cantidad">Cantidad</th>
+                  <th class="col-accion">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of elementosAdicionales">
+                  <td>{{ item.lblClasifica }}</td>
+                  <td>{{ item.lblDescripcion }}</td>
+                  <td class="col-cantidad">{{ item.lblCantidad }}</td>
+                  <td class="col-accion">
+                    <app-icon-button
+                      icon="ti ti-edit"
+                      type="secondary"
+                      size="sm"
+                      title="Editar"
+                      (clicked)="abrirEdicionElemento(item)">
+                    </app-icon-button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </ng-container>
+
       </div>
 
-      <div class="datos-actions">
-        <button type="submit" class="btn btn--pri"> Guardar</button>
-      </div>
-
-    </form>
-  </section>
-
-  <!-- ══ SECCIÓN 3 — VALIDACIONES ══ -->
-  <section class="sec" [class.sec--on]="seccionActiva === 'equipo'">
-    <form [formGroup]="formEquipo" novalidate>
-
-      <div class="loading" *ngIf="cargandoEquipo">
-        <i class="ti ti-loader-2 spin"></i> Cargando validaciones…
-      </div>
-
-      <div class="empty-state empty-state--dashed" *ngIf="!cargandoEquipo && validacionesSeguridad.length === 0">
-        <i class="ti ti-info-circle"></i>
-        Busca un visitante por CURP para cargar las validaciones de seguridad.
-      </div>
-
-      <div class="checks" *ngIf="!cargandoEquipo && validacionesSeguridad.length > 0">
-        <label class="check-item" *ngFor="let v of validacionesSeguridad">
-          <input type="checkbox" [formControlName]="v.lblClaveValidacion" />
-          <span class="check-box"></span>
-          <span class="check-lbl">{{ v.lblDescripcionValidacion }}</span>
-        </label>
-      </div>
-
-    </form>
-  </section>
-
-  <!-- ══ SECCIÓN 4 — INCIDENCIAS ══ -->
-  <section class="sec" [class.sec--on]="seccionActiva === 'incidencias'">
-    <form [formGroup]="formIncidencias" (ngSubmit)="onSubmitIncidencias()" novalidate>
-
-      <div class="quick-add">
-        <select *ngIf="!cargandoNiveles" [formControl]="incNivel" class="sel sel--green"
-          [class.sel--err]="isInvalidSub(nuevaIncidenciaForm, 'nivel')">
-          <option value="">Nivel</option>
-          <option *ngFor="let n of nivelesOpciones" [value]="n.clave">{{ n.etiqueta }}</option>
-        </select>
-        <div class="loading" *ngIf="cargandoNiveles"><i class="ti ti-loader-2 spin"></i> Cargando...</div>
-        <input type="text" [formControl]="incDescripcion" class="inp"
-          [class.inp--err]="isInvalidSub(nuevaIncidenciaForm, 'descripcion')" placeholder="Describe la incidencia..."
-          maxlength="255" />
-        <button type="button" class="btn btn--sec btn--sq" (click)="agregarIncidencia()" title="Agregar">
-          <i class="ti ti-plus"></i>
-        </button>
-      </div>
-
-      <div class="err-list">
-        <span class="err-msg" *ngIf="isInvalidSub(nuevaIncidenciaForm, 'nivel')">Selecciona un nivel.</span>
-        <span class="err-msg" *ngIf="isInvalidSub(nuevaIncidenciaForm, 'descripcion')">Captura una descripción.</span>
-      </div>
-
-      <div class="tbl-wrap">
-
-        <div class="empty-state" *ngIf="incidencias.length === 0"><i class="ti ti-clipboard-x"></i> No hay incidencias
-          registradas aún.</div>
-        <div class="tbl-scroll" *ngIf="incidencias.length > 0">
-          <table class="tbl">
-            <thead>
-              <tr>
-                <th class="th th--fecha">Fecha</th>
-                <th class="th th--badge">Nivel</th>
-                <th class="th">Descripción</th>
-                <th class="th th--acc">Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let inc of incidencias.controls; let i = index" class="tr">
-                <td class="td td--fecha">
-                  <span class="truncated" *ngIf="inc.get('fecha')?.value; else sinFechaInc">{{ inc.get('fecha')?.value |
-                    date:'dd/MM/yyyy'
-                    }}</span>
-                  <ng-template #sinFechaInc><span class="pending"><i class="ti ti-clock"></i>
-                      Pendiente</span></ng-template>
-                </td>
-                <td class="td td--badge">
-                  <span class="nivel-badge"
-                    [style.background-color]="(inc.get('colorNivel')?.value || '#E5E7EB').trim()">
-                    {{ getNivelEtiqueta(inc.get('nivel')?.value) }}
-                  </span>
-                </td>
-                <td class="td td--desc">
-                  <span class="truncated" [title]="inc.get('descripcion')?.value"
-                    (click)="abrirModalDescripcion(inc.get('descripcion')?.value)">
-                    {{ inc.get('descripcion')?.value }}
-                  </span>
-                </td>
-                <td class="td td--acc">
-                  <button type="button" class="btn-icon btn-icon--edit" (click)="abrirEditarIncidencia(i)"
-                    title="Editar">
-                    <i class="ti ti-pencil"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-
-    </form>
-  </section>
-
-  <!-- ══ SECCIÓN 5 — OTROS ══ -->
-  <section class="sec" [class.sec--on]="seccionActiva === 'otros'">
-    <form [formGroup]="formOtros" novalidate>
-      <div class="quick-add quick-add--otros">
-        <input type="text" [formControl]="otrTipo" class="inp" [class.inp--err]="isInvalidSub(nuevoOtroForm, 'tipo')"
-          placeholder="Tipo de artículo" />
-        <input type="number" [formControl]="otrCantidad" class="inp" placeholder="Cantidad" />
-        <input type="text" [formControl]="otrDescripcion" class="inp"
-          [class.inp--err]="isInvalidSub(nuevoOtroForm, 'descripcion')" placeholder="Descripción" />
-        <button type="button" class="btn btn--sec btn--sq" (click)="agregarOtro()">
-          <i class="ti ti-plus"></i>
-        </button>
-      </div>
-
-      <div class="err-list">
-        <span class="err-msg" *ngIf="isInvalidSub(nuevoOtroForm, 'tipo')">Captura el tipo de artículo.</span>
-        <span class="err-msg" *ngIf="isInvalidSub(nuevoOtroForm, 'descripcion')">
-          Captura una descripción.
-        </span>
-      </div>
-
-      <div class="tbl-wrap">
-        <div class="empty-state" *ngIf="otros.length === 0"><i class="ti ti-box-off"></i> No hay artículos registrados
-          aún.</div>
-        <div class="tbl-scroll" *ngIf="otros.length > 0">
-
-
-          <table class="tbl">
-            <thead>
-              <tr>
-                <th class="th th--fecha">Tipo</th>
-                <th class="th th--badge">Cantidad</th>
-                <th class="th">Descripción</th>
-                <th class="th th--acc">Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item_otros of otros.controls; let i = index" class="tr">
-                <td class="td td--fecha">
-                  <span class="truncated">{{item_otros.get('tipo')?.value || '—' }}</span>
-                  <ng-template #sinFechaInc><span class="pending"><i class="ti ti-clock"></i>
-                      Pendiente</span></ng-template>
-                </td>
-                <td class="td td--badge">
-                  <span class="nivel-badge">
-                    <span>{{ item_otros.get('cantidad')?.value ?? '—' }}</span>
-                  </span>
-                </td>
-                <td class="td td--desc">
-                  <span class="truncated" [title]="item_otros.get('descripcion')?.value"
-                    (click)="abrirModalDescripcion(item_otros.get('descripcion')?.value)">
-                    {{ item_otros.get('descripcion')?.value }}
-                  </span>
-                </td>
-                <td class="td td--acc">
-                  <button type="button" class="btn-icon btn-icon--edit" (click)="abrirEditarOtro(i)" title="Editar">
-                    <i class="ti ti-pencil"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-        </div>
-      </div>
-
-    </form>
-  </section>
-
-</div>
-
-<!-- ══ MODAL — Descripción ══ -->
-<div class="overlay" *ngIf="modalDescripcion !== null" (click)="cerrarModal()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-hdr">
-      <span><i class="ti ti-file-description"></i> Descripción completa</span>
-      <button type="button" class="modal-close" (click)="cerrarModal()"><i class="ti ti-x"></i></button>
     </div>
-    <div class="modal-body">{{ modalDescripcion }}</div>
+
   </div>
-</div>
 
-<!-- ══ MODAL — Reset ══ -->
-<div class="overlay" *ngIf="modalResetVisible" (click)="cancelarReset()">
-  <div class="modal modal--sm" (click)="$event.stopPropagation()">
-    <div class="modal-hdr modal-hdr">
-      <span> Nueva consulta</span>
-      <button type="button" class="modal-close" (click)="cancelarReset()"><i class="ti ti-x"></i></button>
-    </div>
-    <div class="modal-body">
-      <p>¿ Realizar una nueva búsqueda de personal ?</p>
-    </div>
-    <div class="modal-ftr">
-      <button type="button" class="btn btn--ghost" (click)="cancelarReset()">Cancelar</button>
-      <button type="button" class="btn btn--pri" (click)="ejecutarReset()">Aceptar</button>
-    </div>
+  <!-- Modal simple para visualizar la imagen ampliada -->
+  <div *ngIf="imagenAmpliada" class="imagen-modal" (click)="cerrarImagenAmpliada()">
+    <img [src]="imagenUrl" [alt]="imagenNombre">
   </div>
-</div>
 
-<!-- ══ MODAL — Editar Incidencia ══ -->
-<div class="overlay" *ngIf="modalEditIncidencia !== null" (click)="cerrarEditarIncidencia()">
-  <div class="modal modal--md" (click)="$event.stopPropagation()">
-    <div class="modal-hdr">
-      <span><i class="ti ti-pencil"></i> Editar Incidencia</span>
-      <button type="button" class="modal-close" (click)="cerrarEditarIncidencia()"><i class="ti ti-x"></i></button>
-    </div>
-    <div class="modal-body" *ngIf="modalEditIncidencia">
-      <form [formGroup]="modalEditIncidencia.form" novalidate>
-        <div class="field" style="margin-bottom:1rem">
-          <label class="lbl lbl--req lbl--sel">Nivel</label>
-          <div class="loading" *ngIf="cargandoNiveles"><i class="ti ti-loader-2 spin"></i> Cargando niveles…</div>
-          <select *ngIf="!cargandoNiveles" formControlName="nivel" class="sel sel--green"
-            [class.sel--err]="modalEditIncidencia.form.get('nivel')?.invalid && modalEditIncidencia.form.get('nivel')?.touched">
-            <option value="">-- Nivel --</option>
-            <option *ngFor="let n of nivelesOpciones" [value]="n.clave">{{ n.etiqueta }}</option>
-          </select>
-          <span class="err-msg"
-            *ngIf="modalEditIncidencia.form.get('nivel')?.invalid && modalEditIncidencia.form.get('nivel')?.touched">Requerido</span>
-        </div>
-        <div class="field">
-          <label class="lbl lbl--req">Descripción <span class="counter">{{
-              modalEditIncidencia.form.get('descripcion')?.value?.length || 0 }}/255</span></label>
-          <textarea formControlName="descripcion" class="txta"
-            [class.inp--err]="modalEditIncidencia.form.get('descripcion')?.invalid && modalEditIncidencia.form.get('descripcion')?.touched"
-            placeholder="Describe la incidencia" maxlength="255" rows="4"></textarea>
-          <span class="err-msg"
-            *ngIf="modalEditIncidencia.form.get('descripcion')?.invalid && modalEditIncidencia.form.get('descripcion')?.touched">Requerido
-            (máx. 255)</span>
-        </div>
-      </form>
-    </div>
-    <div class="modal-ftr">
-      <button type="button" class="btn btn--ghost" (click)="cerrarEditarIncidencia()">Cancelar</button>
-      <button type="button" class="btn btn--pri" (click)="guardarEdicionIncidencia()">Guardar cambios</button>
-    </div>
-  </div>
-</div>
+  <!-- Modal para editar una incidencia -->
+  <app-modal
+    [visible]="modalEdicionIncidenciaVisible"
+    title="Editar incidencia"
+    width="480px"
+    (close)="cerrarEdicionIncidencia()">
 
-<!-- ══ MODAL — Editar Artículo ══ -->
-<div class="overlay" *ngIf="modalEditOtro !== null" (click)="cerrarEditarOtro()">
-  <div class="modal modal--md" (click)="$event.stopPropagation()">
-    <div class="modal-hdr">
-      <span><i class="ti ti-pencil"></i> Editar Artículo</span>
-      <button type="button" class="modal-close" (click)="cerrarEditarOtro()"><i class="ti ti-x"></i></button>
-    </div>
-    <div class="modal-body" *ngIf="modalEditOtro">
-      <form [formGroup]="modalEditOtro.form" novalidate>
-        <div class="field" style="margin-bottom:1rem">
-          <label class="lbl lbl--req">Tipo</label>
-          <input type="text" formControlName="tipo" class="inp"
-            [class.inp--err]="modalEditOtro.form.get('tipo')?.invalid && modalEditOtro.form.get('tipo')?.touched"
-            placeholder="Herramienta, Ropa, Equipo…" maxlength="100" />
-          <span class="err-msg"
-            *ngIf="modalEditOtro.form.get('tipo')?.invalid && modalEditOtro.form.get('tipo')?.touched">Requerido</span>
-        </div>
-        <div class="field" style="margin-bottom:1rem">
-          <label class="lbl lbl--req">Cantidad</label>
-          <input type="number" formControlName="cantidad" class="inp"
-            [class.inp--err]="modalEditOtro.form.get('cantidad')?.invalid && modalEditOtro.form.get('cantidad')?.touched"
-            placeholder="0" />
-        </div>
-        <div class="field">
-          <label class="lbl">Descripción <span class="counter">{{ modalEditOtro.form.get('descripcion')?.value?.length
-              || 0 }}/255</span></label>
-          <textarea formControlName="descripcion" class="txta" [class.inp--err]="
-    modalEditOtro.form.get('descripcion')?.invalid &&
-    modalEditOtro.form.get('descripcion')?.touched
-  " placeholder="Descripción del artículo" maxlength="255" rows="3">
-</textarea>
+    <div class="modal-edicion-incidencia">
 
-          <span class="err-msg" *ngIf="
-    modalEditOtro.form.get('descripcion')?.invalid &&
-    modalEditOtro.form.get('descripcion')?.touched
-  ">
-            Captura una descripción.
-          </span>
-        </div>
-      </form>
+      <div class="campo-select">
+        <label class="campo-label">Nivel</label>
+        <app-select
+          [options]="nivelOptions"
+          placeholder="Seleccione un nivel"
+          [value]="edicionIncidenciaForm.nivel"
+          (valueChange)="edicionIncidenciaForm.nivel = $event">
+        </app-select>
+      </div>
+
+      <app-input
+        label="Descripción"
+        [value]="edicionIncidenciaForm.descripcion"
+        (valueChange)="edicionIncidenciaForm.descripcion = $event">
+      </app-input>
+
+      <div class="modal-edicion-acciones">
+        <app-button
+          label="Cancelar"
+          type="ghost"
+          size="sm"
+          (clicked)="cerrarEdicionIncidencia()">
+        </app-button>
+
+        <app-button
+          label="Guardar"
+          type="primary"
+          size="sm"
+          (clicked)="guardarEdicionIncidencia()">
+        </app-button>
+      </div>
+
     </div>
-    <div class="modal-ftr">
-      <button type="button" class="btn btn--ghost" (click)="cerrarEditarOtro()">Cancelar</button>
-      <button type="button" class="btn btn--pri" (click)="guardarEdicionOtro()">Guardar cambios</button>
+
+  </app-modal>
+
+  <!-- Modal para editar un elemento adicional (Otros) -->
+  <app-modal
+    [visible]="modalEdicionElementoVisible"
+    title="Editar elemento"
+    width="480px"
+    (close)="cerrarEdicionElemento()">
+
+    <div class="modal-edicion-incidencia">
+
+      <app-input
+        label="Clasificación"
+        [value]="edicionElementoForm.tipoElemento"
+        (valueChange)="edicionElementoForm.tipoElemento = $event">
+      </app-input>
+
+      <app-input
+        label="Descripción"
+        [value]="edicionElementoForm.descripcionElemento"
+        (valueChange)="edicionElementoForm.descripcionElemento = $event">
+      </app-input>
+
+      <app-input
+        label="Cantidad"
+        type="number"
+        [value]="edicionElementoForm.cantidad"
+        (valueChange)="edicionElementoForm.cantidad = $event">
+      </app-input>
+
+      <div class="modal-edicion-acciones">
+        <app-button
+          label="Cancelar"
+          type="ghost"
+          size="sm"
+          (clicked)="cerrarEdicionElemento()">
+        </app-button>
+
+        <app-button
+          label="Guardar"
+          type="primary"
+          size="sm"
+          (clicked)="guardarEdicionElemento()">
+        </app-button>
+      </div>
+
     </div>
-  </div>
+
+  </app-modal>
+
 </div>
