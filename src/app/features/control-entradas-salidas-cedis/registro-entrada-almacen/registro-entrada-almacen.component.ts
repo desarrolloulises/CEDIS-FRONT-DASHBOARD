@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { ButtonComponent } from '../../../shared/components/button/button.component';
@@ -12,6 +12,7 @@ import { ModalComponent } from '../../../shared/components/modal/modal.component
 import {
   AplicarVetoPayload,
   ElementoAdicional,
+  ImagenInfo,
   Incidencia,
   NivelIncidenciaCatalogo,
   TipoVeto,
@@ -86,7 +87,7 @@ interface ToastState {
   templateUrl: './registro-entrada-almacen.component.html',
   styleUrls: ['./registro-entrada-almacen.component.css']
 })
-export class RegistroEntradaAlmacenComponent implements OnInit {
+export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
 
   // Lista de apartados: para agregar o quitar uno, solo edita este arreglo
   apartados: Apartado[] = [
@@ -111,6 +112,10 @@ export class RegistroEntradaAlmacenComponent implements OnInit {
   ngOnInit(): void {
     this.cargarCatalogoTiposVeto();
     this.cargarCatalogoNiveles();
+  }
+
+  ngOnDestroy(): void {
+    this.liberarImagenUrl();
   }
 
   // ─────────────────────────────────────────────────────────
@@ -172,11 +177,77 @@ export class RegistroEntradaAlmacenComponent implements OnInit {
   }
 
   // ─────────────────────────────────────────────────────────
-  // Imagen: visualizar, subir, eliminar, editar
+  // Imagen: consultar, visualizar, subir, editar, eliminar
+  //
+  // Nota: mientras no exista la tabla que asocia la imagen con
+  // el usuario, se captura manualmente el id de la imagen a
+  // consultar mediante "imagenIdConsulta".
   // ─────────────────────────────────────────────────────────
+
+  /** Input temporal para indicar el id de imagen a consultar */
+  imagenIdConsulta = '';
+
+  /** Metadatos devueltos por /obtener-imagen/{id} o tras subir/actualizar */
+  imagenInfo: ImagenInfo | null = null;
+
+  /** Id de la imagen actualmente cargada (null = todavía no hay imagen asociada) */
+  imagenId: number | null = null;
+
+  /** Blob URL usado para mostrar la imagen en el <img> */
   imagenUrl: string | null = null;
   imagenNombre = '';
   imagenAmpliada = false;
+
+  /**
+   * 1. Consulta los metadatos de la imagen por id y después
+   *    descarga el binario para poder mostrarla.
+   */
+  consultarImagenPorId(): void {
+    const id = Number(this.imagenIdConsulta);
+
+    if (!this.imagenIdConsulta || Number.isNaN(id)) {
+      this.mostrarToast('error', 'Id inválido', 'Captura un id de imagen numérico válido.');
+      return;
+    }
+
+    this.cargando = true;
+
+    this.cedisService.obtenerImagenInfo(id).subscribe({
+      next: (info) => {
+        this.imagenInfo = info;
+        this.imagenId = info.id;
+        this.cargarImagenBinario(info.id, info.nombreArchivo);
+      },
+      error: () => {
+        this.cargando = false;
+        this.imagenInfo = null;
+        this.imagenId = null;
+        this.mostrarToast('error', 'Imagen no encontrada', `No se encontró información para el id ${id}.`);
+      }
+    });
+  }
+
+  /** Descarga el binario de la imagen (GET/POST /cedis/imagen/{id}) y arma el blob URL */
+  private cargarImagenBinario(id: number, nombreArchivo: string): void {
+    this.cedisService.obtenerImagenBinario(id).subscribe({
+      next: (blob) => {
+        this.liberarImagenUrl();
+        this.imagenUrl = URL.createObjectURL(blob);
+        this.imagenNombre = nombreArchivo;
+        this.cargando = false;
+      },
+      error: () => {
+        this.cargando = false;
+        this.mostrarToast('error', 'Error al cargar imagen', 'No se pudo descargar el archivo de la imagen.');
+      }
+    });
+  }
+
+  /**
+   * Dispara la selección de archivo. Si ya hay una imagen cargada
+   * (imagenId presente) el archivo seleccionado actualiza esa imagen;
+   * si no, se sube como una imagen nueva.
+   */
 
   onSeleccionarImagen(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -192,20 +263,81 @@ export class RegistroEntradaAlmacenComponent implements OnInit {
       return;
     }
 
-    const reader = new FileReader();
+    if (this.imagenId) {
+      this.actualizarImagenApi(file);
+    } else {
+      this.subirImagenApi(file);
+    }
 
-    reader.onload = () => {
-      this.imagenUrl = reader.result as string;
-      this.imagenNombre = file.name;
-      this.mostrarToast('success', 'Imagen cargada', `Se cargó "${file.name}" correctamente.`);
-    };
-
-    reader.onerror = () => {
-      this.mostrarToast('error', 'Error al leer archivo', 'No se pudo leer la imagen seleccionada.');
-    };
-
-    reader.readAsDataURL(file);
     input.value = '';
+  }
+
+  /** 2. Sube una imagen nueva */
+  private subirImagenApi(file: File): void {
+    this.cargando = true;
+
+    this.cedisService.subirImagen(file).subscribe({
+      next: (info) => {
+        this.imagenInfo = info;
+        this.imagenId = info.id;
+        this.imagenIdConsulta = String(info.id);
+        this.cargarImagenBinario(info.id, info.nombreArchivo);
+        this.mostrarToast('success', 'Imagen subida', `Se subió "${file.name}" correctamente.`);
+      },
+      error: () => {
+        this.cargando = false;
+        this.mostrarToast('error', 'Error al subir', 'No se pudo subir la imagen.');
+      }
+    });
+  }
+
+  /** 3. Actualiza (reemplaza) el archivo de la imagen ya asociada */
+  private actualizarImagenApi(file: File): void {
+    if (!this.imagenId) {
+      return;
+    }
+
+    this.cargando = true;
+
+    this.cedisService.actualizarImagen(this.imagenId, file).subscribe({
+      next: (info) => {
+        this.imagenInfo = info;
+        this.imagenId = info.id;
+        this.cargarImagenBinario(info.id, info.nombreArchivo);
+        this.mostrarToast('success', 'Imagen actualizada', 'La imagen se reemplazó correctamente.');
+      },
+      error: () => {
+        this.cargando = false;
+        this.mostrarToast('error', 'Error al actualizar', 'No se pudo actualizar la imagen.');
+      }
+    });
+  }
+
+  /** 4. Elimina la imagen actualmente cargada */
+  eliminarImagen(): void {
+    if (!this.imagenId) {
+      return;
+    }
+
+    this.cargando = true;
+
+    this.cedisService.eliminarImagenPorId(this.imagenId).subscribe({
+      next: (resp) => {
+        this.liberarImagenUrl();
+        this.imagenUrl = null;
+        this.imagenNombre = '';
+        this.imagenAmpliada = false;
+        this.imagenInfo = null;
+        this.imagenId = null;
+        this.imagenIdConsulta = '';
+        this.cargando = false;
+        this.mostrarToast('success', 'Imagen eliminada', resp.mensaje || 'La imagen fue eliminada correctamente.');
+      },
+      error: () => {
+        this.cargando = false;
+        this.mostrarToast('error', 'Error al eliminar', 'No se pudo eliminar la imagen.');
+      }
+    });
   }
 
   verImagenAmpliada(): void {
@@ -218,11 +350,11 @@ export class RegistroEntradaAlmacenComponent implements OnInit {
     this.imagenAmpliada = false;
   }
 
-  eliminarImagen(): void {
-    this.imagenUrl = null;
-    this.imagenNombre = '';
-    this.imagenAmpliada = false;
-    this.mostrarToast('success', 'Imagen eliminada', 'La imagen fue eliminada correctamente.');
+  /** Libera el blob URL anterior para evitar fugas de memoria */
+  private liberarImagenUrl(): void {
+    if (this.imagenUrl && this.imagenUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(this.imagenUrl);
+    }
   }
 
   // ─────────────────────────────────────────────────────────
@@ -778,6 +910,11 @@ export class RegistroEntradaAlmacenComponent implements OnInit {
   // ─────────────────────────────────────────────────────────
   resetFormulario(): void {
     this.datosForm = { ...this.datosFormInicial };
+
+    this.liberarImagenUrl();
+    this.imagenIdConsulta = '';
+    this.imagenInfo = null;
+    this.imagenId = null;
     this.imagenUrl = null;
     this.imagenNombre = '';
     this.imagenAmpliada = false;
