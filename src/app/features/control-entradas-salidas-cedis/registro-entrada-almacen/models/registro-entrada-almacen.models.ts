@@ -206,3 +206,18 @@ export interface ElementoAdicionalResponse {
   lblDescripcion: string;
   lblCantidad: string;
 }
+
+// ─────────────────────────────────────────────────────────
+// Imagen
+// ─────────────────────────────────────────────────────────
+
+export interface ImagenInfo {
+  id: number;
+  carpeta: string;
+  nombreArchivo: string;
+  pathRelativo: string;
+}
+
+export interface EliminarImagenResponse {
+  mensaje: string;
+}

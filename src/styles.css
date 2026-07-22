@@ -252,7 +252,7 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   /* El scroll solo ocurre aquí adentro */
-  background-color: #ffffff;
+  background-color: var(--bg-body);
 }
 
 /* 3. CLASES DE UTILIDAD (Para evitar duplicados en componentes) */

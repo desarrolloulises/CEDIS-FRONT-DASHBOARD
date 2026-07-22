@@ -1,11 +1,7 @@
 <div class="registro-entrada-almacen">
 
   <!-- Toast: instancia única para todo el componente -->
-  <app-toast
-    *ngIf="toast.visible"
-    [tipo]="toast.tipo"
-    [titulo]="toast.titulo"
-    [mensaje]="toast.mensaje"
+  <app-toast *ngIf="toast.visible" [tipo]="toast.tipo" [titulo]="toast.titulo" [mensaje]="toast.mensaje"
     (cerrar)="cerrarToast()">
   </app-toast>
 
@@ -13,21 +9,13 @@
   <div class="barra-superior">
 
     <div class="botones-nav">
-      <app-button
-        *ngFor="let apartado of apartados"
-        [label]="apartado.titulo"
-        [type]="apartadoActivo === apartado.id ? 'primary' : 'ghost'"
-        size="sm"
+      <app-button *ngFor="let apartado of apartados" [label]="apartado.titulo"
+        [type]="apartadoActivo === apartado.id ? 'primary' : 'ghost'" size="sm"
         (clicked)="seleccionarApartado(apartado.id)">
       </app-button>
     </div>
 
-    <app-button
-      label="Restablecer"
-      type="ghost"
-      size="sm"
-      icon="ti ti-refresh"
-      (clicked)="resetFormulario()">
+    <app-button label="Nueva consulta" type="secondary" size="sm" (clicked)="resetFormulario()">
     </app-button>
 
   </div>
@@ -35,9 +23,7 @@
   <!-- Contenido según el apartado seleccionado -->
   <div class="contenido-wrapper">
 
-    <app-loading-spinner
-      [visible]="cargando"
-      [overlay]="true">
+    <app-loading-spinner [visible]="cargando" [overlay]="true">
     </app-loading-spinner>
 
     <div class="contenido" [ngSwitch]="apartadoActivo">
@@ -52,53 +38,36 @@
           <!-- Formulario de datos -->
           <div class="datos-form">
 
-            <app-input
-              label="CURP"
-              [value]="datosForm.curp"
-              (valueChange)="datosForm.curp = $event"
+            <app-input label="CURP" [value]="datosForm.curp" (valueChange)="datosForm.curp = $event"
               (inputBlur)="onCurpBlur()">
             </app-input>
 
-            <app-input
-              label="Nombre"
-              [value]="datosForm.nombre"
-              (valueChange)="datosForm.nombre = $event">
+            <app-input label="Nombre" [value]="datosForm.nombre" (valueChange)="datosForm.nombre = $event">
             </app-input>
 
             <div class="fila-doble">
-              <app-input
-                label="Apellido paterno"
-                [value]="datosForm.apellidoP"
+              <app-input label="Apellido paterno" [value]="datosForm.apellidoP"
                 (valueChange)="datosForm.apellidoP = $event">
               </app-input>
 
-              <app-input
-                label="Apellido materno"
-                [value]="datosForm.apellidoM"
+              <app-input label="Apellido materno" [value]="datosForm.apellidoM"
                 (valueChange)="datosForm.apellidoM = $event">
               </app-input>
             </div>
 
             <div class="campo-select">
               <label class="campo-label">Motivo</label>
-              <app-select
-                [options]="motivoOptions"
-                placeholder="Seleccione un motivo"
-                [value]="datosForm.motivo"
+              <app-select [options]="motivoOptions" placeholder="Seleccione un motivo" [value]="datosForm.motivo"
                 (valueChange)="datosForm.motivo = $event">
               </app-select>
             </div>
 
             <div class="fila-doble">
-              <app-input
-                label="No. Proveedor"
-                [value]="datosForm.noProveedor"
+              <app-input label="No. Proveedor" [value]="datosForm.noProveedor"
                 (valueChange)="datosForm.noProveedor = $event">
               </app-input>
 
-              <app-input
-                label="Razón social"
-                [value]="datosForm.razonSocial"
+              <app-input label="Razón social" [value]="datosForm.razonSocial"
                 (valueChange)="datosForm.razonSocial = $event">
               </app-input>
             </div>
@@ -110,12 +79,18 @@
 
             <span class="campo-label">Imagen</span>
 
+            <!-- Temporal: input para indicar el id de imagen a consultar -->
+            <div class="imagen-consulta">
+              <app-input placeholder="Id de imagen" [value]="imagenIdConsulta" (valueChange)="imagenIdConsulta = $event"
+                (enter)="consultarImagenPorId()">
+              </app-input>
+              <app-icon-button icon="ti ti-search" type="secondary" title="Consultar imagen"
+                (click)="consultarImagenPorId()">
+              </app-icon-button>
+            </div>
+
             <div class="imagen-preview">
-              <img
-                *ngIf="imagenUrl"
-                [src]="imagenUrl"
-                [alt]="imagenNombre"
-                (click)="verImagenAmpliada()">
+              <img *ngIf="imagenUrl" [src]="imagenUrl" [alt]="imagenNombre" (click)="verImagenAmpliada()">
 
               <div *ngIf="!imagenUrl" class="imagen-vacia">
                 <i class="ti ti-photo"></i>
@@ -126,43 +101,20 @@
             <span class="imagen-nombre" *ngIf="imagenNombre">{{ imagenNombre }}</span>
 
             <div class="imagen-acciones">
-              <app-icon-button
-                icon="ti ti-eye"
-                type="secondary"
-                title="Visualizar"
-                [disabled]="!imagenUrl"
-                (clicked)="verImagenAmpliada()">
+              <app-icon-button icon="ti ti-eye" type="secondary" title="Visualizar" [disabled]="!imagenUrl"
+                (click)="verImagenAmpliada()">
               </app-icon-button>
 
-              <app-icon-button
-                icon="ti ti-upload"
-                type="primary"
-                title="Subir"
-                (clicked)="inputImagen.click()">
+              <app-icon-button icon="ti ti-upload" type="primary"
+                [title]="imagenId ? 'Reemplazar imagen' : 'Subir imagen'" (click)="inputImagen.click()">
               </app-icon-button>
 
-              <app-icon-button
-                icon="ti ti-edit"
-                type="secondary"
-                title="Editar"
-                [disabled]="!imagenUrl"
-                (clicked)="inputImagen.click()">
-              </app-icon-button>
-
-              <app-icon-button
-                icon="ti ti-trash"
-                type="error"
-                title="Eliminar"
-                [disabled]="!imagenUrl"
-                (clicked)="eliminarImagen()">
+              <app-icon-button icon="ti ti-trash" type="error" title="Eliminar" [disabled]="!imagenId"
+                (click)="eliminarImagen()">
               </app-icon-button>
             </div>
 
-            <input
-              #inputImagen
-              type="file"
-              accept="image/*"
-              hidden
+            <input #inputImagen type="file" accept="image/*" capture="environment" hidden
               (change)="onSeleccionarImagen($event)">
 
           </div>
@@ -202,12 +154,8 @@
                 </div>
               </div>
 
-              <app-icon-button
-                icon="ti ti-edit"
-                type="secondary"
-                size="sm"
-                title="Modificar"
-                (clicked)="iniciarEdicionVeto()">
+              <app-icon-button icon="ti ti-pencil" type="secondary" size="sm" title="Modificar"
+                (click)="iniciarEdicionVeto()">
               </app-icon-button>
 
             </div>
@@ -217,27 +165,17 @@
 
               <div class="campo-select">
                 <label class="campo-label">Tipo de veto</label>
-                <app-select
-                  [options]="tipoVetoOptions"
-                  placeholder="Seleccione un tipo"
-                  [value]="nuevoVeto.tipoVeto"
+                <app-select [options]="tipoVetoOptions" placeholder="Seleccione un tipo" [value]="nuevoVeto.tipoVeto"
                   (valueChange)="onTipoVetoChange($event)">
                 </app-select>
               </div>
 
-              <app-input
-                label="Fecha inicio"
-                type="date"
-                [value]="nuevoVeto.fechaInicio"
+              <app-input label="Fecha inicio" type="date" [value]="nuevoVeto.fechaInicio"
                 (valueChange)="nuevoVeto.fechaInicio = $event">
               </app-input>
 
-              <app-input
-                *ngIf="!tipoVetoSeleccionadoEsDefinitivo"
-                label="Fecha término"
-                type="date"
-                [value]="nuevoVeto.fechaTermino"
-                (valueChange)="nuevoVeto.fechaTermino = $event">
+              <app-input *ngIf="!tipoVetoSeleccionadoEsDefinitivo" label="Fecha término" type="date"
+                [value]="nuevoVeto.fechaTermino" (valueChange)="nuevoVeto.fechaTermino = $event">
               </app-input>
 
               <span *ngIf="tipoVetoSeleccionadoEsDefinitivo" class="veto-nota">
@@ -245,19 +183,11 @@
               </span>
 
               <div class="veto-aplicar">
-                <app-button
-                  label="Cancelar"
-                  type="ghost"
-                  size="sm"
-                  *ngIf="editandoVeto"
+                <app-button label="Cancelar" type="ghost" size="sm" *ngIf="editandoVeto"
                   (clicked)="cancelarEdicionVeto()">
                 </app-button>
 
-                <app-button
-                  label="Aplicar veto"
-                  type="warning"
-                  size="sm"
-                  (clicked)="aplicarVeto()">
+                <app-button label="Aplicar veto" type="primary" size="sm" (clicked)="aplicarVeto()">
                 </app-button>
               </div>
 
@@ -286,12 +216,8 @@
 
           <div class="seccion-header">
             <h4 class="seccion-titulo">Validaciones de seguridad</h4>
-            <app-icon-button
-              icon="ti ti-refresh"
-              type="ghost"
-              size="xs"
-              title="Actualizar"
-              (clicked)="consultarValidaciones(datosForm.curp.trim().toLowerCase())">
+            <app-icon-button icon="ti ti-refresh" type="ghost" size="xs" title="Actualizar"
+              (click)="consultarValidaciones(datosForm.curp.trim().toLowerCase())" hidden>
             </app-icon-button>
           </div>
 
@@ -302,9 +228,7 @@
           <ul class="lista-validaciones" *ngIf="validaciones.length">
             <li *ngFor="let item of validaciones" class="validacion-item">
               <label class="validacion-check">
-                <input
-                  type="checkbox"
-                  [checked]="item.estadoValidacion === 1"
+                <input type="checkbox" [checked]="item.estadoValidacion === 1"
                   (change)="toggleValidacion(item, $any($event.target).checked)">
                 <span>{{ item.lblDescripcionValidacion }}</span>
               </label>
@@ -330,30 +254,20 @@
           <div class="incidencia-form">
 
             <div class="incidencia-form-nivel">
-              <app-select
-                [options]="nivelOptions"
-                placeholder="Nivel"
-                [value]="nuevaIncidencia.nivel"
+              <app-select [options]="nivelOptions" placeholder="Nivel" [value]="nuevaIncidencia.nivel"
                 (valueChange)="nuevaIncidencia.nivel = $event">
               </app-select>
             </div>
 
             <div class="incidencia-form-descripcion">
-              <app-input
-                placeholder="Describe la incidencia..."
-                [value]="nuevaIncidencia.descripcion"
-                (valueChange)="nuevaIncidencia.descripcion = $event"
-                (enter)="crearIncidencia()">
+              <app-input placeholder="Describe la incidencia..." [value]="nuevaIncidencia.descripcion"
+                (valueChange)="nuevaIncidencia.descripcion = $event" (enter)="crearIncidencia()">
               </app-input>
             </div>
 
-            <app-icon-button
-              icon="ti ti-plus"
-              type="primary"
-              size="md"
-              title="Agregar incidencia"
+            <app-button icon="ti ti-plus" label="" type="primary" size="md" title="Agregar incidencia"
               (clicked)="crearIncidencia()">
-            </app-icon-button>
+            </app-button>
 
           </div>
 
@@ -382,12 +296,8 @@
                   </td>
                   <td>{{ item.lblDescripcion }}</td>
                   <td class="col-accion">
-                    <app-icon-button
-                      icon="ti ti-edit"
-                      type="secondary"
-                      size="sm"
-                      title="Editar"
-                      (clicked)="abrirEdicionIncidencia(item)">
+                    <app-icon-button icon="ti ti-pencil" type="secondary" size="sm" title="Editar"
+                      (click)="abrirEdicionIncidencia(item)">
                     </app-icon-button>
                   </td>
                 </tr>
@@ -411,39 +321,26 @@
           <div class="elemento-form">
 
             <div class="elemento-form-tipo">
-              <app-input
-                placeholder="Tipo / clasificación"
-                [value]="nuevoElemento.tipoElemento"
+              <app-input placeholder="Tipo" [value]="nuevoElemento.tipoElemento"
                 (valueChange)="nuevoElemento.tipoElemento = $event">
               </app-input>
             </div>
 
             <div class="elemento-form-descripcion">
-              <app-input
-                placeholder="Descripción del elemento..."
-                [value]="nuevoElemento.descripcionElemento"
-                (valueChange)="nuevoElemento.descripcionElemento = $event"
-                (enter)="crearElementoAdicional()">
+              <app-input placeholder="Descripción del elemento..." [value]="nuevoElemento.descripcionElemento"
+                (valueChange)="nuevoElemento.descripcionElemento = $event" (enter)="crearElementoAdicional()">
               </app-input>
             </div>
 
             <div class="elemento-form-cantidad">
-              <app-input
-                type="number"
-                placeholder="Cantidad"
-                [value]="nuevoElemento.cantidad"
-                (valueChange)="nuevoElemento.cantidad = $event"
-                (enter)="crearElementoAdicional()">
+              <app-input type="number" placeholder="Cantidad" [value]="nuevoElemento.cantidad"
+                (valueChange)="nuevoElemento.cantidad = $event" (enter)="crearElementoAdicional()">
               </app-input>
             </div>
 
-            <app-icon-button
-              icon="ti ti-plus"
-              type="primary"
-              size="md"
-              title="Agregar elemento"
+            <app-button icon="ti ti-plus" label="" type="primary" size="md" title="Agregar elemento"
               (clicked)="crearElementoAdicional()">
-            </app-icon-button>
+            </app-button>
 
           </div>
 
@@ -456,7 +353,7 @@
             <table class="tabla-registros">
               <thead>
                 <tr>
-                  <th>Clasificación</th>
+                  <th>Tipo</th>
                   <th>Descripción</th>
                   <th class="col-cantidad">Cantidad</th>
                   <th class="col-accion">Acción</th>
@@ -468,12 +365,8 @@
                   <td>{{ item.lblDescripcion }}</td>
                   <td class="col-cantidad">{{ item.lblCantidad }}</td>
                   <td class="col-accion">
-                    <app-icon-button
-                      icon="ti ti-edit"
-                      type="secondary"
-                      size="sm"
-                      title="Editar"
-                      (clicked)="abrirEdicionElemento(item)">
+                    <app-icon-button icon="ti ti-pencil" type="secondary" size="sm" title="Editar"
+                      (click)="abrirEdicionElemento(item)">
                     </app-icon-button>
                   </td>
                 </tr>
@@ -495,43 +388,27 @@
   </div>
 
   <!-- Modal para editar una incidencia -->
-  <app-modal
-    [visible]="modalEdicionIncidenciaVisible"
-    title="Editar incidencia"
-    width="480px"
+  <app-modal [visible]="modalEdicionIncidenciaVisible" title="Editar incidencia" width="480px"
     (close)="cerrarEdicionIncidencia()">
 
     <div class="modal-edicion-incidencia">
 
       <div class="campo-select">
         <label class="campo-label">Nivel</label>
-        <app-select
-          [options]="nivelOptions"
-          placeholder="Seleccione un nivel"
-          [value]="edicionIncidenciaForm.nivel"
+        <app-select [options]="nivelOptions" placeholder="Seleccione un nivel" [value]="edicionIncidenciaForm.nivel"
           (valueChange)="edicionIncidenciaForm.nivel = $event">
         </app-select>
       </div>
 
-      <app-input
-        label="Descripción"
-        [value]="edicionIncidenciaForm.descripcion"
+      <app-input label="Descripción" [value]="edicionIncidenciaForm.descripcion"
         (valueChange)="edicionIncidenciaForm.descripcion = $event">
       </app-input>
 
       <div class="modal-edicion-acciones">
-        <app-button
-          label="Cancelar"
-          type="ghost"
-          size="sm"
-          (clicked)="cerrarEdicionIncidencia()">
+        <app-button label="Cancelar" type="ghost" size="sm" (clicked)="cerrarEdicionIncidencia()">
         </app-button>
 
-        <app-button
-          label="Guardar"
-          type="primary"
-          size="sm"
-          (clicked)="guardarEdicionIncidencia()">
+        <app-button label="Guardar" type="primary" size="sm" (clicked)="guardarEdicionIncidencia()">
         </app-button>
       </div>
 
@@ -540,46 +417,28 @@
   </app-modal>
 
   <!-- Modal para editar un elemento adicional (Otros) -->
-  <app-modal
-    [visible]="modalEdicionElementoVisible"
-    title="Editar elemento"
-    width="480px"
+  <app-modal [visible]="modalEdicionElementoVisible" title="Editar elemento" width="480px"
     (close)="cerrarEdicionElemento()">
 
     <div class="modal-edicion-incidencia">
 
-      <app-input
-        label="Clasificación"
-        [value]="edicionElementoForm.tipoElemento"
+      <app-input label="Clasificación" [value]="edicionElementoForm.tipoElemento"
         (valueChange)="edicionElementoForm.tipoElemento = $event">
       </app-input>
 
-      <app-input
-        label="Descripción"
-        [value]="edicionElementoForm.descripcionElemento"
+      <app-input label="Descripción" [value]="edicionElementoForm.descripcionElemento"
         (valueChange)="edicionElementoForm.descripcionElemento = $event">
       </app-input>
 
-      <app-input
-        label="Cantidad"
-        type="number"
-        [value]="edicionElementoForm.cantidad"
+      <app-input label="Cantidad" type="number" [value]="edicionElementoForm.cantidad"
         (valueChange)="edicionElementoForm.cantidad = $event">
       </app-input>
 
       <div class="modal-edicion-acciones">
-        <app-button
-          label="Cancelar"
-          type="ghost"
-          size="sm"
-          (clicked)="cerrarEdicionElemento()">
+        <app-button label="Cancelar" type="ghost" size="sm" (clicked)="cerrarEdicionElemento()">
         </app-button>
 
-        <app-button
-          label="Guardar"
-          type="primary"
-          size="sm"
-          (clicked)="guardarEdicionElemento()">
+        <app-button label="Guardar" type="primary" size="sm" (clicked)="guardarEdicionElemento()">
         </app-button>
       </div>
 

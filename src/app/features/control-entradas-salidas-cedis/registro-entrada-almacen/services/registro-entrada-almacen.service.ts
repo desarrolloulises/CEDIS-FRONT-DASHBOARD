@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { url } from '../../../../variables';
 
 import {
   ActualizarElementoAdicionalPayload,
@@ -18,16 +19,17 @@ import {
   NivelIncidenciaCatalogo,
   TipoVeto,
   ValidacionSeguridad,
-  VetoExistente
+  VetoExistente, 
+  ImagenInfo,
+  EliminarImagenResponse
 } from '../models/registro-entrada-almacen.models';
 
 @Injectable({ providedIn: 'root' })
 export class RegistroEntradaAlmacenService {
 
-  // TODO: mover a environment.apiUrl cuando se tenga configurado por ambiente
-  private readonly baseUrl = 'http://localhost:8081/cedis';
+  private readonly baseUrl = `${url}/cedis`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // ─────────────────────────────────────────────────────────
   // Validaciones de seguridad
@@ -114,5 +116,41 @@ export class RegistroEntradaAlmacenService {
       `${this.baseUrl}/entrada-elementos-adicionales`,
       payload
     );
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // Imagen
+  // ─────────────────────────────────────────────────────────
+
+  /** 1. Consulta los metadatos de la imagen por id */
+  obtenerImagenInfo(id: number): Observable<ImagenInfo> {
+    return this.http.get<ImagenInfo>(`${this.baseUrl}/obtener-imagen/${id}`);
+  }
+
+  /** 1b. Descarga el binario de la imagen para visualizarla (el endpoint espera POST con body vacío) */
+  obtenerImagenBinario(id: number): Observable<Blob> {
+    return this.http.post(`${this.baseUrl}/imagen/${id}`, null, {
+      responseType: 'blob'
+    });
+  }
+
+  /** 2. Sube una imagen nueva */
+  subirImagen(archivo: File): Observable<ImagenInfo> {
+    const formData = new FormData();
+    formData.append('archivo', archivo, archivo.name);
+    return this.http.post<ImagenInfo>(`${this.baseUrl}/subir-imagen`, formData);
+  }
+
+  /** 3. Actualiza (reemplaza) el archivo de una imagen existente */
+  actualizarImagen(id: number, archivo: File): Observable<ImagenInfo> {
+    const formData = new FormData();
+    formData.append('id', id.toString());
+    formData.append('archivo', archivo, archivo.name);
+    return this.http.put<ImagenInfo>(`${this.baseUrl}/imagen`, formData);
+  }
+
+  /** 4. Elimina la imagen */
+  eliminarImagenPorId(id: number): Observable<EliminarImagenResponse> {
+    return this.http.delete<EliminarImagenResponse>(`${this.baseUrl}/imagen/${id}`);
   }
 }
