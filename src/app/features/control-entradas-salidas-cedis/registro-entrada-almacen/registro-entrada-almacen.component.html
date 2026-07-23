@@ -79,22 +79,12 @@
 
             <span class="campo-label">Imagen</span>
 
-            <!-- Temporal: input para indicar el id de imagen a consultar -->
-            <div class="imagen-consulta">
-              <app-input placeholder="Id de imagen" [value]="imagenIdConsulta" (valueChange)="imagenIdConsulta = $event"
-                (enter)="consultarImagenPorId()">
-              </app-input>
-              <app-icon-button icon="ti ti-search" type="secondary" title="Consultar imagen"
-                (click)="consultarImagenPorId()">
-              </app-icon-button>
-            </div>
-
             <div class="imagen-preview">
               <img *ngIf="imagenUrl" [src]="imagenUrl" [alt]="imagenNombre" (click)="verImagenAmpliada()">
 
               <div *ngIf="!imagenUrl" class="imagen-vacia">
                 <i class="ti ti-photo"></i>
-                <span>Sin imagen</span>
+                <span>{{ datosForm.curp ? 'Sin imagen' : 'Captura el CURP primero' }}</span>
               </div>
             </div>
 
@@ -106,10 +96,10 @@
               </app-icon-button>
 
               <app-icon-button icon="ti ti-upload" type="primary"
-                [title]="imagenId ? 'Reemplazar imagen' : 'Subir imagen'" (click)="inputImagen.click()">
+                [title]="imagenExiste ? 'Reemplazar imagen' : 'Subir imagen'" (click)="abrirCapturaImagen(inputImagen)">
               </app-icon-button>
 
-              <app-icon-button icon="ti ti-trash" type="error" title="Eliminar" [disabled]="!imagenId"
+              <app-icon-button icon="ti ti-trash" type="error" title="Eliminar" [disabled]="!imagenExiste"
                 (click)="eliminarImagen()">
               </app-icon-button>
             </div>

@@ -19,7 +19,7 @@ import {
   NivelIncidenciaCatalogo,
   TipoVeto,
   ValidacionSeguridad,
-  VetoExistente, 
+  VetoExistente,
   ImagenInfo,
   EliminarImagenResponse
 } from '../models/registro-entrada-almacen.models';
@@ -31,9 +31,9 @@ export class RegistroEntradaAlmacenService {
 
   constructor(private http: HttpClient) { }
 
-  // ─────────────────────────────────────────────────────────
-  // Validaciones de seguridad
-  // ─────────────────────────────────────────────────────────
+  /////////////////////////////////////////
+  //   Validaciones de seguridad
+  /////////////////////////////////////////
 
   obtenerValidaciones(curp: string): Observable<ValidacionSeguridad[]> {
     return this.http.get<ValidacionSeguridad[]>(
@@ -50,10 +50,9 @@ export class RegistroEntradaAlmacenService {
     );
   }
 
-  // ─────────────────────────────────────────────────────────
-  // Vetos
-  // ─────────────────────────────────────────────────────────
-
+  /////////////////////////////////////////
+  //            Vetos
+  /////////////////////////////////////////
   obtenerCatalogoTiposVeto(): Observable<TipoVeto[]> {
     return this.http.get<TipoVeto[]>(`${this.baseUrl}/vetos/catalogo-tipos-veto`);
   }
@@ -68,10 +67,9 @@ export class RegistroEntradaAlmacenService {
     return this.http.post<AplicarVetoResponse>(`${this.baseUrl}/vetos`, payload);
   }
 
-  // ─────────────────────────────────────────────────────────
-  // Incidencias
-  // ─────────────────────────────────────────────────────────
-
+  /////////////////////////////////////////
+  //            Incidencias
+  /////////////////////////////////////////
   obtenerIncidencias(curp: string): Observable<Incidencia[]> {
     return this.http.get<Incidencia[]>(`${this.baseUrl}/incidencias/${curp}`);
   }
@@ -90,9 +88,9 @@ export class RegistroEntradaAlmacenService {
     return this.http.put<IncidenciaResponse>(`${this.baseUrl}/incidencias`, payload);
   }
 
-  // ─────────────────────────────────────────────────────────
-  // Otros: elementos adicionales de entrada
-  // ─────────────────────────────────────────────────────────
+  /////////////////////////////////////////
+  //   Otros: Elementos adicionales de entrada
+  /////////////////////////////////////////
 
   obtenerElementosAdicionales(curp: string): Observable<ElementoAdicional[]> {
     return this.http.get<ElementoAdicional[]>(
@@ -118,39 +116,35 @@ export class RegistroEntradaAlmacenService {
     );
   }
 
-  // ─────────────────────────────────────────────────────────
-  // Imagen
-  // ─────────────────────────────────────────────────────────
+  /////////////////////////////////////////
+  //              Imagenes
+  /////////////////////////////////////////
 
-  /** 1. Consulta los metadatos de la imagen por id */
-  obtenerImagenInfo(id: number): Observable<ImagenInfo> {
-    return this.http.get<ImagenInfo>(`${this.baseUrl}/obtener-imagen/${id}`);
+  obtenerImagenInfo(curp: string): Observable<ImagenInfo> {
+    return this.http.post<ImagenInfo>(`${this.baseUrl}/obtener-imagen/${curp}`, null);
   }
 
-  /** 1b. Descarga el binario de la imagen para visualizarla (el endpoint espera POST con body vacío) */
-  obtenerImagenBinario(id: number): Observable<Blob> {
-    return this.http.post(`${this.baseUrl}/imagen/${id}`, null, {
+  obtenerImagenBinario(curp: string): Observable<Blob> {
+    return this.http.post(`${this.baseUrl}/imagen/${curp}`, null, {
       responseType: 'blob'
     });
   }
 
-  /** 2. Sube una imagen nueva */
-  subirImagen(archivo: File): Observable<ImagenInfo> {
+  subirImagen(curp: string, archivo: File): Observable<ImagenInfo> {
     const formData = new FormData();
+    formData.append('CURP', curp);
     formData.append('archivo', archivo, archivo.name);
     return this.http.post<ImagenInfo>(`${this.baseUrl}/subir-imagen`, formData);
   }
 
-  /** 3. Actualiza (reemplaza) el archivo de una imagen existente */
-  actualizarImagen(id: number, archivo: File): Observable<ImagenInfo> {
+  actualizarImagen(curp: string, archivo: File): Observable<ImagenInfo> {
     const formData = new FormData();
-    formData.append('id', id.toString());
+    formData.append('CURP', curp);
     formData.append('archivo', archivo, archivo.name);
     return this.http.put<ImagenInfo>(`${this.baseUrl}/imagen`, formData);
   }
 
-  /** 4. Elimina la imagen */
-  eliminarImagenPorId(id: number): Observable<EliminarImagenResponse> {
-    return this.http.delete<EliminarImagenResponse>(`${this.baseUrl}/imagen/${id}`);
+  eliminarImagenPorCurp(curp: string): Observable<EliminarImagenResponse> {
+    return this.http.delete<EliminarImagenResponse>(`${this.baseUrl}/imagen/${curp}`);
   }
 }

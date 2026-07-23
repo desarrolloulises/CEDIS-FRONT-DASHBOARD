@@ -89,7 +89,7 @@ interface ToastState {
 })
 export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
 
-  // Lista de apartados: para agregar o quitar uno, solo edita este arreglo
+  // Lista de apartados
   apartados: Apartado[] = [
     { id: 'datos', titulo: 'Datos' },
     { id: 'vehiculo', titulo: 'Vehículo' },
@@ -118,9 +118,9 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     this.liberarImagenUrl();
   }
 
-  // ─────────────────────────────────────────────────────────
+  //////////////////////////////////////////
   // Toast: instancia única compartida por todo el componente.
-  // ─────────────────────────────────────────────────────────
+  //////////////////////////////////////////
   toast: ToastState = {
     visible: false,
     tipo: 'success',
@@ -136,9 +136,9 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     this.toast.visible = false;
   }
 
-  // ─────────────────────────────────────────────────────────
+  //////////////////////////////////////////
   // Apartado "Datos": formulario principal
-  // ─────────────────────────────────────────────────────────
+  //////////////////////////////////////////
   motivoOptions: ISelectOption[] = [
     { label: 'Visita', value: 'Visita' },
     { label: 'Maniobra', value: 'Maniobra' },
@@ -170,66 +170,69 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     this.consultarVeto(curp);
     this.consultarIncidencias(curp);
     this.consultarElementosAdicionales(curp);
+    this.consultarImagen(curp);
   }
 
   private obtenerCurpNormalizado(): string {
     return (this.datosForm.curp || '').trim().toLowerCase();
   }
 
-  // ─────────────────────────────────────────────────────────
-  // Imagen: consultar, visualizar, subir, editar, eliminar
-  //
-  // Nota: mientras no exista la tabla que asocia la imagen con
-  // el usuario, se captura manualmente el id de la imagen a
-  // consultar mediante "imagenIdConsulta".
-  // ─────────────────────────────────────────────────────────
 
-  /** Input temporal para indicar el id de imagen a consultar */
-  imagenIdConsulta = '';
+  //////////////////////////////////////////
+  //          Imagen
+  //////////////////////////////////////////
 
-  /** Metadatos devueltos por /obtener-imagen/{id} o tras subir/actualizar */
+  /** Metadatos devueltos por /obtener-imagen/{CURP} o tras subir/actualizar */
   imagenInfo: ImagenInfo | null = null;
-
-  /** Id de la imagen actualmente cargada (null = todavía no hay imagen asociada) */
-  imagenId: number | null = null;
 
   /** Blob URL usado para mostrar la imagen en el <img> */
   imagenUrl: string | null = null;
   imagenNombre = '';
   imagenAmpliada = false;
 
+  get imagenExiste(): boolean {
+    return !!this.imagenInfo;
+  }
+
   /**
-   * 1. Consulta los metadatos de la imagen por id y después
-   *    descarga el binario para poder mostrarla.
+   * Consulta los metadatos de la imagen y después
+   * descarga el binario para poder mostrarla.
    */
-  consultarImagenPorId(): void {
-    const id = Number(this.imagenIdConsulta);
-
-    if (!this.imagenIdConsulta || Number.isNaN(id)) {
-      this.mostrarToast('error', 'Id inválido', 'Captura un id de imagen numérico válido.');
-      return;
-    }
-
+  consultarImagen(curp: string): void {
     this.cargando = true;
 
-    this.cedisService.obtenerImagenInfo(id).subscribe({
+    this.cedisService.obtenerImagenInfo(curp).subscribe({
       next: (info) => {
         this.imagenInfo = info;
-        this.imagenId = info.id;
-        this.cargarImagenBinario(info.id, info.nombreArchivo);
+        this.cargarImagenBinario(curp, info.nombreArchivo);
       },
       error: () => {
         this.cargando = false;
         this.imagenInfo = null;
-        this.imagenId = null;
-        this.mostrarToast('error', 'Imagen no encontrada', `No se encontró información para el id ${id}.`);
+        this.liberarImagenUrl();
+        this.imagenUrl = null;
+        this.imagenNombre = '';
+        // Sin imagen asociada para este CURP; no se muestra error, es un estado válido.
       }
     });
   }
 
-  /** Descarga el binario de la imagen (GET/POST /cedis/imagen/{id}) y arma el blob URL */
-  private cargarImagenBinario(id: number, nombreArchivo: string): void {
-    this.cedisService.obtenerImagenBinario(id).subscribe({
+  /**
+ * Dispara la selección/captura de imagen. Requiere que el CURP ya
+ * esté capturado en el apartado de Datos.
+ */
+  abrirCapturaImagen(inputImagen: HTMLInputElement): void {
+    if (!this.obtenerCurpNormalizado()) {
+      this.mostrarToast('error', 'CURP requerido', 'Captura el CURP en el apartado de Datos antes de subir una imagen.');
+      return;
+    }
+    inputImagen.click();
+  }
+
+
+  /** Descarga el binario de la imagen y arma el blob URL */
+  private cargarImagenBinario(curp: string, nombreArchivo: string): void {
+    this.cedisService.obtenerImagenBinario(curp).subscribe({
       next: (blob) => {
         this.liberarImagenUrl();
         this.imagenUrl = URL.createObjectURL(blob);
@@ -245,7 +248,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
 
   /**
    * Dispara la selección de archivo. Si ya hay una imagen cargada
-   * (imagenId presente) el archivo seleccionado actualiza esa imagen;
+   * el archivo seleccionado actualiza esa imagen;
    * si no, se sube como una imagen nueva.
    */
 
@@ -257,31 +260,38 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const curp = this.obtenerCurpNormalizado();
+
+    if (!curp) {
+      this.mostrarToast('error', 'CURP requerido', 'Captura el CURP en el apartado de Datos antes de subir una imagen.');
+      input.value = '';
+      return;
+    }
+
     if (!file.type.startsWith('image/')) {
       this.mostrarToast('error', 'Archivo inválido', 'El archivo seleccionado no es una imagen.');
       input.value = '';
       return;
     }
 
-    if (this.imagenId) {
-      this.actualizarImagenApi(file);
+    if (this.imagenExiste) {
+      this.actualizarImagenApi(curp, file);
     } else {
-      this.subirImagenApi(file);
+      this.subirImagenApi(curp, file);
     }
 
     input.value = '';
   }
 
-  /** 2. Sube una imagen nueva */
-  private subirImagenApi(file: File): void {
+
+  /** Sube una imagen nueva */
+  private subirImagenApi(curp: string, file: File): void {
     this.cargando = true;
 
-    this.cedisService.subirImagen(file).subscribe({
+    this.cedisService.subirImagen(curp, file).subscribe({
       next: (info) => {
         this.imagenInfo = info;
-        this.imagenId = info.id;
-        this.imagenIdConsulta = String(info.id);
-        this.cargarImagenBinario(info.id, info.nombreArchivo);
+        this.cargarImagenBinario(curp, info.nombreArchivo);
         this.mostrarToast('success', 'Imagen subida', `Se subió "${file.name}" correctamente.`);
       },
       error: () => {
@@ -291,19 +301,14 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** 3. Actualiza (reemplaza) el archivo de la imagen ya asociada */
-  private actualizarImagenApi(file: File): void {
-    if (!this.imagenId) {
-      return;
-    }
-
+  /** Actualiza (reemplaza) el archivo de la imagen ya asociada */
+  private actualizarImagenApi(curp: string, file: File): void {
     this.cargando = true;
 
-    this.cedisService.actualizarImagen(this.imagenId, file).subscribe({
+    this.cedisService.actualizarImagen(curp, file).subscribe({
       next: (info) => {
         this.imagenInfo = info;
-        this.imagenId = info.id;
-        this.cargarImagenBinario(info.id, info.nombreArchivo);
+        this.cargarImagenBinario(curp, info.nombreArchivo);
         this.mostrarToast('success', 'Imagen actualizada', 'La imagen se reemplazó correctamente.');
       },
       error: () => {
@@ -313,23 +318,23 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** 4. Elimina la imagen actualmente cargada */
+  /** Elimina la imagen actualmente cargada */
   eliminarImagen(): void {
-    if (!this.imagenId) {
+    const curp = this.obtenerCurpNormalizado();
+
+    if (!curp || !this.imagenExiste) {
       return;
     }
 
     this.cargando = true;
 
-    this.cedisService.eliminarImagenPorId(this.imagenId).subscribe({
+    this.cedisService.eliminarImagenPorCurp(curp).subscribe({
       next: (resp) => {
         this.liberarImagenUrl();
         this.imagenUrl = null;
         this.imagenNombre = '';
         this.imagenAmpliada = false;
         this.imagenInfo = null;
-        this.imagenId = null;
-        this.imagenIdConsulta = '';
         this.cargando = false;
         this.mostrarToast('success', 'Imagen eliminada', resp.mensaje || 'La imagen fue eliminada correctamente.');
       },
@@ -350,6 +355,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     this.imagenAmpliada = false;
   }
 
+
   /** Libera el blob URL anterior para evitar fugas de memoria */
   private liberarImagenUrl(): void {
     if (this.imagenUrl && this.imagenUrl.startsWith('blob:')) {
@@ -357,9 +363,9 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ─────────────────────────────────────────────────────────
-  // Apartado "Validaciones"
-  // ─────────────────────────────────────────────────────────
+  //////////////////////////////////////////
+  //      Validaciones de seguridad
+  //////////////////////////////////////////
   validaciones: ValidacionSeguridad[] = [];
   validacionesCargadas = false;
 
@@ -424,9 +430,9 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ─────────────────────────────────────────────────────────
-  // Apartado "Datos" → sección Veto
-  // ─────────────────────────────────────────────────────────
+  //////////////////////////////////////////
+  //          Veto
+  //////////////////////////////////////////
   catalogoTiposVeto: TipoVeto[] = [];
   tipoVetoOptions: ISelectOption[] = [];
 
@@ -582,9 +588,9 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     return `${yyyy}-${mm}-${dd}`;
   }
 
-  // ─────────────────────────────────────────────────────────
-  // Apartado "Incidencias"
-  // ─────────────────────────────────────────────────────────
+  //////////////////////////////////////////
+  //          Incidencias
+  //////////////////////////////////////////
   incidencias: Incidencia[] = [];
   incidenciasCargadas = false;
 
@@ -690,9 +696,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     return `${dd}/${mm}/${yyyy}`;
   }
 
-  // ─────────────────────────────────────────────────────────
-  // Edición de incidencias (modal)
-  // ─────────────────────────────────────────────────────────
+  // Modal incidencias
   modalEdicionIncidenciaVisible = false;
   incidenciaEnEdicion: Incidencia | null = null;
   edicionIncidenciaForm: EdicionIncidenciaForm = { nivel: '', descripcion: '' };
@@ -747,9 +751,9 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ─────────────────────────────────────────────────────────
-  // Apartado "Otros": elementos adicionales de entrada
-  // ─────────────────────────────────────────────────────────
+  //////////////////////////////////////////
+  //    Otros: elementos adicionales
+  //////////////////////////////////////////
   elementosAdicionales: ElementoAdicional[] = [];
   elementosAdicionalesCargados = false;
 
@@ -820,9 +824,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ─────────────────────────────────────────────────────────
-  // Edición de elementos adicionales (modal)
-  // ─────────────────────────────────────────────────────────
+  // Modal elementos adicionales
   modalEdicionElementoVisible = false;
   elementoEnEdicion: ElementoAdicional | null = null;
   edicionElementoForm: EdicionElementoForm = {
@@ -884,9 +886,9 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ─────────────────────────────────────────────────────────
-  // Navegación entre apartados
-  // ─────────────────────────────────────────────────────────
+  //////////////////////////////////////////
+  //          Navegacion entre apartados
+  //////////////////////////////////////////
   seleccionarApartado(id: string): void {
     this.apartadoActivo = id;
 
@@ -905,16 +907,14 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ─────────────────────────────────────────────────────────
-  // Reset general: limpia todos los apartados del componente
-  // ─────────────────────────────────────────────────────────
+  //////////////////////////////////////////
+  //      Reset global del componente
+  //////////////////////////////////////////
   resetFormulario(): void {
     this.datosForm = { ...this.datosFormInicial };
 
     this.liberarImagenUrl();
-    this.imagenIdConsulta = '';
     this.imagenInfo = null;
-    this.imagenId = null;
     this.imagenUrl = null;
     this.imagenNombre = '';
     this.imagenAmpliada = false;
