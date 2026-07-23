@@ -1,7 +1,6 @@
-// ─────────────────────────────────────────────────────────
-// Validaciones de seguridad
-// ─────────────────────────────────────────────────────────
-
+/////////////////////////////////////////
+//      Validaciones de seguridad
+/////////////////////////////////////////
 export interface ValidacionSeguridad {
   errId: number;
   errMsg: string;
@@ -26,9 +25,9 @@ export interface ActualizarValidacionResponse {
   lblEstadoValidacion: string;
 }
 
-// ─────────────────────────────────────────────────────────
-// Vetos
-// ─────────────────────────────────────────────────────────
+/////////////////////////////////////////
+//              Vetos
+/////////////////////////////////////////
 
 export interface TipoVeto {
   errId: number;
@@ -40,7 +39,6 @@ export interface TipoVeto {
   lblDiasRestantes: string;
 }
 
-/** Respuesta de GET /vetos?curp=... cuando ya existe un veto registrado */
 export interface VetoExistente {
   errId: number;
   errMsg: string;
@@ -71,10 +69,10 @@ export interface AplicarVetoResponse {
   lblDiasRestantes: string;
 }
 
-// ─────────────────────────────────────────────────────────
-// Incidencias
-// ─────────────────────────────────────────────────────────
 
+/////////////////////////////////////////
+//              Incidencias
+/////////////////////////////////////////
 export interface Incidencia {
   errId: number;
   errMsg: string;
@@ -87,11 +85,6 @@ export interface Incidencia {
   lblColor: string;
 }
 
-/**
- * El catálogo de niveles regresa la forma "invertida" respecto a
- * Incidencia: aquí lblDescripcionNivel trae la CLAVE ("1","2","3")
- * y lblDescripcion trae la ETIQUETA ("Bajo","Medio","Alto").
- */
 export interface NivelIncidenciaCatalogo {
   errId: number;
   errMsg: string;
@@ -128,10 +121,10 @@ export interface IncidenciaResponse {
   lblColor: string;
 }
 
-// ─────────────────────────────────────────────────────────
-// Otros: elementos adicionales de entrada
-// ─────────────────────────────────────────────────────────
 
+/////////////////////////////////////////
+// Otros: elementos adicionales de entrada
+/////////////////////////////////////////
 export interface ElementoAdicional {
   errId: number;
   errMsg: string;
@@ -168,51 +161,12 @@ export interface ElementoAdicionalResponse {
   lblCantidad: string;
 }
 
-// ─────────────────────────────────────────────────────────
-// Otros: elementos adicionales
-// ─────────────────────────────────────────────────────────
 
-export interface ElementoAdicional {
-  errId: number;
-  errMsg: string;
-  lblId: string;
-  lblClasifica: string;
-  lblDescripcion: string;
-  lblCantidad: string;
-}
-
-export interface CrearElementoAdicionalPayload {
-  tipoElemento: string;
-  descripcionElemento: string;
-  cantidad: string;
-  curp: string;
-  usuario: string;
-}
-
-export interface ActualizarElementoAdicionalPayload {
-  idElemento: string;
-  tipoElemento: string;
-  descripcionElemento: string;
-  cantidad: string;
-  curp: string;
-  usuario: string;
-}
-
-export interface ElementoAdicionalResponse {
-  errId: number;
-  errMsg: string;
-  lblId: string;
-  lblClasifica: string;
-  lblDescripcion: string;
-  lblCantidad: string;
-}
-
-// ─────────────────────────────────────────────────────────
-// Imagen
-// ─────────────────────────────────────────────────────────
-
+/////////////////////////////////////////
+//              Imagenes
+/////////////////////////////////////////
 export interface ImagenInfo {
-  id: number;
+  CURP: string;
   carpeta: string;
   nombreArchivo: string;
   pathRelativo: string;
