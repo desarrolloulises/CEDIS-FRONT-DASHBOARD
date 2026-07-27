@@ -2,10 +2,7 @@
      SPINNER GLOBAL (overlay)
      Se activa durante llamadas a la API que bloquean la pantalla
      ════════════════════════════════════════════════════════════════ -->
-<app-loading-spinner
-  [visible]="cargando"
-  [overlay]="true"
-  texto="Procesando...">
+<app-loading-spinner [visible]="cargando" [overlay]="true" texto="Procesando...">
 </app-loading-spinner>
 
 
@@ -14,11 +11,7 @@
      Se monta/desmonta con *ngIf para que OnInit/OnDestroy
      del timer funcionen correctamente en cada aparición
      ════════════════════════════════════════════════════════════════ -->
-<app-toast
-  *ngIf="toastVisible"
-  [tipo]="toastTipo"
-  [titulo]="toastTitulo"
-  [mensaje]="toastMensaje"
+<app-toast *ngIf="toastVisible" [tipo]="toastTipo" [titulo]="toastTitulo" [mensaje]="toastMensaje"
   (cerrar)="toastVisible = false">
 </app-toast>
 
@@ -49,10 +42,7 @@
     <div class="ev-header__bottom">
 
       <div class="ev-search-container">
-        <app-input
-          placeholder="Buscar visitante por nombre, empresa o CURP..."
-          size="sm"
-          [value]="filtro"
+        <app-input placeholder="Buscar visitante por nombre, empresa o CURP..." size="sm" [value]="filtro"
           (valueChange)="filtro = $event">
         </app-input>
       </div>
@@ -113,26 +103,12 @@
           </td>
           <td>{{ v.placas || '—' }}</td>
           <td class="ev-actions">
-            <app-icon-button
-              type="secondary"
-              icon="ti ti-pencil"
-              size="xs"
-              title="Editar"
-              (click)="openEditar(v)">
+            <app-icon-button type="secondary" icon="ti ti-pencil" size="xs" title="Editar" (click)="openEditar(v)">
             </app-icon-button>
-            <app-icon-button
-              type="warning"
-              icon="ti ti-logout"
-              size="xs"
-              title="Dar Salida"
+            <app-icon-button type="warning" icon="ti ti-logout" size="xs" title="Dar Salida"
               (click)="marcarSalida(v.id)">
             </app-icon-button>
-            <app-icon-button
-              type="ghost"
-              icon="ti ti-printer"
-              size="xs"
-              title="Imprimir QR"
-              (click)="imprimir(v)">
+            <app-icon-button type="ghost" icon="ti ti-printer" size="xs" title="Imprimir QR" (click)="imprimir(v)">
             </app-icon-button>
           </td>
         </tr>
@@ -143,6 +119,12 @@
       </tbody>
     </table>
   </div>
+
+  <!-- Ayuda atajos -->
+  <p class="etc-shortcuts-hint">
+    <span><kbd>F1</kbd> Nuevo registro</span>
+    <span><kbd>F2</kbd> Buscar</span>
+  </p>
 
 </div>
 
@@ -155,38 +137,26 @@
   <div class="ev-modal__body">
 
     <!-- TIPO -->
-    <app-select
-      [value]="form.tipo"
-      [options]="tiposOptions"
-      (valueChange)="form.tipo = $any($event); onChangeTipo()">
+    <app-select [value]="form.tipo" [options]="tiposOptions" (valueChange)="form.tipo = $any($event); onChangeTipo()">
     </app-select>
 
     <!-- NOMBRES -->
     <div class="ev-field-row">
       <div class="ev-field">
         <label class="ev-label">NOMBRE <span class="ev-req">*</span></label>
-        <app-input
-          placeholder="Nombre"
-          [value]="form.nombre"
-          [disabled]="curpBloqueado"
+        <app-input placeholder="Nombre" [value]="form.nombre" [disabled]="curpBloqueado"
           (valueChange)="form.nombre = $event">
         </app-input>
       </div>
       <div class="ev-field">
         <label class="ev-label">AP. PATERNO <span class="ev-req">*</span></label>
-        <app-input
-          placeholder="Ap. Paterno"
-          [value]="form.apellidoPaterno"
-          [disabled]="curpBloqueado"
+        <app-input placeholder="Ap. Paterno" [value]="form.apellidoPaterno" [disabled]="curpBloqueado"
           (valueChange)="form.apellidoPaterno = $event">
         </app-input>
       </div>
       <div class="ev-field">
         <label class="ev-label">AP. MATERNO</label>
-        <app-input
-          placeholder="Ap. Materno"
-          [value]="form.apellidoMaterno"
-          [disabled]="curpBloqueado"
+        <app-input placeholder="Ap. Materno" [value]="form.apellidoMaterno" [disabled]="curpBloqueado"
           (valueChange)="form.apellidoMaterno = $event">
         </app-input>
       </div>
@@ -196,25 +166,12 @@
     <div class="ev-field ev-field--curp">
       <label class="ev-label">CURP</label>
       <div class="ev-input-group">
-        <app-input
-          placeholder="CURP"
-          [value]="form.curp"
-          [disabled]="curpBloqueado"
-          [mono]="true"
+        <app-input placeholder="CURP" [value]="form.curp" [disabled]="curpBloqueado" [mono]="true"
           (valueChange)="form.curp = $event">
         </app-input>
-        <app-button
-          *ngIf="curpBloqueado"
-          label="Desbloquear"
-          type="secondary"
-          size="sm"
-          (clicked)="desbloquearCURP()">
+        <app-button *ngIf="curpBloqueado" label="Desbloquear" type="secondary" size="sm" (clicked)="desbloquearCURP()">
         </app-button>
-        <app-button
-          *ngIf="!curpBloqueado"
-          label="Consultar por CURP"
-          type="secondary"
-          size="sm"
+        <app-button *ngIf="!curpBloqueado" label="Consultar por CURP" type="secondary" size="sm"
           (clicked)="abrirConsultaCURP()">
         </app-button>
       </div>
@@ -223,20 +180,14 @@
     <!-- EMPRESA (solo Servicio Externo) -->
     <div class="ev-field ev-field--full" *ngIf="form.tipo === 'Servicio Externo'">
       <label class="ev-label">EMPRESA <span class="ev-req">*</span></label>
-      <app-input
-        placeholder="Nombre de la empresa"
-        [value]="form.empresa"
-        (valueChange)="form.empresa = $event">
+      <app-input placeholder="Nombre de la empresa" [value]="form.empresa" (valueChange)="form.empresa = $event">
       </app-input>
     </div>
 
     <!-- ÁREA (solo Candidato) -->
     <div class="ev-field ev-field--full" *ngIf="form.tipo === 'Candidato'">
       <label class="ev-label">ÁREA QUE VISITA <span class="ev-req">*</span></label>
-      <app-select
-        [value]="form.areaQueVisita"
-        [options]="areasOptions"
-        placeholder="Seleccionar área"
+      <app-select [value]="form.areaQueVisita" [options]="areasOptions" placeholder="Seleccionar área"
         (valueChange)="form.areaQueVisita = $event">
       </app-select>
     </div>
@@ -252,35 +203,23 @@
     <div class="ev-field-row" *ngIf="form.tieneVehiculo">
       <div class="ev-field">
         <label class="ev-label">TIPO VEHÍCULO</label>
-        <app-select
-          [value]="form.tipoVehiculo"
-          [options]="vehiculosOptions"
-          placeholder="Tipo de vehículo"
+        <app-select [value]="form.tipoVehiculo" [options]="vehiculosOptions" placeholder="Tipo de vehículo"
           (valueChange)="form.tipoVehiculo = $event">
         </app-select>
       </div>
       <div class="ev-field">
         <label class="ev-label">MARCA</label>
-        <app-input
-          placeholder="Marca"
-          [value]="form.marcaVehiculo"
-          (valueChange)="form.marcaVehiculo = $event">
+        <app-input placeholder="Marca" [value]="form.marcaVehiculo" (valueChange)="form.marcaVehiculo = $event">
         </app-input>
       </div>
       <div class="ev-field">
         <label class="ev-label">MODELO (AÑO)</label>
-        <app-input
-          placeholder="Modelo"
-          [value]="form.modeloVehiculo"
-          (valueChange)="form.modeloVehiculo = $event">
+        <app-input placeholder="Modelo" [value]="form.modeloVehiculo" (valueChange)="form.modeloVehiculo = $event">
         </app-input>
       </div>
       <div class="ev-field">
         <label class="ev-label">PLACAS</label>
-        <app-input
-          placeholder="Placas"
-          [value]="form.placas"
-          (valueChange)="form.placas = $event">
+        <app-input placeholder="Placas" [value]="form.placas" (valueChange)="form.placas = $event">
         </app-input>
       </div>
     </div>
@@ -288,17 +227,9 @@
   </div><!-- /body -->
 
   <div class="ev-modal__footer">
-    <app-button
-      label="Cancelar"
-      type="ghost"
-      size="sm"
-      (clicked)="showAlta = false">
+    <app-button label="Cancelar" type="ghost" size="sm" (clicked)="showAlta = false">
     </app-button>
-    <app-button
-      label="{{ modalBotonPrimario }}"
-      type="primary"
-      size="sm"
-      [disabled]="!formValido || cargando"
+    <app-button label="{{ modalBotonPrimario }}" type="primary" size="sm" [disabled]="!formValido || cargando"
       (clicked)="registrar()">
     </app-button>
   </div>
@@ -324,11 +255,7 @@
         CURP (18 caracteres)
       </label>
 
-      <app-input
-        placeholder="CURP"
-        [value]="consultaCURP"
-        [mono]="true"
-        (valueChange)="consultaCURP = $event"
+      <app-input placeholder="CURP" [value]="consultaCURP" [mono]="true" (valueChange)="consultaCURP = $event"
         (enter)="consultarCURP()">
       </app-input>
 
@@ -342,25 +269,14 @@
 
   <div class="ev-modal__footer">
 
-    <app-button
-      label="Cancelar"
-      type="ghost"
-      size="sm"
-      (clicked)="showCURP = false">
+    <app-button label="Cancelar" type="ghost" size="sm" (clicked)="showCURP = false">
     </app-button>
 
     <!-- Spinner compacto inline mientras se consulta la CURP -->
-    <app-loading-spinner
-      [visible]="cargandoCURP"
-      [compact]="true"
-      texto="Consultando...">
+    <app-loading-spinner [visible]="cargandoCURP" [compact]="true" texto="Consultando...">
     </app-loading-spinner>
 
-    <app-button
-      label="Buscar"
-      type="primary"
-      size="sm"
-      [disabled]="consultaCURP.trim().length < 18 || cargandoCURP"
+    <app-button label="Buscar" type="primary" size="sm" [disabled]="consultaCURP.trim().length < 18 || cargandoCURP"
       (clicked)="consultarCURP()">
     </app-button>
 
@@ -380,28 +296,16 @@
     <p class="ev-modal__hint">Escanea o ingresa la CURP del visitante.</p>
     <div class="ev-field ev-field--full">
       <label class="ev-label">CURP / QR</label>
-      <app-input
-        placeholder="CURP del visitante"
-        [value]="qrInput"
-        [mono]="true"
-        (valueChange)="qrInput = $event"
+      <app-input placeholder="CURP del visitante" [value]="qrInput" [mono]="true" (valueChange)="qrInput = $event"
         (enter)="submitQR()">
       </app-input>
     </div>
   </div>
 
   <div class="ev-modal__footer">
-    <app-button
-      label="Cancelar"
-      type="ghost"
-      size="sm"
-      (clicked)="showQR = false">
+    <app-button label="Cancelar" type="ghost" size="sm" (clicked)="showQR = false">
     </app-button>
-    <app-button
-      label="Registrar"
-      type="primary"
-      size="sm"
-      [disabled]="!qrInput.trim() || cargando"
+    <app-button label="Registrar" type="primary" size="sm" [disabled]="!qrInput.trim() || cargando"
       (clicked)="submitQR()">
     </app-button>
   </div>

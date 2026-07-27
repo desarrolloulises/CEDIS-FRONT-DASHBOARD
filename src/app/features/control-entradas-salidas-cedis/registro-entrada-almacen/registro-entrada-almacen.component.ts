@@ -187,7 +187,6 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
 
   /** Blob URL usado para mostrar la imagen en el <img> */
   imagenUrl: string | null = null;
-  imagenNombre = '';
   imagenAmpliada = false;
 
   get imagenExiste(): boolean {
@@ -204,23 +203,22 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     this.cedisService.obtenerImagenInfo(curp).subscribe({
       next: (info) => {
         this.imagenInfo = info;
-        this.cargarImagenBinario(curp, info.nombreArchivo);
+        this.cargarImagenBinario(curp);
       },
       error: () => {
         this.cargando = false;
         this.imagenInfo = null;
         this.liberarImagenUrl();
         this.imagenUrl = null;
-        this.imagenNombre = '';
         // Sin imagen asociada para este CURP; no se muestra error, es un estado válido.
       }
     });
   }
 
   /**
- * Dispara la selección/captura de imagen. Requiere que el CURP ya
- * esté capturado en el apartado de Datos.
- */
+   * Dispara la selección/captura de imagen. Requiere que el CURP ya
+   * esté capturado en el apartado de Datos.
+   */
   abrirCapturaImagen(inputImagen: HTMLInputElement): void {
     if (!this.obtenerCurpNormalizado()) {
       this.mostrarToast('error', 'CURP requerido', 'Captura el CURP en el apartado de Datos antes de subir una imagen.');
@@ -229,14 +227,12 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     inputImagen.click();
   }
 
-
   /** Descarga el binario de la imagen y arma el blob URL */
-  private cargarImagenBinario(curp: string, nombreArchivo: string): void {
+  private cargarImagenBinario(curp: string): void {
     this.cedisService.obtenerImagenBinario(curp).subscribe({
       next: (blob) => {
         this.liberarImagenUrl();
         this.imagenUrl = URL.createObjectURL(blob);
-        this.imagenNombre = nombreArchivo;
         this.cargando = false;
       },
       error: () => {
@@ -251,7 +247,6 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
    * el archivo seleccionado actualiza esa imagen;
    * si no, se sube como una imagen nueva.
    */
-
   onSeleccionarImagen(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files && input.files[0];
@@ -283,7 +278,6 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     input.value = '';
   }
 
-
   /** Sube una imagen nueva */
   private subirImagenApi(curp: string, file: File): void {
     this.cargando = true;
@@ -291,7 +285,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     this.cedisService.subirImagen(curp, file).subscribe({
       next: (info) => {
         this.imagenInfo = info;
-        this.cargarImagenBinario(curp, info.nombreArchivo);
+        this.cargarImagenBinario(curp);
         this.mostrarToast('success', 'Imagen subida', `Se subió "${file.name}" correctamente.`);
       },
       error: () => {
@@ -308,7 +302,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     this.cedisService.actualizarImagen(curp, file).subscribe({
       next: (info) => {
         this.imagenInfo = info;
-        this.cargarImagenBinario(curp, info.nombreArchivo);
+        this.cargarImagenBinario(curp);
         this.mostrarToast('success', 'Imagen actualizada', 'La imagen se reemplazó correctamente.');
       },
       error: () => {
@@ -332,7 +326,6 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       next: (resp) => {
         this.liberarImagenUrl();
         this.imagenUrl = null;
-        this.imagenNombre = '';
         this.imagenAmpliada = false;
         this.imagenInfo = null;
         this.cargando = false;
@@ -354,7 +347,6 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
   cerrarImagenAmpliada(): void {
     this.imagenAmpliada = false;
   }
-
 
   /** Libera el blob URL anterior para evitar fugas de memoria */
   private liberarImagenUrl(): void {
@@ -916,7 +908,6 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     this.liberarImagenUrl();
     this.imagenInfo = null;
     this.imagenUrl = null;
-    this.imagenNombre = '';
     this.imagenAmpliada = false;
 
     this.validaciones = [];

@@ -80,15 +80,13 @@
             <span class="campo-label">Imagen</span>
 
             <div class="imagen-preview">
-              <img *ngIf="imagenUrl" [src]="imagenUrl" [alt]="imagenNombre" (click)="verImagenAmpliada()">
+              <img *ngIf="imagenUrl" [src]="imagenUrl" alt="Imagen" (click)="verImagenAmpliada()">
 
               <div *ngIf="!imagenUrl" class="imagen-vacia">
                 <i class="ti ti-photo"></i>
                 <span>{{ datosForm.curp ? 'Sin imagen' : 'Captura el CURP primero' }}</span>
               </div>
             </div>
-
-            <span class="imagen-nombre" *ngIf="imagenNombre">{{ imagenNombre }}</span>
 
             <div class="imagen-acciones">
               <app-icon-button icon="ti ti-eye" type="secondary" title="Visualizar" [disabled]="!imagenUrl"
@@ -167,10 +165,6 @@
               <app-input *ngIf="!tipoVetoSeleccionadoEsDefinitivo" label="Fecha término" type="date"
                 [value]="nuevoVeto.fechaTermino" (valueChange)="nuevoVeto.fechaTermino = $event">
               </app-input>
-
-              <span *ngIf="tipoVetoSeleccionadoEsDefinitivo" class="veto-nota">
-                Al ser definitivo, no se solicita fecha de término.
-              </span>
 
               <div class="veto-aplicar">
                 <app-button label="Cancelar" type="ghost" size="sm" *ngIf="editandoVeto"
@@ -374,7 +368,7 @@
 
   <!-- Modal simple para visualizar la imagen ampliada -->
   <div *ngIf="imagenAmpliada" class="imagen-modal" (click)="cerrarImagenAmpliada()">
-    <img [src]="imagenUrl" [alt]="imagenNombre">
+    <img [src]="imagenUrl" alt="Imagen">
   </div>
 
   <!-- Modal para editar una incidencia -->
