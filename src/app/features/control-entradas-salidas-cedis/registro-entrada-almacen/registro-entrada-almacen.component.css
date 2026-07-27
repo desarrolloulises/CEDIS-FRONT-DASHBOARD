@@ -156,12 +156,6 @@
   font-size: 28px;
 }
 
-.imagen-nombre {
-  font-size: 12px;
-  color: var(--texto-secundario);
-  word-break: break-all;
-}
-
 .imagen-acciones {
   display: flex;
   gap: 8px;
@@ -445,6 +439,7 @@
 
 .aviso {
   font-size: 13px;
+  text-align: center;
   color: var(--texto-secundario);
   padding: 10px 12px;
   border-radius: var(--radius-md);

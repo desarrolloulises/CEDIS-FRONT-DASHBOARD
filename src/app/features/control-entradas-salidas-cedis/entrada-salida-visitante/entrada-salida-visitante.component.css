@@ -107,6 +107,27 @@
   white-space: nowrap;
 }
 
+/* ── Atajos hint ───────────────────────────────────────────────── */
+.etc-shortcuts-hint {
+  margin: 10px 0 0;
+  display: flex;
+  gap: 16px;
+  font-size: .72rem;
+  color: var(--ev-text-light);
+}
+
+.etc-shortcuts-hint kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  border: 1px solid var(--ev-border);
+  border-radius: 3px;
+  background: #f8fafc;
+  font-family: var(--ev-font-mono);
+  font-size: .7rem;
+  color: var(--ev-text-muted);
+  margin-right: 3px;
+}
+
 /* ── Table ─────────────────────────────────────────────────────── */
 .ev-table-wrap {
   background: var(--ev-surface);
@@ -157,7 +178,7 @@
 }
 
 .ev-table tbody td {
-  padding:  var(--space-xs) var(--space-md);
+  padding: var(--space-xs) var(--space-md);
   color: var(--ev-text);
   font-size: .82rem;
   font-weight: 400;
@@ -188,6 +209,7 @@
   padding: 0;
   border-radius: 0;
 }
+
 /* ── Action icons ──────────────────────────────────────────────── */
 
 .ev-actions {

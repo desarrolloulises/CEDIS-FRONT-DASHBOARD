@@ -69,7 +69,6 @@ export interface AplicarVetoResponse {
   lblDiasRestantes: string;
 }
 
-
 /////////////////////////////////////////
 //              Incidencias
 /////////////////////////////////////////
@@ -121,7 +120,6 @@ export interface IncidenciaResponse {
   lblColor: string;
 }
 
-
 /////////////////////////////////////////
 // Otros: elementos adicionales de entrada
 /////////////////////////////////////////
@@ -161,14 +159,11 @@ export interface ElementoAdicionalResponse {
   lblCantidad: string;
 }
 
-
 /////////////////////////////////////////
 //              Imagenes
 /////////////////////////////////////////
 export interface ImagenInfo {
   CURP: string;
-  carpeta: string;
-  nombreArchivo: string;
   pathRelativo: string;
 }
 
