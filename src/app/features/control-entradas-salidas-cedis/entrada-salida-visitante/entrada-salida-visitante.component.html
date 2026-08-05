@@ -1,6 +1,5 @@
 <!-- ════════════════════════════════════════════════════════════════
      SPINNER GLOBAL (overlay)
-     Se activa durante llamadas a la API que bloquean la pantalla
      ════════════════════════════════════════════════════════════════ -->
 <app-loading-spinner [visible]="cargando" [overlay]="true" texto="Procesando...">
 </app-loading-spinner>
@@ -8,8 +7,6 @@
 
 <!-- ════════════════════════════════════════════════════════════════
      TOAST
-     Se monta/desmonta con *ngIf para que OnInit/OnDestroy
-     del timer funcionen correctamente en cada aparición
      ════════════════════════════════════════════════════════════════ -->
 <app-toast *ngIf="toastVisible" [tipo]="toastTipo" [titulo]="toastTitulo" [mensaje]="toastMensaje"
   (cerrar)="toastVisible = false">
@@ -66,8 +63,6 @@
           <th>Tipo</th>
           <th>Fecha</th>
           <th>Nombre</th>
-          <th>Ap. Paterno</th>
-          <th>Ap. Materno</th>
           <th>CURP</th>
           <th>Empresa / Área</th>
           <th>Vehículo</th>
@@ -78,26 +73,17 @@
       <tbody>
         <tr *ngFor="let v of visitasFiltradas; trackBy: trackById">
           <td>
-            <span [class]="badgeClass(v.tipo)">
-              {{ v.tipo }}
+            <span [class]="badgeClass(v.tipoIngreso)">
+              {{ v.tipoIngreso }}
             </span>
           </td>
-          <td>{{ v.fecha }}</td>
+          <td>{{ formatFecha(v.fechaCita) }}</td>
           <td>{{ v.nombre }}</td>
-          <td>{{ v.apellidoPaterno }}</td>
-          <td>{{ v.apellidoMaterno }}</td>
-          <td class="ev-curp">{{ v.curp }}</td>
+          <td class="ev-curp">{{ v.CURP }}</td>
+          <td>{{ empresaOArea(v) }}</td>
           <td>
-            <ng-container *ngIf="v.tipo === 'Servicio Externo'; else areaTpl">
-              {{ v.empresa || '—' }}
-            </ng-container>
-            <ng-template #areaTpl>
-              {{ v.areaQueVisita || '—' }}
-            </ng-template>
-          </td>
-          <td>
-            <ng-container *ngIf="v.tieneVehiculo; else sinVeh">
-              {{ v.tipoVehiculo }} {{ v.marcaVehiculo }}
+            <ng-container *ngIf="v.descripcionUnidad; else sinVeh">
+              {{ v.descripcionUnidad }} {{ v.marca }}
             </ng-container>
             <ng-template #sinVeh>—</ng-template>
           </td>
@@ -105,8 +91,11 @@
           <td class="ev-actions">
             <app-icon-button type="secondary" icon="ti ti-pencil" size="xs" title="Editar" (click)="openEditar(v)">
             </app-icon-button>
-            <app-icon-button type="warning" icon="ti ti-logout" size="xs" title="Dar Salida"
-              (click)="marcarSalida(v.id)">
+            <app-icon-button type="success" icon="ti ti-login" size="xs" title="Dar Entrada" [disabled]="!v.entrada"
+              (click)="marcarEntrada(v)">
+            </app-icon-button>
+            <app-icon-button type="warning" icon="ti ti-logout" size="xs" title="Dar Salida" [disabled]="!v.salida"
+              (click)="marcarSalida(v)">
             </app-icon-button>
             <app-icon-button type="ghost" icon="ti ti-printer" size="xs" title="Imprimir QR" (click)="imprimir(v)">
             </app-icon-button>
@@ -114,7 +103,7 @@
         </tr>
 
         <tr *ngIf="visitasFiltradas.length === 0">
-          <td colspan="10" class="ev-empty">Sin registros que coincidan.</td>
+          <td colspan="8" class="ev-empty">Sin registros que coincidan.</td>
         </tr>
       </tbody>
     </table>
@@ -136,9 +125,13 @@
 <app-modal [visible]="showAlta" [title]="modalTitulo" (close)="showAlta = false">
   <div class="ev-modal__body">
 
-    <!-- TIPO -->
-    <app-select [value]="form.tipo" [options]="tiposOptions" (valueChange)="form.tipo = $any($event); onChangeTipo()">
-    </app-select>
+    <!-- MOTIVO DE VISITA -->
+    <div class="ev-field ev-field--full">
+      <label class="ev-label">MOTIVO DE VISITA <span class="ev-req">*</span></label>
+      <app-select [value]="form.idTipoIngreso ? (form.idTipoIngreso + '') : ''" [options]="motivosOptions"
+        placeholder="Seleccionar motivo" (valueChange)="onChangeMotivo($any($event))">
+      </app-select>
+    </div>
 
     <!-- NOMBRES -->
     <div class="ev-field-row">
@@ -150,21 +143,21 @@
       </div>
       <div class="ev-field">
         <label class="ev-label">AP. PATERNO <span class="ev-req">*</span></label>
-        <app-input placeholder="Ap. Paterno" [value]="form.apellidoPaterno" [disabled]="curpBloqueado"
-          (valueChange)="form.apellidoPaterno = $event">
+        <app-input placeholder="Ap. Paterno" [value]="form.paterno" [disabled]="curpBloqueado"
+          (valueChange)="form.paterno = $event">
         </app-input>
       </div>
       <div class="ev-field">
         <label class="ev-label">AP. MATERNO</label>
-        <app-input placeholder="Ap. Materno" [value]="form.apellidoMaterno" [disabled]="curpBloqueado"
-          (valueChange)="form.apellidoMaterno = $event">
+        <app-input placeholder="Ap. Materno" [value]="form.materno" [disabled]="curpBloqueado"
+          (valueChange)="form.materno = $event">
         </app-input>
       </div>
     </div>
 
     <!-- CURP -->
     <div class="ev-field ev-field--curp">
-      <label class="ev-label">CURP</label>
+      <label class="ev-label">CURP <span class="ev-req">*</span></label>
       <div class="ev-input-group">
         <app-input placeholder="CURP" [value]="form.curp" [disabled]="curpBloqueado" [mono]="true"
           (valueChange)="form.curp = $event">
@@ -177,22 +170,35 @@
       </div>
     </div>
 
-    <!-- EMPRESA (solo Servicio Externo) -->
-    <div class="ev-field ev-field--full" *ngIf="form.tipo === 'Servicio Externo'">
-      <label class="ev-label">EMPRESA <span class="ev-req">*</span></label>
-      <app-input placeholder="Nombre de la empresa" [value]="form.empresa" (valueChange)="form.empresa = $event">
-      </app-input>
+    <!-- EMPRESA (motivo con opcion === 1) -->
+    <div class="ev-field-row" *ngIf="mostrarCamposEmpresa">
+      <div class="ev-field">
+        <label class="ev-label">ID EMPRESA <span class="ev-req">*</span></label>
+        <div class="ev-input-group">
+          <app-input placeholder="Id. empresa" [value]="form.idEmpresa ? (form.idEmpresa + '') : ''"
+            (valueChange)="form.idEmpresa = $event ? +$event : 0" (enter)="onBuscarRazonSocial()">
+          </app-input>
+          <app-button label="Buscar" type="secondary" size="sm" [disabled]="!form.idEmpresa || cargandoEmpresa"
+            (clicked)="onBuscarRazonSocial()">
+          </app-button>
+        </div>
+      </div>
+      <div class="ev-field ev-field--full">
+        <label class="ev-label">EMPRESA</label>
+        <app-input placeholder="Razón social" [value]="form.empresa" [disabled]="true">
+        </app-input>
+      </div>
     </div>
 
-    <!-- ÁREA (solo Candidato) -->
-    <div class="ev-field ev-field--full" *ngIf="form.tipo === 'Candidato'">
+    <!-- ÁREA (motivo con opcion > 1) -->
+    <div class="ev-field ev-field--full" *ngIf="mostrarCatalogoArea">
       <label class="ev-label">ÁREA QUE VISITA <span class="ev-req">*</span></label>
-      <app-select [value]="form.areaQueVisita" [options]="areasOptions" placeholder="Seleccionar área"
-        (valueChange)="form.areaQueVisita = $event">
+      <app-select [value]="form.idArea ? (form.idArea + '') : ''" [options]="areasOptions"
+        placeholder="Seleccionar área" (valueChange)="onChangeArea($any($event))">
       </app-select>
     </div>
 
-    <!-- VEHÍCULO -->
+    <!-- VEHÍCULO (todos los datos de vehículo son opcionales) -->
     <div class="ev-field ev-field--full">
       <label class="ev-checkbox">
         <input type="checkbox" [(ngModel)]="form.tieneVehiculo" (ngModelChange)="onToggleVehiculo()" />
@@ -202,19 +208,19 @@
 
     <div class="ev-field-row" *ngIf="form.tieneVehiculo">
       <div class="ev-field">
-        <label class="ev-label">TIPO VEHÍCULO</label>
-        <app-select [value]="form.tipoVehiculo" [options]="vehiculosOptions" placeholder="Tipo de vehículo"
-          (valueChange)="form.tipoVehiculo = $event">
+        <label class="ev-label">TIPO DE UNIDAD</label>
+        <app-select [value]="form.unidad ? (form.unidad + '') : ''" [options]="tiposUnidadOptions"
+          placeholder="Tipo de unidad" (valueChange)="onChangeTipoUnidad($any($event))">
         </app-select>
       </div>
       <div class="ev-field">
         <label class="ev-label">MARCA</label>
-        <app-input placeholder="Marca" [value]="form.marcaVehiculo" (valueChange)="form.marcaVehiculo = $event">
+        <app-input placeholder="Marca" [value]="form.marca" (valueChange)="form.marca = $event">
         </app-input>
       </div>
       <div class="ev-field">
         <label class="ev-label">MODELO (AÑO)</label>
-        <app-input placeholder="Modelo" [value]="form.modeloVehiculo" (valueChange)="form.modeloVehiculo = $event">
+        <app-input placeholder="Modelo" [value]="form.modelo" (valueChange)="form.modelo = $event">
         </app-input>
       </div>
       <div class="ev-field">
