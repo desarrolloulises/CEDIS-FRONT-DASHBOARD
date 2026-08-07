@@ -64,6 +64,7 @@ export class SidebarComponent {
     40: 'ti-id-badge',
     43: 'ti-inbox',
     44: 'ti-file-report',
+    50: 'ti-truck'
   };
 
   public readonly MAPEO_RUTAS_HIJOS: Record<string, string> = {
@@ -99,7 +100,8 @@ export class SidebarComponent {
     '40-1': 'registro-ingreso-transportista-caseta',
     '40-2': 'registro-personal',
     '40-3': 'control-visita',
-    '44-1': 'ver-reporte/44-1'
+    '44-1': 'ver-reporte/44-1',
+    '50-1': 'registro-arribo-asn'
   };
 
   obtenerSubmenus(modulo: any) {
