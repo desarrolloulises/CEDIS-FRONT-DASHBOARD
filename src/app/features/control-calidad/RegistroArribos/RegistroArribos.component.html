@@ -1,0 +1,87 @@
+<div class="contenedor">
+<div class="tarjeta">
+  <div class="encabezado">
+    <h2>Registro de Arribos</h2>
+    <button
+      *ngIf="datosAsn"
+      class="btn-icono"
+      type="button"
+      title="Volver al inicio"
+      aria-label="Volver al inicio"
+      (click)="volverInicio()"
+    >
+      <i class="ti ti-arrow-left"></i>
+    </button>
+  </div>
+
+  <div class="campo-asn">
+    <label for="asn">ASN</label>
+    <input
+      id="asn"
+      type="text"
+      [(ngModel)]="asnInput"
+      (keyup.enter)="consultarAsn()"
+      placeholder="Escanea o captura el ASN"
+    />
+  </div>
+
+  <div class="datos-asn" *ngIf="datosAsn">
+    <div class="datos-grid">
+      <div class="dato">
+        <span class="etiqueta">Proveedor</span>
+        <span class="valor">{{ datosAsn.proveedor }}</span>
+      </div>
+      <div class="dato">
+        <span class="etiqueta">ID Cita</span>
+        <span class="valor">{{ datosAsn.idCita }}</span>
+      </div>
+      <div class="dato">
+        <span class="etiqueta">Fecha Cita</span>
+        <span class="valor">{{ datosAsn.fechaCita | date:'dd/MM/yyyy' }}</span>
+      </div>
+      <div class="dato">
+        <span class="etiqueta">Cajas</span>
+        <span class="valor">{{ datosAsn.cajas }}</span>
+      </div>
+      <div class="dato">
+        <span class="etiqueta">Estatus</span>
+        <span class="valor badge">
+          {{ datosAsn.estatusArribo === '0' ? 'Pendiente' : 'Registrado' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- razonSocial contemplado pero deshabilitado/oculto por ahora -->
+    <div *ngIf="false" class="dato">
+      <label>Razón Social</label>
+      <input type="text" [value]="datosAsn?.razonSocial" disabled />
+    </div>
+
+    <div class="ordenes">
+      <span class="etiqueta">Órdenes de Compra ({{ datosAsn.ordenesCompra.length }})</span>
+      <ul>
+        <li *ngFor="let oc of datosAsn.ordenesCompra">{{ oc.ordenCompra }}</li>
+      </ul>
+    </div>
+
+    <div class="acciones">
+      <button class="btn btn-primario" *ngIf="datosAsn.estatusArribo === '0'" (click)="registrarArribo()">
+        Registrar Arribo
+      </button>
+      <button class="btn btn-secundario" *ngIf="datosAsn.estatusArribo === '1'" (click)="imprimirTicket()">
+        Imprimir
+      </button>
+    </div>
+  </div>
+
+  <app-loading-spinner [visible]="cargando" [overlay]="true" texto="Procesando..."></app-loading-spinner>
+</div>
+</div>
+
+<app-toast
+  *ngIf="toast"
+  [tipo]="toast.tipo"
+  [titulo]="toast.titulo"
+  [mensaje]="toast.mensaje"
+  (cerrar)="cerrarToast()"
+></app-toast>

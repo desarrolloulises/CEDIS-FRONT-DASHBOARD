@@ -110,6 +110,11 @@ export const routes: Routes = [
         path: 'control-visita',
         loadComponent: () => import('./features/control-entradas-salidas-cedis/entrada-salida-visitante/entrada-salida-visitante.component').then(m => m.EntradaSalidaVisitanteComponent)
       },
+
+      {
+        path: 'registro-arribo-asn',
+        loadComponent: () => import('./features/control-calidad/RegistroArribos/RegistroArribos.component').then(m => m.RegistroArribosComponent)
+      },
     
       {
         path: 'CambiaPass',
