@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, finalize, forkJoin, of } from 'rxjs';
+import QRCode from 'qrcode';
 
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { IconButtonComponent } from '../../../shared/components/icon-button/icon-button.component';
@@ -13,10 +14,11 @@ import { InputComponent } from '../../../shared/components/input/input.component
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { url } from '../../../variables';
+import { DatosService } from '../../../service/servicio.service';
 
-// ═══════════════════════════════════════════════════════════════════════
-// MODELOS 
-// ═══════════════════════════════════════════════════════════════════════
+//////////////////////////////////////////////
+///         MODELOS 
+//////////////////////////////////////////////
 
 export interface VisitanteApi {
   idCita: number;
@@ -24,11 +26,10 @@ export interface VisitanteApi {
   idTipoIngreso: number;
   tipoIngreso: string;
   fechaCita: string;
-  idEmpresa: number;
-  empresa: string;
-  idArea: number;
+  idEmpresaArea: number;
+  empresaArea: string;
   CURP: string;
-  nombre: string; 
+  nombre: string;
   tipoUnidad: number;
   descripcionUnidad: string;
   placas: string;
@@ -42,7 +43,7 @@ export interface VisitanteApi {
 export interface MotivoVisita {
   id: number;
   motivo: string;
-  opcion: number; // 0 = ni empresa ni área, 1 = empresa, >1 = catálogo de áreas (tipo = opcion)
+  opcion: number; // 0 = ni empresa ni área, 1 = empresa, 2+ = catálogo de áreas
 }
 
 /** POST /cedis/visitante/areas */
@@ -80,9 +81,8 @@ export interface RazonSocialResponse {
 /** Formulario de alta/edición */
 export interface FormVisita {
   idTipoIngreso: number | null;
-  idEmpresa: number;
-  empresa: string;
-  idArea: number;
+  idEmpresaArea: number;
+  empresaArea: string;
   curp: string;
   nombre: string;
   paterno: string;
@@ -97,9 +97,8 @@ export interface FormVisita {
 function emptyForm(): FormVisita {
   return {
     idTipoIngreso: null,
-    idEmpresa: 0,
-    empresa: '',
-    idArea: 0,
+    idEmpresaArea: 0,
+    empresaArea: '',
     curp: '',
     nombre: '',
     paterno: '',
@@ -140,10 +139,7 @@ function formatFecha(fechaIso: string): string {
 })
 export class EntradaSalidaVisitanteComponent implements OnInit {
 
-
   private readonly baseUrl = `${url}/cedis`;
-  // TODO: reemplazar
-  usuario = '406991';
 
   // ── Datos ───────────────────────────────────────────────────────────────
   visitas: VisitanteApi[] = [];
@@ -180,7 +176,13 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
   toastTitulo = '';
   toastMensaje = '';
 
-  constructor(private http: HttpClient, private router: Router) { }
+  // ── Imprimir ────────────────────────────────────────────────────────────
+  imprimirAlGuardar = false;
+  readonly imagenReverso = './logo.png';
+  readonly logoFrontal = './logo_sm.png';
+  readonly visitorBarImage = '/visitor_bar.png';
+
+  constructor(private http: HttpClient, private router: Router, private datosService: DatosService) { }
 
   ngOnInit(): void {
     this.cargarDatosIniciales();
@@ -224,11 +226,11 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
   private cargarDatosIniciales(): void {
     this.cargando = true;
     forkJoin({
-      visitas: this.http.post<VisitanteApi[]>(`${this.baseUrl}/visitantes`, { usuario: this.usuario })
+      visitas: this.http.post<VisitanteApi[]>(`${this.baseUrl}/visitantes`, { usuario: this.datosService.usuarioSignal() })
         .pipe(catchError(err => { this.manejarError('Error al cargar visitantes', err); return of([] as VisitanteApi[]); })),
-      motivos: this.http.post<MotivoVisita[]>(`${this.baseUrl}/visitante/motivos-visita`, { usuario: this.usuario })
+      motivos: this.http.post<MotivoVisita[]>(`${this.baseUrl}/visitante/motivos-visita`, { usuario: this.datosService.usuarioSignal() })
         .pipe(catchError(err => { this.manejarError('Error al cargar motivos de visita', err); return of([] as MotivoVisita[]); })),
-      tiposUnidad: this.http.post<TipoUnidadCatalogo[]>(`${this.baseUrl}/visitante/tipos-unidad`, { usuario: this.usuario })
+      tiposUnidad: this.http.post<TipoUnidadCatalogo[]>(`${this.baseUrl}/visitante/tipos-unidad`, { usuario: this.datosService.usuarioSignal() })
         .pipe(catchError(err => { this.manejarError('Error al cargar tipos de unidad', err); return of([] as TipoUnidadCatalogo[]); })),
     }).pipe(finalize(() => (this.cargando = false)))
       .subscribe(({ visitas, motivos, tiposUnidad }) => {
@@ -239,7 +241,7 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
   }
 
   private recargarVisitas(onDone?: () => void): void {
-    this.http.post<VisitanteApi[]>(`${this.baseUrl}/visitantes`, { usuario: this.usuario })
+    this.http.post<VisitanteApi[]>(`${this.baseUrl}/visitantes`, { usuario: this.datosService.usuarioSignal() })
       .pipe(catchError(err => { this.manejarError('Error al recargar visitantes', err); return of([] as VisitanteApi[]); }))
       .subscribe(visitas => {
         this.visitas = visitas;
@@ -252,29 +254,20 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
     const q = this.filtro.toLowerCase().trim();
     if (!q) return this.visitas;
     return this.visitas.filter(v =>
-      [v.nombre, v.tipoIngreso, v.empresa, v.CURP]
+      [v.nombre, v.tipoIngreso, v.empresaArea, v.CURP]
         .some(f => (f || '').toLowerCase().includes(q))
     );
   }
 
-  badgeClass(tipoIngreso: string): string {
-    return 'ev-badge ev-badge--' + (tipoIngreso || '').toLowerCase().replace(/\s+/g, '-');
-  }
-
   empresaOArea(v: VisitanteApi): string {
-    if (v.empresa) return v.empresa;
-    if (v.idArea > 0) {
-      const area = this.areasCatalogo.find(a => a.idArea === v.idArea);
-      return area?.descripcionArea || `Área ${v.idArea}`;
-    }
-    return '—';
+    return v.empresaArea || '—';
   }
 
   // ── Entrada / Salida ────────────────────────────────────────────────────
   marcarEntrada(v: VisitanteApi): void {
     if (!v.entrada) return;
     this.cargando = true;
-    this.http.post<ApiResult>(`${this.baseUrl}/visitante/entrada`, { registro: v.idCita, usuario: this.usuario })
+    this.http.post<ApiResult>(`${this.baseUrl}/visitante/entrada`, { registro: v.idCita, usuario: this.datosService.usuarioSignal() })
       .pipe(finalize(() => (this.cargando = false)))
       .subscribe({
         next: resp => {
@@ -292,7 +285,7 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
   marcarSalida(v: VisitanteApi): void {
     if (!v.salida) return;
     this.cargando = true;
-    this.http.post<ApiResult>(`${this.baseUrl}/visitante/salida`, { registro: v.idCita, usuario: this.usuario })
+    this.http.post<ApiResult>(`${this.baseUrl}/visitante/salida`, { registro: v.idCita, usuario: this.datosService.usuarioSignal() })
       .pipe(finalize(() => (this.cargando = false)))
       .subscribe({
         next: resp => {
@@ -307,8 +300,124 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
       });
   }
 
-  imprimir(v: VisitanteApi): void {
-    console.log('IMPRIMIR:', { curp: v.CURP, nombre: v.nombre });
+  // ── Imprimir etiqueta ───────────────────────────────────────────────────
+  async imprimir(v: VisitanteApi): Promise<void> {
+    try {
+      const curp = v.CURP;
+      const nombre = v.nombre;
+      const qrBase64 = await QRCode.toDataURL(curp, { width: 320, margin: 1 });
+
+      const ventana = window.open('', '_blank', 'width=700,height=1000');
+      if (!ventana) return;
+
+      ventana.document.write(`
+        <html>
+          <head>
+            <title>Etiqueta visitante</title>
+            <style>
+              @page { size: 75mm 100mm; margin: 0; }
+              html, body {
+                margin: 0; padding: 0;
+                width: 75mm; height: 100mm;
+                overflow: hidden;
+                font-family: Arial, sans-serif;
+                background: #fff;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+              body { display: flex; flex-direction: column; }
+              .card-side {
+                position: relative;
+                width: 75mm; height: 50mm;
+                display: flex; overflow: hidden;
+                box-sizing: border-box;
+              }
+              .visitor-bar {
+                position: relative;
+                width: 12mm; flex-shrink: 0;
+                overflow: hidden;
+              }
+              .visitor-bar img {
+                position: absolute;
+                inset: 0; width: 100%; height: 100%;
+                object-fit: cover;
+              }
+              .visitor-text {
+                position: absolute;
+                top: 50%; left: 50%;
+                transform: translate(-50%, -50%) rotate(-90deg);
+                color: #fff; font-size: 10pt; font-weight: 900;
+                letter-spacing: 2px; white-space: nowrap;
+                text-transform: uppercase;
+                font-family: Arial, sans-serif; z-index: 2;
+              }
+              .content {
+                flex: 1; display: flex;
+                flex-direction: column;
+                align-items: center; justify-content: center;
+                box-sizing: border-box;
+              }
+              .front { border-bottom: 1px dashed #000; }
+              .front .content {
+                position: relative;
+                gap: 2mm; padding: 5mm 4mm 4mm;
+                transform: rotate(180deg);
+              }
+              .front-logo {
+                position: absolute;
+                top: 2mm; left: 2mm;
+                width: 10mm; height: 10mm;
+                object-fit: contain;
+              }
+              .qr { width: 30mm; height: 30mm; object-fit: contain; }
+              .curp {
+                font-size: 10pt; font-weight: 700;
+                letter-spacing: .5px; text-align: center;
+              }
+              .visitante {
+                font-size: 8pt; text-align: center; max-width: 90%;
+              }
+              .back .content {
+                display: flex; align-items: center; justify-content: center;
+              }
+              .back-logo {
+                width: 70%; height: 70%;
+                object-fit: contain;
+                image-rendering: crisp-edges;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="card-side front">
+              <div class="visitor-bar">
+                <img src="${this.visitorBarImage}" />
+                <div class="visitor-text">VISITANTE</div>
+              </div>
+              <div class="content">
+                <img class="front-logo" src="${this.logoFrontal}" />
+                <img class="qr" src="${qrBase64}" />
+                <div class="curp">${curp}</div>
+                <div class="visitante">${nombre}</div>
+              </div>
+            </div>
+            <div class="card-side back">
+              <div class="visitor-bar">
+                <img src="${this.visitorBarImage}" />
+                <div class="visitor-text">VISITANTE</div>
+              </div>
+              <div class="content">
+                <img class="back-logo" src="${this.imagenReverso}" />
+              </div>
+            </div>
+            <script>window.onload = () => { window.print(); setTimeout(() => window.close(), 700); };</script>
+          </body>
+        </html>
+      `);
+      ventana.document.close();
+    } catch (error) {
+      console.error('Error impresión:', error);
+      this.mostrarToast('error', 'Error de impresión', 'No se pudo imprimir la etiqueta.');
+    }
   }
 
   // ── Formulario: alta ────────────────────────────────────────────────────
@@ -317,12 +426,11 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
     this.form = emptyForm();
     this.curpBloqueado = false;
     this.areasCatalogo = [];
+    this.imprimirAlGuardar = false;
     this.showAlta = true;
   }
 
   // ── Formulario: edición ─────────────────────────────────────────────────
-  // La lista solo trae "nombre" combinado, así que para editar consultamos
-  // los datos separados (nombre/paterno/materno) por CURP (endpoint 4).
   openEditar(v: VisitanteApi): void {
     this.editandoRegistro = v.idCita;
     this.curpBloqueado = true;
@@ -330,9 +438,8 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
 
     this.form = {
       idTipoIngreso: v.idTipoIngreso,
-      idEmpresa: v.idEmpresa,
-      empresa: v.empresa,
-      idArea: v.idArea,
+      idEmpresaArea: v.idEmpresaArea,
+      empresaArea: v.empresaArea,
       curp: v.CURP,
       nombre: '',
       paterno: '',
@@ -399,9 +506,8 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
 
   onChangeMotivo(idTipoIngresoStr: string): void {
     this.form.idTipoIngreso = idTipoIngresoStr ? Number(idTipoIngresoStr) : null;
-    this.form.idEmpresa = 0;
-    this.form.empresa = '';
-    this.form.idArea = 0;
+    this.form.idEmpresaArea = 0;
+    this.form.empresaArea = '';
     this.areasCatalogo = [];
 
     const motivo = this.motivoSeleccionado;
@@ -410,9 +516,21 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
     }
   }
 
+  onChangeIdEmpresa(value: string): void {
+    const nuevoId = value ? +value : 0;
+    this.form.idEmpresaArea = nuevoId;
+
+    // Si el ID cambió y es válido, buscar automáticamente
+    if (nuevoId > 0) {
+      this.onBuscarRazonSocial();
+    } else {
+      this.form.empresaArea = '';
+    }
+  }
+
   private cargarAreas(tipo: number): void {
     this.cargandoArea = true;
-    this.http.post<AreaCatalogo[]>(`${this.baseUrl}/visitante/areas`, { tipo, usuario: this.usuario })
+    this.http.post<AreaCatalogo[]>(`${this.baseUrl}/visitante/areas`, { tipo, usuario: this.datosService.usuarioSignal() })
       .pipe(
         catchError(err => { this.manejarError('Error al cargar áreas', err); return of([] as AreaCatalogo[]); }),
         finalize(() => (this.cargandoArea = false)),
@@ -425,29 +543,39 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
   }
 
   onChangeArea(idAreaStr: string): void {
-    this.form.idArea = idAreaStr ? Number(idAreaStr) : 0;
+    this.form.idEmpresaArea = idAreaStr ? Number(idAreaStr) : 0;
+    const area = this.areasCatalogo.find(a => a.idArea === this.form.idEmpresaArea);
+    this.form.empresaArea = area?.descripcionArea || '';
   }
 
-  // Al perder el foco del campo "idEmpresa" (motivo con opcion === 1),
-  // consultamos la razón social del proveedor.
+  // ── Búsqueda de razón social con validación ─────────────────────────────
   onBuscarRazonSocial(): void {
-    if (!this.mostrarCamposEmpresa || !this.form.idEmpresa) {
-      this.form.empresa = '';
+    if (!this.mostrarCamposEmpresa || !this.form.idEmpresaArea) {
+      this.form.empresaArea = '';
       return;
     }
     this.cargandoEmpresa = true;
-    this.http.post<RazonSocialResponse>(`${this.baseUrl}/visitante/razon-social-proveedor`, { idProvedor: this.form.idEmpresa })
+    this.http.post<RazonSocialResponse>(`${this.baseUrl}/visitante/razon-social-proveedor`, {
+      idProvedor: this.form.idEmpresaArea
+    })
       .pipe(finalize(() => (this.cargandoEmpresa = false)))
       .subscribe({
-        next: resp => (this.form.empresa = resp?.razonSocial || ''),
+        next: resp => {
+          if (resp && resp.razonSocial) {
+            this.form.empresaArea = resp.razonSocial;
+          } else {
+            this.form.empresaArea = '';
+            this.mostrarToast('error', 'No encontrado', 'No se encontró la razón social para el ID proporcionado.');
+          }
+        },
         error: err => {
-          this.form.empresa = '';
+          this.form.empresaArea = '';
           this.manejarError('Error al obtener la razón social', err);
         },
       });
   }
 
-  // ── Vehículo (todos los campos de vehículo son opcionales) ─────────────
+  // ── Vehículo (marca y modelo opcionales si checkbox activado) ───────────
   get tiposUnidadOptions(): ISelectOption[] {
     return this.tiposUnidad.map(t => ({ label: t.tipoUnidad, value: String(t.id) }));
   }
@@ -470,8 +598,22 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
     if (!this.form.idTipoIngreso) return false;
     if (!this.form.nombre.trim() || !this.form.paterno.trim()) return false;
     if (!this.form.curp.trim()) return false;
-    if (this.mostrarCamposEmpresa && !this.form.idEmpresa) return false;
-    if (this.mostrarCatalogoArea && !this.form.idArea) return false;
+
+    // Validación unificada para empresa/área
+    if (this.mostrarCamposEmpresa && !this.form.idEmpresaArea) return false;
+    if (this.mostrarCatalogoArea && !this.form.idEmpresaArea) return false;
+
+    // Validar que empresaArea no esté vacío cuando se requiere empresa
+    if (this.mostrarCamposEmpresa && !this.form.empresaArea.trim()) return false;
+
+    // Si tiene vehículo activado, el tipo de unidad y placas son requeridos
+    // Marca y modelo son opcionales
+    if (
+      this.form.tieneVehiculo &&
+      (!this.form.unidad || !this.form.placas.trim())
+    ) {
+      return false;
+    }
     return true;
   }
 
@@ -483,12 +625,12 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
     // la validamos antes de enviar el alta/edición.
     if (!this.curpBloqueado) {
       this.cargando = true;
-      this.http.post<ApiResult>(`${this.baseUrl}/visitante/valida-curp`, {
+      this.http.post<ApiResult>(`${this.baseUrl}/visitante/validar-curp`, {
         curp: this.form.curp,
         nombre: this.form.nombre,
         paterno: this.form.paterno,
         materno: this.form.materno,
-        usuario: this.usuario,
+        usuario: this.datosService.usuarioSignal(),
       }).pipe(finalize(() => (this.cargando = false)))
         .subscribe({
           next: resp => {
@@ -509,12 +651,12 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
     this.cargando = true;
 
     if (this.editandoRegistro !== null) {
+      // Payload de actualización
       const payload = {
-        tipoIngreso: this.form.idTipoIngreso,
-        registro: this.editandoRegistro,
-        idEmpresa: this.form.idEmpresa,
-        empresa: this.form.empresa,
-        idArea: this.form.idArea,
+        idCita: this.editandoRegistro,
+        idTipoIngreso: this.form.idTipoIngreso,
+        idEmpresaArea: this.form.idEmpresaArea,
+        empresaArea: this.form.empresaArea,
         curp: this.form.curp,
         nombre: this.form.nombre,
         paterno: this.form.paterno,
@@ -523,7 +665,7 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
         placas: this.form.placas,
         marca: this.form.marca,
         modelo: this.form.modelo,
-        usuario: this.usuario,
+        usuario: this.datosService.usuarioSignal(),
       };
       this.http.put<ApiResult>(`${this.baseUrl}/visitante`, payload)
         .pipe(finalize(() => (this.cargando = false)))
@@ -532,12 +674,12 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
           error: err => this.manejarError('Error al actualizar la visita', err),
         });
     } else {
+      // Payload de alta
       const payload = {
         idTipoIngreso: this.form.idTipoIngreso,
-        idEmpresa: this.form.idEmpresa,
-        empresa: this.form.empresa,
-        idArea: this.form.idArea,
-        curpVisitante: this.form.curp,
+        idEmpresaArea: this.form.idEmpresaArea,
+        empresaArea: this.form.empresaArea,
+        curp: this.form.curp,
         nombre: this.form.nombre,
         paterno: this.form.paterno,
         materno: this.form.materno,
@@ -545,7 +687,7 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
         placas: this.form.placas,
         marca: this.form.marca,
         modelo: this.form.modelo,
-        usuario: this.usuario,
+        usuario: this.datosService.usuarioSignal(),
       };
       this.http.post<ApiResult>(`${this.baseUrl}/visitantes/agregar`, payload)
         .pipe(finalize(() => (this.cargando = false)))
@@ -559,6 +701,16 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
   private finalizarRegistro(resp: ApiResult, mensajeExito: string): void {
     if (this.esExito(resp)) {
       this.mostrarToast('success', 'Éxito', mensajeExito);
+
+      // Imprimir etiqueta si el checkbox está activado
+      if (this.imprimirAlGuardar && this.editandoRegistro === null) {
+        this.imprimir({
+          CURP: this.form.curp,
+          nombre: `${this.form.nombre} ${this.form.paterno} ${this.form.materno}`.trim(),
+        } as VisitanteApi);
+      }
+
+      this.imprimirAlGuardar = false;
       this.showAlta = false;
       this.editandoRegistro = null;
       this.recargarVisitas();

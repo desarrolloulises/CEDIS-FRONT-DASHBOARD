@@ -1,21 +1,21 @@
-<!-- ════════════════════════════════════════════════════════════════
-     SPINNER GLOBAL (overlay)
-     ════════════════════════════════════════════════════════════════ -->
+<!-- //////////////////////////////////////////////
+     ///      SPINNER GLOBAL (overlay)
+     ////////////////////////////////////////////// -->
 <app-loading-spinner [visible]="cargando" [overlay]="true" texto="Procesando...">
 </app-loading-spinner>
 
 
-<!-- ════════════════════════════════════════════════════════════════
-     TOAST
-     ════════════════════════════════════════════════════════════════ -->
+<!-- //////////////////////////////////////////////
+     ///            TOAST
+     ////////////////////////////////////////////// -->
 <app-toast *ngIf="toastVisible" [tipo]="toastTipo" [titulo]="toastTitulo" [mensaje]="toastMensaje"
   (cerrar)="toastVisible = false">
 </app-toast>
 
 
-<!-- ════════════════════════════════════════════════════════════════
-     VISTA PRINCIPAL
-     ════════════════════════════════════════════════════════════════ -->
+<!-- //////////////////////////////////////////////
+     ///          VISTA PRINCIPAL
+     ////////////////////////////////////////////// -->
 <div class="etc-wrapper">
 
   <div class="etc-header">
@@ -28,12 +28,11 @@
       </div>
 
       <div class="etc-header__actions">
-        <app-button label="Agregar entrada (F1)" type="primary" size="sm" title="F1 — Abrir registro"
-          (clicked)="openAlta()">
+        <app-button label="Agregar entrada" type="primary" size="sm" title="F1 — Abrir registro" (clicked)="openAlta()">
         </app-button>
-        <app-button label="Registro QR" type="secondary" size="sm" (clicked)="showQR = true">
+        <app-button label="Registro QR" type="ghost" size="sm" (clicked)="showQR = true">
         </app-button>
-        <app-button label="Ver visitantes" type="secondary" size="sm" (clicked)="irConsultar()">
+        <app-button label="Ver visitantes" type="ghost" size="sm" (clicked)="irConsultar()">
         </app-button>
       </div>
     </div>
@@ -42,7 +41,7 @@
     <div class="etc-header__bottom">
 
       <div class="etc-search-container">
-        <app-input placeholder="Buscar por nombre, empresa, CURP, placas... (F2)" size="sm" [value]="filtro"
+        <app-input placeholder="Buscar por nombre, empresa, CURP, placas..." size="sm" [value]="filtro"
           (valueChange)="filtro = $event">
         </app-input>
       </div>
@@ -76,7 +75,7 @@
         <tr *ngFor="let t of transportistasFiltrados; trackBy: trackById">
 
           <td>
-            <span [class]="badgeClass(t.id_tipo_ingreso)">
+            <span>
               {{ labelTipoIngreso(t) }}
             </span>
           </td>
@@ -131,9 +130,9 @@
 </div>
 
 
-<!-- ════════════════════════════════════════════════════════════════
-     MODAL ALTA / EDICIÓN
-     ════════════════════════════════════════════════════════════════ -->
+<!-- //////////////////////////////////////////////
+     ///        MODAL ALTA / EDICIÓN
+     ////////////////////////////////////////////// -->
 <app-modal [visible]="showAlta" [title]="modalTitulo" (close)="showAlta = false">
 
   <div class="etc-modal__body">
@@ -171,7 +170,7 @@
       </app-input>
     </div>
 
-    <!-- NOMBRES DEL OPERADOR -->
+    <!-- NOMBRE DEL OPERADOR -->
     <div class="etc-field-row">
       <div class="etc-field">
         <label class="etc-label">NOMBRE <span class="etc-req">*</span></label>
@@ -246,12 +245,11 @@
       <div class="etc-field"></div>
     </div>
 
-  </div><!-- /body -->
+  </div>
 
   <div class="etc-modal__footer">
 
-    <!-- Checkbox imprimir — solo en alta, no en edición -->
-    <label *ngIf="editandoId === null" class="etc-print-check">
+    <label class="etc-print-check">
       <input type="checkbox" [(ngModel)]="imprimirAlGuardar" />
       Imprimir etiqueta
     </label>
@@ -267,12 +265,11 @@
   </div>
 
 </app-modal>
-<!-- /modal alta -->
 
 
-<!-- ════════════════════════════════════════════════════════════════
-     MODAL CONFIRMAR SALIDA
-     ════════════════════════════════════════════════════════════════ -->
+<!-- //////////////////////////////////////////////
+     ///        MODAL CONFIRMAR SALIDA
+     ////////////////////////////////////////////// -->
 <app-modal [visible]="showSalida" title="Confirmar salida" (close)="showSalida = false">
 
   <div class="etc-modal__body" *ngIf="salidaTarget">
@@ -313,12 +310,11 @@
   </div>
 
 </app-modal>
-<!-- /modal salida -->
 
 
-<!-- ════════════════════════════════════════════════════════════════
-     MODAL CONSULTA CURP
-     ════════════════════════════════════════════════════════════════ -->
+<!-- //////////////////////////////////////////////
+     ///        MODAL CONSULTA CURP
+     ////////////////////////////////////////////// -->
 <app-modal [visible]="showCURP" title="Consultar por CURP" (close)="showCURP = false">
 
   <app-loading-spinner [visible]="cargandoCURP" [overlay]="true" texto="Consultando CURP...">
@@ -346,12 +342,11 @@
   </div>
 
 </app-modal>
-<!-- /modal CURP -->
 
 
-<!-- ════════════════════════════════════════════════════════════════
-     MODAL QR
-     ════════════════════════════════════════════════════════════════ -->
+<!-- //////////////////////////////////////////////
+     ///             MODAL QR
+     ////////////////////////////////////////////// -->
 <app-modal [visible]="showQR" title="Registro por QR" (close)="showQR = false">
 
   <div class="etc-modal__body">
@@ -373,4 +368,3 @@
   </div>
 
 </app-modal>
-<!-- /modal QR -->

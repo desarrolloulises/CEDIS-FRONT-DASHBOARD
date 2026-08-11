@@ -1,28 +1,18 @@
 :host {
-  /* Paleta propia del componente de transportistas */
-  --etc-bg: #f4f6f9;
   --etc-surface: #ffffff;
   --etc-border: #e2e6ea;
 
   --etc-text: #1e2533;
   --etc-text-muted: #6b7280;
-  --etc-text-light: #9ca3af;
 
   --etc-primary: #2563eb;
   --etc-danger: #ef4444;
 
-  --etc-radius: 6px;
   --etc-radius-lg: 10px;
   --etc-shadow-sm: 0 1px 3px rgba(0, 0, 0, .08);
 
   --etc-font: 'Segoe UI', system-ui, sans-serif;
   --etc-font-mono: 'Consolas', monospace;
-
-  /* Badges */
-  --etc-entrega-bg: var(--primario-light);
-  --etc-entrega-fg: var(--primario);
-  --etc-carga-bg:   var(--secundario-light);
-  --etc-carga-fg:   var(--secundario);
 
   font-family: var(--etc-font);
   color: var(--etc-text);
@@ -31,7 +21,6 @@
 /* ── Wrapper ───────────────────────────────────────────────────── */
 .etc-wrapper {
   background: var(--bg-body);
-  min-height: 100dvh;
   padding: var(--space-lg);
 }
 
@@ -51,7 +40,9 @@
   flex-wrap: wrap;
 }
 
-.etc-header__brand { line-height: 1.2; }
+.etc-header__brand {
+  line-height: 1.2;
+}
 
 .etc-title {
   margin: 0 0 2px 0;
@@ -105,7 +96,7 @@
   display: flex;
   gap: 16px;
   font-size: .72rem;
-  color: var(--etc-text-light);
+  color: var(--etc-text-muted);
 }
 
 .etc-shortcuts-hint kbd {
@@ -153,7 +144,9 @@
   transition: background .15s ease;
 }
 
-.etc-table tbody tr:last-child { border-bottom: none; }
+.etc-table tbody tr:last-child {
+  border-bottom: none;
+}
 
 .etc-table tbody tr:nth-child(even) {
   background: #fafbfd;
@@ -163,15 +156,13 @@
   background: #ffffff;
 }
 
-/* Hover */
 .etc-table tbody tr:hover {
   background: #f1f5f9;
 }
 
 .etc-table tbody td {
-  padding:  var(--space-xs) var(--space-md);
+  padding: var(--space-xs) var(--space-md);
   vertical-align: middle;
-
   font-size: .82rem;
   font-weight: 400;
   color: var(--etc-text);
@@ -181,28 +172,8 @@
 .etc-empty {
   text-align: center;
   padding: 40px !important;
-  color: var(--etc-text-light);
+  color: var(--etc-text-muted);
   font-style: italic;
-}
-
-/* ── Badges ────────────────────────────────────────────────────── */
-.etc-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 20px;
-  font-size: .7rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.etc-badge--entrega {
-  background: var(--etc-entrega-bg);
-  color: var(--etc-entrega-fg);
-}
-
-.etc-badge--carga {
-  background: var(--etc-carga-bg);
-  color: var(--etc-carga-fg);
 }
 
 /* ── Chips auxiliares ──────────────────────────────────────────── */
@@ -212,7 +183,6 @@
   padding: 0;
   background: transparent;
   border: none;
-
   font-size: .82rem;
   font-weight: 400;
   color: var(--etc-text);
@@ -224,27 +194,6 @@
   font-size: .82rem;
   font-weight: 400;
   color: var(--etc-text);
-}
-
-/* ── Badge booleano (remolque) ─────────────────────────────────── */
-.etc-badge-bool {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  font-size: .7rem;
-  font-weight: 600;
-}
-
-.etc-badge-bool--si {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.etc-badge-bool--no {
-  background: #f1f5f9;
-  color: var(--etc-text-muted);
 }
 
 /* ── Pill remolque en formulario ───────────────────────────────── */
@@ -285,7 +234,7 @@
   padding: 12px 16px;
   background: #f8fafc;
   border: 1px solid var(--etc-border);
-  border-radius: var(--etc-radius);
+  border-radius: var(--etc-radius-lg);
 }
 
 .etc-salida-row {
@@ -310,11 +259,6 @@
   font-weight: 500;
 }
 
-.etc-salida-value--mono {
-  font-family: var(--etc-font-mono);
-  font-size: .82rem;
-}
-
 /* ── Toggle con caja / sin caja ────────────────────────────────── */
 .etc-salida-caja {
   display: flex;
@@ -334,38 +278,10 @@
   gap: 8px;
 }
 
-.etc-toggle-btn {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: var(--etc-radius);
-  border: 1.5px solid var(--etc-border);
-  background: #f8fafc;
-  font-size: .82rem;
-  font-weight: 500;
-  color: var(--etc-text-muted);
-  cursor: pointer;
-  transition: border-color .15s, background .15s, color .15s;
-}
-
-.etc-toggle-btn:hover {
-  border-color: #cbd5e1;
-  background: #f1f5f9;
-  color: var(--etc-text);
-}
-
-.etc-toggle-btn--active {
-  border-color: var(--etc-primary);
-  background: #eff6ff;
-  color: var(--etc-primary);
-  font-weight: 600;
-}
-
 /* ── Acciones ──────────────────────────────────────────────────── */
-.etc-actions { white-space: nowrap; }
+.etc-actions {
+  white-space: nowrap;
+}
 
 /* ── Modal ─────────────────────────────────────────────────────── */
 .etc-modal__body {
@@ -414,7 +330,6 @@
   accent-color: var(--etc-primary);
 }
 
-
 /* ── Form fields ───────────────────────────────────────────────── */
 .etc-field-row {
   display: grid;
@@ -428,7 +343,9 @@
   gap: 4px;
 }
 
-.etc-field--full { width: 100%; }
+.etc-field--full {
+  width: 100%;
+}
 
 .etc-field--curp .etc-input-group {
   display: flex;
@@ -444,18 +361,15 @@
   color: var(--etc-text-muted);
 }
 
-.etc-req { color: var(--etc-danger); }
-
-.etc-error {
-  margin: 2px 0 0;
-  font-size: .75rem;
+.etc-req {
   color: var(--etc-danger);
 }
 
 /* ── Responsive ────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-
-  .etc-wrapper { padding: 12px; }
+  .etc-wrapper {
+    padding: 12px;
+  }
 
   .etc-header__top {
     flex-direction: column;
@@ -488,9 +402,15 @@
     width: 100%;
   }
 
-  .etc-count { text-align: right; }
+  .etc-count {
+    text-align: right;
+  }
 
-  .etc-field-row { grid-template-columns: 1fr; }
+  .etc-field-row {
+    grid-template-columns: 1fr;
+  }
 
-  .etc-shortcuts-hint { display: none; }
+  .etc-shortcuts-hint {
+    display: none;
+  }
 }
