@@ -1,4 +1,4 @@
-<div class="contenedor">
+<div class="pagina">
 <div class="tarjeta">
   <div class="encabezado">
     <h2>Registro de Arribos</h2>
@@ -29,7 +29,7 @@
     <div class="datos-grid">
       <div class="dato">
         <span class="etiqueta">Proveedor</span>
-        <span class="valor">{{ datosAsn.proveedor }}</span>
+        <span class="valor">{{ datosAsn.idProveedor }}</span>
       </div>
       <div class="dato">
         <span class="etiqueta">ID Cita</span>
@@ -60,7 +60,7 @@
     <div class="ordenes">
       <span class="etiqueta">Órdenes de Compra ({{ datosAsn.ordenesCompra.length }})</span>
       <ul>
-        <li *ngFor="let oc of datosAsn.ordenesCompra">{{ oc.ordenCompra }}</li>
+        <li *ngFor="let oc of datosAsn.ordenesCompra">{{ oc }}</li>
       </ul>
     </div>
 
