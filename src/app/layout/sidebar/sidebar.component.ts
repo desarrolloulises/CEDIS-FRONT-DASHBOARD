@@ -64,7 +64,7 @@ export class SidebarComponent {
     40: 'ti-id-badge',
     43: 'ti-inbox',
     44: 'ti-file-report',
-    50: 'ti-truck'
+    50: 'ti ti-clipboard-check'
   };
 
   public readonly MAPEO_RUTAS_HIJOS: Record<string, string> = {

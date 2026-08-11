@@ -1,21 +1,21 @@
-<!-- ════════════════════════════════════════════════════════════════
-     SPINNER GLOBAL (overlay)
-     ════════════════════════════════════════════════════════════════ -->
+<!-- //////////////////////////////////////////////
+     ///        SPINNER GLOBAL (overlay)
+     ////////////////////////////////////////////// -->
 <app-loading-spinner [visible]="cargando" [overlay]="true" texto="Procesando...">
 </app-loading-spinner>
 
 
-<!-- ════════════════════════════════════════════════════════════════
-     TOAST
-     ════════════════════════════════════════════════════════════════ -->
+<!-- //////////////////////////////////////////////
+     ///            TOAST
+     ////////////////////////////////////////////// -->
 <app-toast *ngIf="toastVisible" [tipo]="toastTipo" [titulo]="toastTitulo" [mensaje]="toastMensaje"
   (cerrar)="toastVisible = false">
 </app-toast>
 
 
-<!-- ════════════════════════════════════════════════════════════════
-     VISTA PRINCIPAL
-     ════════════════════════════════════════════════════════════════ -->
+<!-- //////////////////////////////////////////////
+     ///        VISTA PRINCIPAL
+     ////////////////////////////////////////////// -->
 <div class="ev-wrapper">
 
   <div class="ev-header">
@@ -29,9 +29,9 @@
       <div class="ev-header__actions">
         <app-button label="Agregar visita" type="primary" size="sm" (clicked)="openAlta()">
         </app-button>
-        <app-button label="Registro QR" type="secondary" size="sm" (clicked)="showQR = true">
+        <app-button label="Registro QR" type="ghost" size="sm" (clicked)="showQR = true">
         </app-button>
-        <app-button label="Consultar transportistas" type="secondary" size="sm" (clicked)="irConsultar()">
+        <app-button label="Consultar transportistas" type="ghost" size="sm" (clicked)="irConsultar()">
         </app-button>
       </div>
     </div>
@@ -48,7 +48,7 @@
         <p class="ev-count">
           {{ visitasFiltradas.length }} registros
         </p>
-        <app-button label="Exportar" type="ghost" size="sm" [disabled]="true">
+        <app-button label="Exportar" type="ghost" size="sm" [disabled]="true" hidden>
         </app-button>
       </div>
 
@@ -73,9 +73,7 @@
       <tbody>
         <tr *ngFor="let v of visitasFiltradas; trackBy: trackById">
           <td>
-            <span [class]="badgeClass(v.tipoIngreso)">
-              {{ v.tipoIngreso }}
-            </span>
+            <span>{{ v.tipoIngreso }}</span>
           </td>
           <td>{{ formatFecha(v.fechaCita) }}</td>
           <td>{{ v.nombre }}</td>
@@ -97,7 +95,8 @@
             <app-icon-button type="warning" icon="ti ti-logout" size="xs" title="Dar Salida" [disabled]="!v.salida"
               (click)="marcarSalida(v)">
             </app-icon-button>
-            <app-icon-button type="ghost" icon="ti ti-printer" size="xs" title="Imprimir QR" (click)="imprimir(v)">
+            <app-icon-button type="ghost" icon="ti ti-printer" size="xs" title="Imprimir etiqueta"
+              (click)="imprimir(v)">
             </app-icon-button>
           </td>
         </tr>
@@ -110,7 +109,7 @@
   </div>
 
   <!-- Ayuda atajos -->
-  <p class="etc-shortcuts-hint">
+  <p class="ev-shortcuts-hint">
     <span><kbd>F1</kbd> Nuevo registro</span>
     <span><kbd>F2</kbd> Buscar</span>
   </p>
@@ -118,9 +117,9 @@
 </div>
 
 
-<!-- ════════════════════════════════════════════════════════════════
-     MODAL ALTA / EDICIÓN
-     ════════════════════════════════════════════════════════════════ -->
+<!-- //////////////////////////////////////////////
+     ///      MODAL ALTA / EDICIÓN
+     ////////////////////////////////////////////// -->
 
 <app-modal [visible]="showAlta" [title]="modalTitulo" (close)="showAlta = false">
   <div class="ev-modal__body">
@@ -174,18 +173,13 @@
     <div class="ev-field-row" *ngIf="mostrarCamposEmpresa">
       <div class="ev-field">
         <label class="ev-label">ID EMPRESA <span class="ev-req">*</span></label>
-        <div class="ev-input-group">
-          <app-input placeholder="Id. empresa" [value]="form.idEmpresa ? (form.idEmpresa + '') : ''"
-            (valueChange)="form.idEmpresa = $event ? +$event : 0" (enter)="onBuscarRazonSocial()">
-          </app-input>
-          <app-button label="Buscar" type="secondary" size="sm" [disabled]="!form.idEmpresa || cargandoEmpresa"
-            (clicked)="onBuscarRazonSocial()">
-          </app-button>
-        </div>
+        <app-input placeholder="Id. empresa" [value]="form.idEmpresaArea ? (form.idEmpresaArea + '') : ''"
+          (valueChange)="onChangeIdEmpresa($event)" (enter)="onBuscarRazonSocial()">
+        </app-input>
       </div>
       <div class="ev-field ev-field--full">
         <label class="ev-label">EMPRESA</label>
-        <app-input placeholder="Razón social" [value]="form.empresa" [disabled]="true">
+        <app-input placeholder="Razón social" [value]="form.empresaArea" [disabled]="true">
         </app-input>
       </div>
     </div>
@@ -193,12 +187,12 @@
     <!-- ÁREA (motivo con opcion > 1) -->
     <div class="ev-field ev-field--full" *ngIf="mostrarCatalogoArea">
       <label class="ev-label">ÁREA QUE VISITA <span class="ev-req">*</span></label>
-      <app-select [value]="form.idArea ? (form.idArea + '') : ''" [options]="areasOptions"
+      <app-select [value]="form.idEmpresaArea ? (form.idEmpresaArea + '') : ''" [options]="areasOptions"
         placeholder="Seleccionar área" (valueChange)="onChangeArea($any($event))">
       </app-select>
     </div>
 
-    <!-- VEHÍCULO (todos los datos de vehículo son opcionales) -->
+    <!-- VEHÍCULO -->
     <div class="ev-field ev-field--full">
       <label class="ev-checkbox">
         <input type="checkbox" [(ngModel)]="form.tieneVehiculo" (ngModelChange)="onToggleVehiculo()" />
@@ -208,7 +202,7 @@
 
     <div class="ev-field-row" *ngIf="form.tieneVehiculo">
       <div class="ev-field">
-        <label class="ev-label">TIPO DE UNIDAD</label>
+        <label class="ev-label">TIPO DE UNIDAD <span class="ev-req">*</span></label>
         <app-select [value]="form.unidad ? (form.unidad + '') : ''" [options]="tiposUnidadOptions"
           placeholder="Tipo de unidad" (valueChange)="onChangeTipoUnidad($any($event))">
         </app-select>
@@ -219,34 +213,42 @@
         </app-input>
       </div>
       <div class="ev-field">
-        <label class="ev-label">MODELO (AÑO)</label>
+        <label class="ev-label">MODELO/AÑO</label>
         <app-input placeholder="Modelo" [value]="form.modelo" (valueChange)="form.modelo = $event">
         </app-input>
       </div>
       <div class="ev-field">
-        <label class="ev-label">PLACAS</label>
+        <label class="ev-label">PLACAS <span class="ev-req">*</span></label>
         <app-input placeholder="Placas" [value]="form.placas" (valueChange)="form.placas = $event">
         </app-input>
       </div>
     </div>
 
-  </div><!-- /body -->
+  </div>
 
   <div class="ev-modal__footer">
-    <app-button label="Cancelar" type="ghost" size="sm" (clicked)="showAlta = false">
-    </app-button>
-    <app-button label="{{ modalBotonPrimario }}" type="primary" size="sm" [disabled]="!formValido || cargando"
-      (clicked)="registrar()">
-    </app-button>
+
+    <label class="ev-print-check">
+      <input type="checkbox" [(ngModel)]="imprimirAlGuardar" />
+      Imprimir etiqueta
+    </label>
+
+    <div class="ev-modal__footer-actions">
+      <app-button label="Cancelar" type="ghost" size="sm" (clicked)="showAlta = false">
+      </app-button>
+      <app-button label="{{ modalBotonPrimario }}" type="primary" size="sm" [disabled]="!formValido || cargando"
+        (clicked)="registrar()">
+      </app-button>
+    </div>
+
   </div>
 
 </app-modal>
-<!-- /modal alta -->
 
 
-<!-- ════════════════════════════════════════════════════════════════
-     MODAL CONSULTA CURP
-     ════════════════════════════════════════════════════════════════ -->
+<!-- //////////////////////////////////////////////
+     ///        MODAL CONSULTA CURP
+     ////////////////////////////////////////////// -->
 
 <app-modal [visible]="showCURP" title="Consultar por CURP" (close)="showCURP = false">
 
@@ -289,12 +291,11 @@
   </div>
 
 </app-modal>
-<!-- /modal CURP -->
 
 
-<!-- ════════════════════════════════════════════════════════════════
-     MODAL QR
-     ════════════════════════════════════════════════════════════════ -->
+<!-- //////////////////////////////////////////////
+     ///          MODAL QR
+     ////////////////////////////////////////////// -->
 
 <app-modal [visible]="showQR" title="Registro por QR" (close)="showQR = false">
 

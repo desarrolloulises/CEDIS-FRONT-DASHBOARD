@@ -8,6 +8,7 @@ import { SelectComponent, ISelectOption } from '../../../shared/components/selec
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { DatosService } from '../../../service/servicio.service';
 
 import {
   AplicarVetoPayload,
@@ -104,10 +105,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
   // Spinner único compartido por todos los apartados
   cargando = false;
 
-  // TODO: obtener del servicio de sesión/autenticación real
-  private usuarioActual = '406991';
-
-  constructor(private cedisService: RegistroEntradaAlmacenService) { }
+  constructor(private cedisService: RegistroEntradaAlmacenService, private datosService: DatosService) { }
 
   ngOnInit(): void {
     this.cargarCatalogoTiposVeto();
@@ -400,7 +398,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
         curp,
         clave: item.lblClaveValidacion,
         activa,
-        usuario: this.usuarioActual
+        usuario: this.datosService.usuarioSignal()
       })
       .subscribe({
         next: () => {
@@ -548,7 +546,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       tipoVeto: this.nuevoVeto.tipoVeto,
       fechaInicio: this.nuevoVeto.fechaInicio,
       fechaTermino,
-      usuario: this.usuarioActual
+      usuario: this.datosService.usuarioSignal()
     };
 
     this.cargando = true;
@@ -659,7 +657,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
         curp,
         nivel: this.nuevaIncidencia.nivel,
         descripcion: this.nuevaIncidencia.descripcion.trim(),
-        usuario: this.usuarioActual
+        usuario: this.datosService.usuarioSignal()
       })
       .subscribe({
         next: () => {
@@ -800,7 +798,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
         descripcionElemento: this.nuevoElemento.descripcionElemento.trim(),
         cantidad: this.nuevoElemento.cantidad || '0',
         curp,
-        usuario: this.usuarioActual
+        usuario: this.datosService.usuarioSignal()
       })
       .subscribe({
         next: () => {
@@ -862,7 +860,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
         descripcionElemento: this.edicionElementoForm.descripcionElemento.trim(),
         cantidad: this.edicionElementoForm.cantidad || '0',
         curp,
-        usuario: this.usuarioActual
+        usuario: this.datosService.usuarioSignal()
       })
       .subscribe({
         next: () => {
