@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { DatosService } from '../../../service/servicio.service';
 
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -11,18 +12,24 @@ interface RespuestaSimple {
   errMsg: string;
 }
 
-interface OrdenCompra {
-  ordenCompra: string;
+interface Caja {
+  codigo: string;
+  folioCaja: string;
+}
+
+interface Conteo {
+  cajas: Caja[];
 }
 
 interface AsnData {
-  proveedor: string;
+  idProveedor: string;
   razonSocial: string | null;
   idCita: string;
   fechaCita: string;
   cajas: string;
   estatusArribo: string;
-  ordenesCompra: OrdenCompra[];
+  ordenesCompra: string[];
+  conteos: Conteo[];
 }
 
 interface ToastState {
@@ -42,8 +49,9 @@ export class RegistroArribosComponent {
   private http = inject(HttpClient);
   private readonly baseUrl = 'http://localhost:5242/cedis/control-calidad';
 
-  // TODO: reemplazar
-  private readonly usuario = '406991';
+  constructor(
+    private datosService: DatosService
+  ){}
 
   asnInput = '';
   datosAsn: AsnData | null = null;
@@ -60,7 +68,7 @@ export class RegistroArribosComponent {
     }
 
     this.cargando = true;
-    this.http.post<RespuestaSimple>(`${this.baseUrl}/validar-asn`, { asn, usuario: this.usuario })
+    this.http.post<RespuestaSimple>(`${this.baseUrl}/validar-asn`, { asn, usuario: this.datosService.usuarioSignal() })
       .subscribe({
         next: res => {
           if (res.errId !== 0) {
@@ -78,7 +86,7 @@ export class RegistroArribosComponent {
   }
 
   private cargarDatosAsn(asn: number): void {
-    this.http.post<AsnData>(`${this.baseUrl}/obtener-datos-asn`, { asn, usuario: this.usuario })
+    this.http.post<AsnData>(`${this.baseUrl}/obtener-datos-asn`, { asn, usuario: this.datosService.usuarioSignal() })
       .subscribe({
         next: data => {
           this.cargando = false;
@@ -98,7 +106,7 @@ export class RegistroArribosComponent {
     const asn = Number(this.asnInput);
 
     this.cargando = true;
-    this.http.post<RespuestaSimple>(`${this.baseUrl}/registrar-arribo`, { asn, usuario: this.usuario })
+    this.http.post<RespuestaSimple>(`${this.baseUrl}/registrar-arribo`, { asn, usuario: this.datosService.usuarioSignal() })
       .subscribe({
         next: res => {
           if (res.errId !== 0) {
@@ -121,52 +129,14 @@ export class RegistroArribosComponent {
       return;
     }
 
-    // "ordenesCompra" y "conteos" simulados de forma temporal hasta contar con el endpoint real
-    const ordenesCompraSimuladas = [
-      '678912340',
-      '678912341',
-      '678912342',
-      '678912343',
-      '678912344',
-      '678912345',
-      '678912346',
-      '678912347'
-    ];
-
-    const conteosSimulados = [
-      {
-        cajas: [
-          { codigo: '3011', folioCaja: '0300060000002340000001' },
-          { codigo: '3012', folioCaja: '0300060000002340000002' },
-          { codigo: '3013', folioCaja: '0300060000002340000003' },
-          { codigo: '3014', folioCaja: '0300060000002340000004' },
-          { codigo: '3015', folioCaja: '0300060000002340000005' },
-          { codigo: '3016', folioCaja: '0300060000002340000006' },
-          { codigo: '3017', folioCaja: '0300060000002340000007' }
-        ]
-      },
-      {
-        cajas: [
-          { codigo: '3011', folioCaja: '0300060000002340000001' },
-          { codigo: '3012', folioCaja: '0300060000002340000002' },
-          { codigo: '3013', folioCaja: '0300060000002340000003' },
-          { codigo: '3014', folioCaja: '0300060000002340000004' },
-          { codigo: '3015', folioCaja: '0300060000002340000005' },
-          { codigo: '3016', folioCaja: '0300060000002340000006' },
-          { codigo: '3017', folioCaja: '0300060000002340000007' },
-          { codigo: '3018', folioCaja: '0300060000002340000008' }
-        ]
-      }
-    ];
-
     const payload = {
-      idProveedor: this.datosAsn.proveedor,
+      idProveedor: this.datosAsn.idProveedor,
       razonSocial: '', // de momento se envía vacío
       fechaCita: this.datosAsn.fechaCita,
       asn: this.asnInput,
       numeroCajas: Number(this.datosAsn.cajas),
-      ordenesCompra: ordenesCompraSimuladas,
-      conteos: conteosSimulados
+      ordenesCompra: this.datosAsn.ordenesCompra,
+      conteos: this.datosAsn.conteos
     };
 
     this.cargando = true;
