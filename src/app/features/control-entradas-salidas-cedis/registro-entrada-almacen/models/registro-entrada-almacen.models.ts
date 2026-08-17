@@ -170,3 +170,100 @@ export interface ImagenInfo {
 export interface EliminarImagenResponse {
   mensaje: string;
 }
+
+export interface Visitante {
+  idCita: number;
+  tipoCita: string;
+  idTipoIngreso: number;
+  tipoIngreso: string;
+  fechaCita: string;
+  idEmpresaArea: number;
+  empresaArea: string;
+  CURP: string;
+  nombre: string;
+  tipoUnidad: number;
+  descripcionUnidad: string;
+  placas: string;
+  marca: string;
+  modelo: string;
+  entrada: boolean;
+  salida: boolean;
+}
+
+export interface MotivoVisita {
+  id: number;
+  motivo: string;
+  opcion: number;
+}
+
+export interface Area {
+  idArea: number;
+  descripcionArea: string;
+}
+
+export interface RazonSocialProveedor {
+  razonSocial: string;
+}
+
+export interface DatosVisitante {
+  curp: string;
+  nombre: string;
+  paterno: string;
+  materno: string;
+}
+
+export interface TipoUnidad {
+  id: number;
+  tipoUnidad: string;
+  usaRemolque: number;
+}
+
+export interface ActualizarVisitantePayload {
+  idCita: number;
+  idTipoIngreso: number;
+  idEmpresaArea: number;
+  empresaArea: string;
+  curp: string;
+  nombre: string;
+  paterno: string;
+  materno: string;
+  unidad: number;
+  placas: string;
+  marca: string;
+  modelo: string;
+  usuario: string;
+}
+
+export interface ValidarCurpPayload {
+  curp: string;
+  nombre: string;
+  paterno: string;
+  materno: string;
+  usuario: string;
+}
+
+export interface ValidarCurpResponse {
+  errId: number;
+  errMsg: string | null;
+}
+
+export interface ConsultarVisitantesPayload {
+  usuario: string;
+}
+
+export interface ConsultarAreasPayload {
+  tipo: number;
+  usuario: string;
+}
+
+export interface ConsultarRazonSocialPayload {
+  idProvedor: number;
+}
+
+export interface ConsultarDatosVisitantePayload {
+  curp: string;
+}
+
+export interface ConsultarTiposUnidadPayload {
+  usuario: string;
+}

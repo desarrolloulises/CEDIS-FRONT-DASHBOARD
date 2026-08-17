@@ -1,0 +1,173 @@
+<div class="apartado-datos">
+
+  <div class="datos-header">
+    <h4>Datos del visitante</h4>
+  </div>
+
+  <div class="datos-grid">
+    <!-- Formulario de datos -->
+    <div class="datos-form">
+      <div class="campo-select">
+        <label class="campo-label">Motivo</label>
+        <app-select [options]="motivoOptions" placeholder="Seleccione un motivo" [value]="datosForm.motivo"
+          (valueChange)="onCampoChange('motivo', $event)">
+        </app-select>
+      </div>
+
+      <app-input label="CURP" [value]="datosForm.curp" [disabled]="true">
+      </app-input>
+
+      <app-input label="Nombre" [value]="datosForm.nombre" (valueChange)="onCampoChange('nombre', $event)">
+      </app-input>
+
+      <div class="fila-doble">
+        <app-input label="Apellido paterno" [value]="datosForm.apellidoP"
+          (valueChange)="onCampoChange('apellidoP', $event)">
+        </app-input>
+
+        <app-input label="Apellido materno" [value]="datosForm.apellidoM"
+          (valueChange)="onCampoChange('apellidoM', $event)">
+        </app-input>
+      </div>
+
+      <!-- Campo de Área (solo si opcion > 1) -->
+      <div class="campo-select" *ngIf="opcionMotivoSeleccionado > 1">
+        <label class="campo-label">
+          Área <span class="ev-req">*</span>
+        </label>
+        <app-select [options]="areaOptions" placeholder="Seleccione un área" [value]="datosForm.area"
+          (valueChange)="onCampoChange('area', $event)">
+        </app-select>
+        <small class="campo-hint" *ngIf="!datosForm.area">
+          Debe seleccionar un área para actualizar
+        </small>
+      </div>
+
+      <!-- Campos de proveedor (solo si opcion == 1) -->
+      <ng-container *ngIf="opcionMotivoSeleccionado === 1">
+        <div class="fila-doble">
+          <div class="campo-input">
+            <label class="campo-label">
+              No. Proveedor <span class="ev-req">*</span>
+            </label>
+            <app-input [value]="datosForm.noProveedor" (valueChange)="onCampoChange('noProveedor', $event)">
+            </app-input>
+            <small class="campo-hint" *ngIf="!datosForm.noProveedor">
+              Debe ingresar un proveedor válido
+            </small>
+          </div>
+
+          <div class="campo-input">
+            <label class="campo-label">Razón social</label>
+            <app-input [value]="datosForm.razonSocial" [disabled]="true">
+            </app-input>
+            <small class="campo-hint" *ngIf="datosForm.noProveedor && !datosForm.razonSocial">
+              Consultando razón social...
+            </small>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Botón para actualizar -->
+      <div class="datos-acciones">
+        <app-button label="Actualizar datos" type="primary" size="md" (clicked)="actualizarVisitanteEvent()">
+        </app-button>
+      </div>
+    </div>
+
+    <!-- Gestión de imagen -->
+    <div class="imagen-panel">
+      <span class="campo-label">Imagen</span>
+
+      <div class="imagen-preview">
+        <img *ngIf="imagenUrl" [src]="imagenUrl" alt="Imagen" (click)="verImagenAmpliadaEvent()">
+
+        <div *ngIf="!imagenUrl" class="imagen-vacia">
+          <i class="ti ti-photo"></i>
+          <span>{{ datosForm.curp ? 'Sin imagen' : 'Captura el CURP primero' }}</span>
+        </div>
+      </div>
+
+      <div class="imagen-acciones">
+        <app-icon-button icon="ti ti-eye" type="secondary" title="Visualizar" [disabled]="!imagenUrl"
+          (click)="verImagenAmpliadaEvent()">
+        </app-icon-button>
+
+        <app-icon-button icon="ti ti-upload" type="primary"
+          [title]="imagenExiste ? 'Reemplazar imagen' : 'Subir imagen'" (click)="abrirCapturaImagenEvent(inputImagen)">
+        </app-icon-button>
+
+        <app-icon-button icon="ti ti-trash" type="error" title="Eliminar" [disabled]="!imagenExiste"
+          (click)="eliminarImagenEvent()">
+        </app-icon-button>
+      </div>
+
+      <input #inputImagen type="file" accept="image/*" capture="environment" hidden
+        (change)="onSeleccionarImagenEvent($event)">
+    </div>
+  </div>
+
+  <!-- Veto section -->
+  <div class="veto-section">
+    <h4 class="veto-titulo">Veto</h4>
+
+    <div *ngIf="!datosForm.curp" class="aviso">
+      Captura el CURP para consultar si existe un veto.
+    </div>
+
+    <ng-container *ngIf="datosForm.curp && vetoConsultado">
+      <!-- Ya existe un veto registrado y no se está editando -->
+      <div *ngIf="vetoExistente && !editandoVeto" class="veto-existente-wrapper">
+        <div class="veto-existente">
+          <div class="veto-dato">
+            <span class="campo-label">Tipo</span>
+            <span>{{ vetoExistente.lblDescripcionTipoVeto }}</span>
+          </div>
+          <div class="veto-dato">
+            <span class="campo-label">Fecha inicio</span>
+            <span>{{ vetoExistente.lblFechaInicio || '—' }}</span>
+          </div>
+          <div class="veto-dato">
+            <span class="campo-label">Fecha término</span>
+            <span>{{ vetoExistente.lblFechaTermino || '—' }}</span>
+          </div>
+          <div class="veto-dato">
+            <span class="campo-label">Días restantes</span>
+            <span>{{ vetoExistente.lblDiasRestantes || '—' }}</span>
+          </div>
+        </div>
+
+        <app-icon-button icon="ti ti-pencil" type="secondary" size="sm" title="Modificar"
+          (click)="iniciarEdicionVetoEvent()">
+        </app-icon-button>
+      </div>
+
+      <!-- No tiene veto, o se está reemplazando uno existente -->
+      <div *ngIf="!vetoExistente || editandoVeto" class="veto-grid">
+        <div class="campo-select">
+          <label class="campo-label">Tipo de veto</label>
+          <app-select [options]="tipoVetoOptions" placeholder="Seleccione un tipo" [value]="nuevoVeto.tipoVeto"
+            (valueChange)="onTipoVetoChangeEvent($event)">
+          </app-select>
+        </div>
+
+        <app-input label="Fecha inicio" type="date" [value]="nuevoVeto.fechaInicio"
+          (valueChange)="nuevoVeto.fechaInicio = $event">
+        </app-input>
+
+        <app-input *ngIf="!tipoVetoSeleccionadoEsDefinitivo" label="Fecha término" type="date"
+          [value]="nuevoVeto.fechaTermino" (valueChange)="nuevoVeto.fechaTermino = $event">
+        </app-input>
+
+        <div class="veto-aplicar">
+          <app-button label="Cancelar" type="ghost" size="sm" *ngIf="editandoVeto"
+            (clicked)="cancelarEdicionVetoEvent()">
+          </app-button>
+
+          <app-button label="Aplicar veto" type="primary" size="sm" (clicked)="aplicarVetoEvent()">
+          </app-button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

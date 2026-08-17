@@ -1,0 +1,65 @@
+<div class="apartado-otros">
+  <div *ngIf="!curp" class="aviso">
+    Captura el CURP en el apartado de Captura para consultar los elementos adicionales.
+  </div>
+
+  <div class="seccion-header">
+    <h4>Ingreso con elementos adicionales</h4>
+  </div>
+
+  <ng-container *ngIf="curp">
+    <!-- Formulario para agregar un nuevo elemento -->
+    <div class="elemento-form">
+      <div class="elemento-form-tipo">
+        <app-input placeholder="Tipo" [value]="nuevoElemento.tipoElemento" (valueChange)="onTipoChange($event)">
+        </app-input>
+      </div>
+
+      <div class="elemento-form-descripcion">
+        <app-input placeholder="Descripción del elemento..." [value]="nuevoElemento.descripcionElemento"
+          (valueChange)="onDescripcionChange($event)" (enter)="crearElementoEvent()">
+        </app-input>
+      </div>
+
+      <div class="elemento-form-cantidad">
+        <app-input type="number" placeholder="Cantidad" [value]="nuevoElemento.cantidad"
+          (valueChange)="onCantidadChange($event)" (enter)="crearElementoEvent()">
+        </app-input>
+      </div>
+
+      <app-button icon="ti ti-plus" label="" type="primary" size="md" title="Agregar elemento"
+        (clicked)="crearElementoEvent()">
+      </app-button>
+    </div>
+
+    <div *ngIf="elementosAdicionalesCargados && elementosAdicionales.length === 0" class="aviso">
+      No se encontraron elementos adicionales para este CURP.
+    </div>
+
+    <!-- Tabla de elementos adicionales -->
+    <div class="tabla-wrapper" *ngIf="elementosAdicionales.length">
+      <table class="tabla-registros">
+        <thead>
+          <tr>
+            <th>Tipo</th>
+            <th>Descripción</th>
+            <th class="col-cantidad">Cantidad</th>
+            <th class="col-accion">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of elementosAdicionales">
+            <td>{{ item.lblClasifica }}</td>
+            <td>{{ item.lblDescripcion }}</td>
+            <td class="col-cantidad">{{ item.lblCantidad }}</td>
+            <td class="col-accion">
+              <app-icon-button icon="ti ti-pencil" type="secondary" size="sm" title="Editar"
+                (click)="editarElementoEvent(item)">
+              </app-icon-button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</div>

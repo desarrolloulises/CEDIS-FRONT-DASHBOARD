@@ -1,0 +1,43 @@
+<!-- apartado-vehiculo.component.html -->
+<div class="apartado-vehiculo">
+  <div *ngIf="!curp" class="aviso">
+    Captura el CURP en el apartado de Captura para consultar los datos del vehículo.
+  </div>
+  
+  <ng-container *ngIf="curp">
+    <div class="vehiculo-header">
+      <h4>Información del Vehículo</h4>
+    </div>
+    
+    <div class="vehiculo-form">
+      <div class="campo-select">
+        <label class="campo-label">Tipo de unidad</label>
+        <app-select [options]="tipoUnidadOptions" placeholder="Seleccione tipo de unidad" 
+          [value]="vehiculoForm.tipoUnidad"
+          (valueChange)="onCampoChange('tipoUnidad', $event)">
+        </app-select>
+      </div>
+
+      <div class="fila-doble">
+        <app-input label="Placas" placeholder="Número de placas"
+          [value]="vehiculoForm.placas" (valueChange)="onCampoChange('placas', $event)">
+        </app-input>
+        <app-input label="Marca" placeholder="Marca del vehículo"
+          [value]="vehiculoForm.marca" (valueChange)="onCampoChange('marca', $event)">
+        </app-input>
+      </div>
+      
+      <div class="fila-doble">
+        <app-input label="Modelo" placeholder="Modelo del vehículo"
+          [value]="vehiculoForm.modelo" (valueChange)="onCampoChange('modelo', $event)">
+        </app-input>
+      </div>
+      
+      <div class="vehiculo-acciones">
+        <app-button label="Actualizar datos" type="primary" size="md" 
+          (clicked)="actualizarVisitanteEvent()">
+        </app-button>
+      </div>
+    </div>
+  </ng-container>
+</div>

@@ -1,14 +1,23 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+
 import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { IconButtonComponent } from '../../../shared/components/icon-button/icon-button.component';
-import { InputComponent } from '../../../shared/components/input/input.component';
-import { SelectComponent, ISelectOption } from '../../../shared/components/select/select.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { InputComponent } from '../../../shared/components/input/input.component';
+import { SelectComponent, ISelectOption } from '../../../shared/components/select/select.component';
 import { DatosService } from '../../../service/servicio.service';
+
+import { CapturaCurpComponent } from './components/captura-curp/captura-curp.component';
+import { ApartadoDatosComponent } from './components/apartado-datos/apartado-datos.component';
+import { ApartadoVehiculoComponent } from './components/apartado-vehiculo/apartado-vehiculo.component';
+import { ApartadoValidacionesComponent } from './components/apartado-validaciones/apartado-validaciones.component';
+import { ApartadoIncidenciasComponent } from './components/apartado-incidencias/apartado-incidencias.component';
+import { ApartadoOtrosComponent } from './components/apartado-otros/apartado-otros.component';
 
 import {
   AplicarVetoPayload,
@@ -18,7 +27,14 @@ import {
   NivelIncidenciaCatalogo,
   TipoVeto,
   ValidacionSeguridad,
-  VetoExistente
+  VetoExistente,
+  Visitante,
+  MotivoVisita,
+  Area,
+  DatosVisitante,
+  TipoUnidad,
+  ActualizarVisitantePayload,
+  ValidarCurpResponse
 } from './models/registro-entrada-almacen.models';
 import { RegistroEntradaAlmacenService } from './services/registro-entrada-almacen.service';
 
@@ -35,6 +51,8 @@ interface DatosForm {
   motivo: string;
   noProveedor: string;
   razonSocial: string;
+  area: string;
+  idEmpresaArea: number;
 }
 
 interface NuevoVetoForm {
@@ -72,18 +90,30 @@ interface ToastState {
   mensaje: string;
 }
 
+interface VehiculoForm {
+  tipoUnidad: string;
+  placas: string;
+  marca: string;
+  modelo: string;
+}
+
 @Component({
   selector: 'app-registro-entrada-almacen',
   standalone: true,
   imports: [
     CommonModule,
     ButtonComponent,
-    IconButtonComponent,
-    InputComponent,
-    SelectComponent,
     LoadingSpinnerComponent,
     ToastComponent,
-    ModalComponent
+    ModalComponent,
+    InputComponent,
+    SelectComponent,
+    CapturaCurpComponent,
+    ApartadoDatosComponent,
+    ApartadoVehiculoComponent,
+    ApartadoValidacionesComponent,
+    ApartadoIncidenciasComponent,
+    ApartadoOtrosComponent
   ],
   templateUrl: './registro-entrada-almacen.component.html',
   styleUrls: ['./registro-entrada-almacen.component.css']
@@ -99,25 +129,50 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     { id: 'otros', titulo: 'Otros' }
   ];
 
-  // Apartado activo (por defecto, el primero)
-  apartadoActivo: string = this.apartados[0].id;
+  apartadoActivo: string = 'curp';
 
-  // Spinner único compartido por todos los apartados
+  curpValidado: boolean = false;
+
   cargando = false;
 
-  constructor(private cedisService: RegistroEntradaAlmacenService, private datosService: DatosService) { }
+  visitanteActual: Visitante | null = null;
+
+  constructor(
+    private cedisService: RegistroEntradaAlmacenService,
+    private datosService: DatosService
+  ) { }
+
+  private proveedorSubject = new Subject<string>();
+
 
   ngOnInit(): void {
-    this.cargarCatalogoTiposVeto();
-    this.cargarCatalogoNiveles();
+    this.cargarCatalogos();
+
+    this.proveedorSubject.pipe(
+      debounceTime(500), 
+      distinctUntilChanged() 
+    ).subscribe(valor => {
+      this.procesarCambioProveedor(valor);
+    });
   }
 
   ngOnDestroy(): void {
     this.liberarImagenUrl();
+    if (this.proveedorSubject) {
+      this.proveedorSubject.complete();
+    }
   }
 
+  private cargarCatalogos(): void {
+    this.cargarMotivosVisita();
+    this.cargarCatalogoTiposVeto();
+    this.cargarCatalogoNiveles();
+    this.cargarTiposUnidad();
+  }
+
+
   //////////////////////////////////////////
-  // Toast: instancia única compartida por todo el componente.
+  //              Toast
   //////////////////////////////////////////
   toast: ToastState = {
     visible: false,
@@ -128,6 +183,10 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
 
   mostrarToast(tipo: 'success' | 'error', titulo: string, mensaje: string): void {
     this.toast = { visible: true, tipo, titulo, mensaje };
+
+    setTimeout(() => {
+      this.cerrarToast();
+    }, 4000);
   }
 
   cerrarToast(): void {
@@ -135,14 +194,640 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
   }
 
   //////////////////////////////////////////
-  // Apartado "Datos": formulario principal
+  // Validación de CURP
   //////////////////////////////////////////
-  motivoOptions: ISelectOption[] = [
-    { label: 'Visita', value: 'Visita' },
-    { label: 'Maniobra', value: 'Maniobra' },
-    { label: 'Encargado', value: 'Encargado' }
-  ];
 
+  onCurpChange(curp: string): void {
+    this.datosForm.curp = curp.toUpperCase();
+    this.curpValidado = false;
+  }
+
+  onCurpValidar(): void {
+    const curp = this.obtenerCurpNormalizado();
+
+    if (!curp || curp.length !== 18) {
+      this.mostrarToast('error', 'CURP inválido', 'El CURP debe tener 18 caracteres.');
+      return;
+    }
+
+    this.validarCurpEnListaVisitantes(curp);
+  }
+
+  private procesarCambioProveedor(valor: string): void {
+    if (!valor || valor.trim() === '') {
+      this.datosForm.razonSocial = '';
+      this.datosForm.idEmpresaArea = 0;
+      return;
+    }
+
+    const idProveedor = Number(valor);
+    if (isNaN(idProveedor) || idProveedor <= 0) {
+      this.datosForm.razonSocial = '';
+      this.datosForm.idEmpresaArea = 0;
+      return;
+    }
+
+    this.datosForm.idEmpresaArea = idProveedor;
+    this.consultarRazonSocial(idProveedor);
+  }
+
+  private validarCurpEnListaVisitantes(curp: string): void {
+    this.cargando = true;
+
+    this.cedisService.consultarVisitantes({
+      usuario: this.datosService.usuarioSignal()
+    }).subscribe({
+      next: (visitantes) => {
+        this.cargando = false;
+
+        const visitanteEncontrado = visitantes.find(v => v.CURP.toLowerCase() === curp.toLowerCase());
+
+        if (visitanteEncontrado) {
+          this.visitanteActual = visitanteEncontrado;
+          this.curpValidado = true;
+          this.procesarVisitanteEncontrado(visitanteEncontrado);
+          this.seleccionarApartado('datos');
+
+        } else {
+          this.mostrarToast(
+            'error',
+            'CURP no encontrado',
+            'El CURP no se encuentra en la lista de visitantes.'
+          );
+        }
+      },
+      error: () => {
+        this.cargando = false;
+        this.mostrarToast(
+          'error',
+          'Error de consulta',
+          'No se pudo consultar la lista de visitantes.'
+        );
+      }
+    });
+  }
+
+  private procesarVisitanteEncontrado(visitante: Visitante): void {
+
+    // Llenar formulario con la información del visitante
+    this.datosForm.curp = visitante.CURP;
+    this.datosForm.motivo = visitante.idTipoIngreso.toString();
+
+    // Llenar formulario de vehículo
+    this.vehiculoForm.tipoUnidad = visitante.tipoUnidad?.toString() || '';
+    this.vehiculoForm.placas = visitante.placas || '';
+    this.vehiculoForm.marca = visitante.marca || '';
+    this.vehiculoForm.modelo = visitante.modelo || '';
+
+    // Consultar datos separados del visitante (nombre, apellidos)
+    this.consultarDatosVisitante(visitante.CURP);
+
+    // Procesar según la opción del motivo
+    this.procesarMotivoSeleccionado(visitante.idTipoIngreso);
+
+    // Consultar veto e imagen
+    const curp = this.obtenerCurpNormalizado();
+    if (curp) {
+      this.consultarVeto(curp);
+      this.consultarImagen(curp);
+    }
+  }
+
+  private procesarMotivoSeleccionado(idTipoIngreso: number): void {
+    const motivo = this.motivosVisita.find(m => m.id === idTipoIngreso);
+
+    if (!motivo) {
+      return;
+    }
+
+
+    const opcion = motivo.opcion;
+
+    if (opcion === 1) {
+
+      if (this.visitanteActual?.idEmpresaArea && this.visitanteActual.idEmpresaArea > 0) {
+        this.datosForm.noProveedor = this.visitanteActual.idEmpresaArea.toString();
+        this.datosForm.idEmpresaArea = this.visitanteActual.idEmpresaArea;
+        this.consultarRazonSocial(this.visitanteActual.idEmpresaArea);
+      }
+
+    } else if (opcion > 1) {
+      this.cargarAreasConSeleccion(opcion, this.visitanteActual?.idEmpresaArea);
+
+    } else {
+      this.datosForm.area = '';
+      this.datosForm.noProveedor = '';
+      this.datosForm.razonSocial = '';
+      this.datosForm.idEmpresaArea = 0;
+    }
+  }
+
+  private cargarAreasConSeleccion(opcion: number, idEmpresaAreaSeleccionado?: number): void {
+    this.cargando = true;
+
+    this.cedisService.obtenerAreas({
+      tipo: opcion,
+      usuario: this.datosService.usuarioSignal()
+    }).subscribe({
+      next: (areas) => {
+
+        this.areas = areas ?? [];
+        this.areaOptions = this.areas.map((a) => ({
+          label: a.descripcionArea,
+          value: a.idArea.toString()
+        }));
+
+        if (idEmpresaAreaSeleccionado && idEmpresaAreaSeleccionado > 0) {
+          const areaExistente = this.areas.find(a => a.idArea === idEmpresaAreaSeleccionado);
+
+          if (areaExistente) {
+            this.datosForm.idEmpresaArea = idEmpresaAreaSeleccionado;
+            this.datosForm.area = idEmpresaAreaSeleccionado.toString();
+          } else {
+            this.datosForm.area = '';
+            this.datosForm.idEmpresaArea = 0;
+          }
+        } else {
+          this.datosForm.area = '';
+          this.datosForm.idEmpresaArea = 0;
+        }
+
+        this.cargando = false;
+      },
+      error: (error) => {
+        this.cargando = false;
+        this.areas = [];
+        this.areaOptions = [];
+        this.datosForm.area = '';
+        this.datosForm.idEmpresaArea = 0;
+
+        this.mostrarToast(
+          'error',
+          'Áreas no disponibles',
+          'No se pudieron cargar las áreas para este tipo de visita.'
+        );
+      }
+    });
+  }
+
+  private consultarDatosVisitante(curp: string): void {
+    this.cedisService.obtenerDatosVisitante({
+      curp: curp
+    }).subscribe({
+      next: (datos) => {
+        this.datosForm.nombre = datos.nombre;
+        this.datosForm.apellidoP = datos.paterno;
+        this.datosForm.apellidoM = datos.materno;
+      },
+      error: () => {
+      }
+    });
+  }
+
+  //////////////////////////////////////////
+  // Apartado Datos
+  //////////////////////////////////////////
+  motivosVisita: MotivoVisita[] = [];
+  motivoOptions: ISelectOption[] = [];
+  areas: Area[] = [];
+  areaOptions: ISelectOption[] = [];
+  tiposUnidad: TipoUnidad[] = [];
+  tipoUnidadOptions: ISelectOption[] = [];
+
+  private cargarMotivosVisita(): void {
+    this.cedisService.obtenerMotivosVisita({
+      usuario: this.datosService.usuarioSignal()
+    }).subscribe({
+      next: (motivos) => {
+        this.motivosVisita = motivos ?? [];
+        this.motivoOptions = this.motivosVisita.map((m) => ({
+          label: m.motivo,
+          value: m.id.toString()
+        }));
+      },
+      error: () => {
+        this.mostrarToast(
+          'error',
+          'Catálogo no disponible',
+          'No se pudo cargar el catálogo de motivos de visita.'
+        );
+      }
+    });
+  }
+
+  private cargarTiposUnidad(): void {
+    this.cedisService.obtenerTiposUnidad({
+      usuario: this.datosService.usuarioSignal()
+    }).subscribe({
+      next: (tipos) => {
+        this.tiposUnidad = tipos ?? [];
+        this.tipoUnidadOptions = this.tiposUnidad.map((t) => ({
+          label: t.tipoUnidad,
+          value: t.id.toString()
+        }));
+      },
+      error: () => {
+        this.mostrarToast(
+          'error',
+          'Catálogo no disponible',
+          'No se pudo cargar el catálogo de tipos de unidad.'
+        );
+      }
+    });
+  }
+
+  get opcionMotivoSeleccionado(): number {
+    const motivo = this.motivosVisita.find(
+      (m) => m.id.toString() === this.datosForm.motivo
+    );
+    return motivo ? motivo.opcion : 0;
+  }
+
+  onMotivoChange(valor: string): void {
+
+    this.datosForm.motivo = valor;
+
+    const opcion = this.opcionMotivoSeleccionado;
+
+    // Resetear todos los campos relacionados al cambio de motivo
+    this.datosForm.area = '';
+    this.datosForm.noProveedor = '';
+    this.datosForm.razonSocial = '';
+    this.datosForm.idEmpresaArea = 0;
+
+    // Limpiar lista de áreas
+    this.areas = [];
+    this.areaOptions = [];
+
+    if (opcion > 1) {
+      this.cargarAreas(opcion);
+
+    } 
+  }
+
+  onNoProveedorChange(valor: string): void {
+
+    this.datosForm.noProveedor = valor;
+
+    if (!valor || valor.trim() === '') {
+      this.datosForm.razonSocial = '';
+      this.datosForm.idEmpresaArea = 0;
+      return;
+    }
+
+    const idProveedor = Number(valor);
+    if (isNaN(idProveedor) || idProveedor <= 0) {
+      this.datosForm.razonSocial = '';
+      this.datosForm.idEmpresaArea = 0;
+      return;
+    }
+
+    this.datosForm.idEmpresaArea = idProveedor;
+    this.consultarRazonSocial(idProveedor);
+  }
+
+  private consultarRazonSocial(idProveedor: number): void {
+
+    if (!idProveedor || idProveedor <= 0) {
+      this.datosForm.razonSocial = '';
+      return;
+    }
+
+    this.cargando = true;
+
+    this.cedisService.obtenerRazonSocialProveedor({
+      idProvedor: idProveedor
+    }).subscribe({
+      next: (resp) => {
+        this.cargando = false;
+
+        if (resp && resp.razonSocial) {
+          this.datosForm.razonSocial = resp.razonSocial;
+          this.datosForm.noProveedor = idProveedor.toString();
+          this.datosForm.idEmpresaArea = idProveedor;
+        } else {
+          this.datosForm.razonSocial = '';
+        }
+      },
+      error: (error) => {
+        this.cargando = false;
+        this.datosForm.razonSocial = '';
+
+        if (error.message.includes('tiempo de espera')) {
+          this.mostrarToast(
+            'error',
+            'Tiempo de espera agotado',
+            `La consulta del proveedor ${idProveedor} excedió el tiempo límite.`
+          );
+        } else {
+          this.mostrarToast(
+            'error',
+            'Error de consulta',
+            `No se pudo obtener la razón social del proveedor ${idProveedor}.`
+          );
+        }
+      }
+    });
+  }
+
+  private cargarAreas(opcion: number): void {
+    this.cargando = true;
+
+    this.cedisService.obtenerAreas({
+      tipo: opcion,
+      usuario: this.datosService.usuarioSignal()
+    }).subscribe({
+      next: (areas) => {
+
+        this.areas = areas ?? [];
+        this.areaOptions = this.areas.map((a) => ({
+          label: a.descripcionArea,
+          value: a.idArea.toString()
+        }));
+
+        this.datosForm.area = '';
+        this.datosForm.idEmpresaArea = 0;
+
+        this.cargando = false;
+      },
+      error: (error) => {
+        this.cargando = false;
+        this.areas = [];
+        this.areaOptions = [];
+        this.datosForm.area = '';
+        this.datosForm.idEmpresaArea = 0;
+
+        this.mostrarToast(
+          'error',
+          'Áreas no disponibles',
+          'No se pudieron cargar las áreas para este tipo de visita.'
+        );
+      }
+    });
+  }
+
+
+  onAreaChange(valor: string): void {
+
+    this.datosForm.area = valor;
+
+    if (valor && valor !== '') {
+      this.datosForm.idEmpresaArea = Number(valor);
+    } else {
+      this.datosForm.idEmpresaArea = 0;
+    }
+  }
+
+
+
+  //////////////////////////////////////////
+  // Vehículo
+  //////////////////////////////////////////
+  vehiculoForm: VehiculoForm = {
+    tipoUnidad: '',
+    placas: '',
+    marca: '',
+    modelo: ''
+  };
+
+  actualizarVisitante(): void {
+    if (!this.visitanteActual) {
+      this.mostrarToast('error', 'Error', 'No hay un visitante seleccionado.');
+      return;
+    }
+
+    if (!this.validarCamposSegunOpcion()) {
+      return;
+    }
+
+    this.validarCurpAntesDeActualizar();
+  }
+
+  private validarCamposSegunOpcion(): boolean {
+    const opcion = this.opcionMotivoSeleccionado;
+
+
+    if (opcion === 1) {
+      if (!this.datosForm.noProveedor || this.datosForm.noProveedor.trim() === '') {
+        this.mostrarToast(
+          'error',
+          'Proveedor requerido',
+          'Debe ingresar un número de proveedor válido para actualizar.'
+        );
+        return false;
+      }
+
+      const idProveedor = Number(this.datosForm.noProveedor);
+      if (isNaN(idProveedor) || idProveedor <= 0) {
+        this.mostrarToast(
+          'error',
+          'Proveedor inválido',
+          'El número de proveedor debe ser un valor numérico mayor a 0.'
+        );
+        return false;
+      }
+
+      if (!this.datosForm.razonSocial || this.datosForm.razonSocial.trim() === '') {
+        this.mostrarToast(
+          'error',
+          'Razón social requerida',
+          'Debe consultar la razón social del proveedor antes de actualizar.'
+        );
+        return false;
+      }
+
+      return true;
+
+    } else if (opcion > 1) {
+      if (!this.datosForm.area || this.datosForm.area === '' || this.datosForm.idEmpresaArea === 0) {
+        this.mostrarToast(
+          'error',
+          'Área requerida',
+          'Debe seleccionar un área válida para actualizar.'
+        );
+        return false;
+      }
+
+      const areaSeleccionada = this.areas.find(a => a.idArea === this.datosForm.idEmpresaArea);
+      if (!areaSeleccionada) {
+        this.mostrarToast(
+          'error',
+          'Área inválida',
+          'El área seleccionada no es válida. Por favor seleccione otra.'
+        );
+        return false;
+      }
+
+      return true;
+
+    } else {
+      return true;
+    }
+  }
+
+  onVehiculoFormChange(vehiculoForm: VehiculoForm): void {
+    this.vehiculoForm = vehiculoForm;
+  }
+
+  private validarCurpAntesDeActualizar(): void {
+    const curp = this.obtenerCurpNormalizado();
+
+    this.cargando = true;
+
+    this.cedisService.validarCurp({
+      curp: curp,
+      nombre: this.datosForm.nombre,
+      paterno: this.datosForm.apellidoP,
+      materno: this.datosForm.apellidoM,
+      usuario: this.datosService.usuarioSignal()
+    }).subscribe({
+      next: (resp: ValidarCurpResponse) => {
+
+        if (resp.errId === 0) {
+          this.procesarActualizacionVisitante();
+        } else {
+          this.cargando = false;
+          this.mostrarToast(
+            'error',
+            'Error de validación',
+            resp.errMsg || 'Los datos no coinciden con el CURP proporcionado.'
+          );
+        }
+      },
+      error: (error) => {
+        this.cargando = false;
+        this.mostrarToast(
+          'error',
+          'Error de validación',
+          'No se pudo validar el CURP con los datos proporcionados.'
+        );
+      }
+    });
+  }
+
+  private procesarActualizacionVisitante(): void {
+    if (!this.visitanteActual) {
+      return;
+    }
+
+    let idEmpresaArea = 0;
+    let empresaArea = '';
+
+    if (this.opcionMotivoSeleccionado === 1) {
+      idEmpresaArea = this.datosForm.idEmpresaArea;
+      empresaArea = this.datosForm.razonSocial;
+
+      if (idEmpresaArea <= 0 || !empresaArea) {
+        this.cargando = false;
+        this.mostrarToast(
+          'error',
+          'Datos incompletos',
+          'El proveedor o la razón social no son válidos.'
+        );
+        return;
+      }
+
+    } else if (this.opcionMotivoSeleccionado > 1) {
+      idEmpresaArea = this.datosForm.idEmpresaArea;
+
+      const area = this.areas.find(a => a.idArea === idEmpresaArea);
+
+      if (!area || idEmpresaArea <= 0) {
+        this.cargando = false;
+        this.mostrarToast(
+          'error',
+          'Área inválida',
+          'Debe seleccionar un área válida para actualizar.'
+        );
+        return;
+      }
+
+      empresaArea = area.descripcionArea;
+
+    } else {
+      idEmpresaArea = this.visitanteActual.idEmpresaArea;
+      empresaArea = this.visitanteActual.empresaArea;
+    }
+
+    const payload: ActualizarVisitantePayload = {
+      idCita: this.visitanteActual.idCita,
+      idTipoIngreso: Number(this.datosForm.motivo),
+      idEmpresaArea: idEmpresaArea,
+      empresaArea: empresaArea,
+      curp: this.visitanteActual.CURP,
+      nombre: this.datosForm.nombre,
+      paterno: this.datosForm.apellidoP,
+      materno: this.datosForm.apellidoM,
+      unidad: Number(this.vehiculoForm.tipoUnidad) || 0,
+      placas: this.vehiculoForm.placas || '',
+      marca: this.vehiculoForm.marca || '',
+      modelo: this.vehiculoForm.modelo || '',
+      usuario: this.datosService.usuarioSignal()
+    };
+
+
+    this.cedisService.actualizarVisitante(payload).subscribe({
+      next: (respuesta) => {
+        this.cargando = false;
+
+        this.mostrarToast(
+          'success',
+          'Datos actualizados',
+          'La información del visitante se actualizó.'
+        );
+
+        // Actualizar el visitante actual con los nuevos datos
+        if (this.visitanteActual) {
+          this.visitanteActual.idTipoIngreso = Number(this.datosForm.motivo);
+          this.visitanteActual.idEmpresaArea = idEmpresaArea;
+          this.visitanteActual.empresaArea = empresaArea;
+          this.visitanteActual.nombre = `${this.datosForm.nombre} ${this.datosForm.apellidoP} ${this.datosForm.apellidoM}`.trim();
+          this.visitanteActual.tipoUnidad = Number(this.vehiculoForm.tipoUnidad) || 0;
+          this.visitanteActual.placas = this.vehiculoForm.placas || '';
+          this.visitanteActual.marca = this.vehiculoForm.marca || '';
+          this.visitanteActual.modelo = this.vehiculoForm.modelo || '';
+        }
+
+        // Recargar validaciones de seguridad después de actualizar
+        this.recargarValidacionesDespuesDeActualizar();
+
+        // Recargar otros datos relacionados
+        const curp = this.obtenerCurpNormalizado();
+        if (curp) {
+          this.consultarVeto(curp);
+          this.consultarIncidencias(curp);
+          this.consultarElementosAdicionales(curp);
+        }
+      },
+      error: (error) => {
+        console.error('Error al actualizar visitante:', error);
+        this.cargando = false;
+        this.mostrarToast(
+          'error',
+          'Error al actualizar',
+          'No se pudieron actualizar los datos del visitante.'
+        );
+      }
+    });
+  }
+
+
+  private recargarValidacionesDespuesDeActualizar(): void {
+    const curp = this.obtenerCurpNormalizado();
+
+    if (!curp) {
+      return;
+    }
+
+    this.validaciones = [];
+    this.validacionesCargadas = false;
+
+    this.consultarValidaciones(curp);
+  }
+
+  //////////////////////////////////////////
+  // Apartado Datos
+  //////////////////////////////////////////
   private datosFormInicial: DatosForm = {
     curp: '',
     nombre: '',
@@ -150,15 +835,35 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     apellidoM: '',
     motivo: '',
     noProveedor: '',
-    razonSocial: ''
+    razonSocial: '',
+    area: '',
+    idEmpresaArea: 0
   };
 
   datosForm: DatosForm = { ...this.datosFormInicial };
 
-  /**
-   * Se dispara al perder el foco el campo CURP. A partir de aquí
-   * se consultan validaciones, veto e incidencias para ese CURP.
-   */
+  onDatosFormChange(event: { campo: string, valor: any }): void {
+
+    (this.datosForm as any)[event.campo] = event.valor;
+
+    if (event.campo === 'curp') {
+      this.datosForm.curp = event.valor.toUpperCase();
+      this.curpValidado = this.datosForm.curp.length === 18;
+    }
+
+    if (event.campo === 'motivo') {
+      this.onMotivoChange(event.valor);
+    }
+
+    if (event.campo === 'area') {
+      this.onAreaChange(event.valor);
+    }
+
+    if (event.campo === 'noProveedor') {
+      this.onNoProveedorChange(event.valor);
+    }
+  }
+
   onCurpBlur(): void {
     const curp = this.obtenerCurpNormalizado();
     if (!curp) {
@@ -175,15 +880,12 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     return (this.datosForm.curp || '').trim().toLowerCase();
   }
 
-
   //////////////////////////////////////////
   //          Imagen
   //////////////////////////////////////////
 
-  /** Metadatos devueltos por /obtener-imagen/{CURP} o tras subir/actualizar */
   imagenInfo: ImagenInfo | null = null;
 
-  /** Blob URL usado para mostrar la imagen en el <img> */
   imagenUrl: string | null = null;
   imagenAmpliada = false;
 
@@ -191,10 +893,6 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     return !!this.imagenInfo;
   }
 
-  /**
-   * Consulta los metadatos de la imagen y después
-   * descarga el binario para poder mostrarla.
-   */
   consultarImagen(curp: string): void {
     this.cargando = true;
 
@@ -203,20 +901,16 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
         this.imagenInfo = info;
         this.cargarImagenBinario(curp);
       },
-      error: () => {
+      error: (error) => {
         this.cargando = false;
         this.imagenInfo = null;
         this.liberarImagenUrl();
         this.imagenUrl = null;
-        // Sin imagen asociada para este CURP; no se muestra error, es un estado válido.
       }
     });
   }
 
-  /**
-   * Dispara la selección/captura de imagen. Requiere que el CURP ya
-   * esté capturado en el apartado de Datos.
-   */
+
   abrirCapturaImagen(inputImagen: HTMLInputElement): void {
     if (!this.obtenerCurpNormalizado()) {
       this.mostrarToast('error', 'CURP requerido', 'Captura el CURP en el apartado de Datos antes de subir una imagen.');
@@ -225,26 +919,21 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     inputImagen.click();
   }
 
-  /** Descarga el binario de la imagen y arma el blob URL */
   private cargarImagenBinario(curp: string): void {
+
     this.cedisService.obtenerImagenBinario(curp).subscribe({
       next: (blob) => {
         this.liberarImagenUrl();
         this.imagenUrl = URL.createObjectURL(blob);
         this.cargando = false;
       },
-      error: () => {
+      error: (error) => {
         this.cargando = false;
         this.mostrarToast('error', 'Error al cargar imagen', 'No se pudo descargar el archivo de la imagen.');
       }
     });
   }
 
-  /**
-   * Dispara la selección de archivo. Si ya hay una imagen cargada
-   * el archivo seleccionado actualiza esa imagen;
-   * si no, se sube como una imagen nueva.
-   */
   onSeleccionarImagen(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files && input.files[0];
@@ -276,7 +965,6 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     input.value = '';
   }
 
-  /** Sube una imagen nueva */
   private subirImagenApi(curp: string, file: File): void {
     this.cargando = true;
 
@@ -284,16 +972,15 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       next: (info) => {
         this.imagenInfo = info;
         this.cargarImagenBinario(curp);
-        this.mostrarToast('success', 'Imagen subida', `Se subió "${file.name}" correctamente.`);
+        this.mostrarToast('success', 'Imagen subida', `Se subió "${file.name}".`);
       },
-      error: () => {
+      error: (error) => {
         this.cargando = false;
         this.mostrarToast('error', 'Error al subir', 'No se pudo subir la imagen.');
       }
     });
   }
 
-  /** Actualiza (reemplaza) el archivo de la imagen ya asociada */
   private actualizarImagenApi(curp: string, file: File): void {
     this.cargando = true;
 
@@ -301,16 +988,15 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       next: (info) => {
         this.imagenInfo = info;
         this.cargarImagenBinario(curp);
-        this.mostrarToast('success', 'Imagen actualizada', 'La imagen se reemplazó correctamente.');
+        this.mostrarToast('success', 'Imagen actualizada', 'La imagen se reemplazó.');
       },
-      error: () => {
+      error: (error) => {
         this.cargando = false;
         this.mostrarToast('error', 'Error al actualizar', 'No se pudo actualizar la imagen.');
       }
     });
   }
 
-  /** Elimina la imagen actualmente cargada */
   eliminarImagen(): void {
     const curp = this.obtenerCurpNormalizado();
 
@@ -327,9 +1013,9 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
         this.imagenAmpliada = false;
         this.imagenInfo = null;
         this.cargando = false;
-        this.mostrarToast('success', 'Imagen eliminada', resp.mensaje || 'La imagen fue eliminada correctamente.');
+        this.mostrarToast('success', 'Imagen eliminada', resp.mensaje || 'La imagen fue eliminada.');
       },
-      error: () => {
+      error: (error) => {
         this.cargando = false;
         this.mostrarToast('error', 'Error al eliminar', 'No se pudo eliminar la imagen.');
       }
@@ -360,6 +1046,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
   validacionesCargadas = false;
 
   consultarValidaciones(curp: string): void {
+
     this.cargando = true;
 
     this.cedisService.obtenerValidaciones(curp).subscribe({
@@ -368,7 +1055,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
         this.validacionesCargadas = true;
         this.cargando = false;
       },
-      error: () => {
+      error: (error) => {
         this.validaciones = [];
         this.validacionesCargadas = true;
         this.cargando = false;
@@ -381,7 +1068,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     });
   }
 
-  toggleValidacion(item: ValidacionSeguridad, activa: boolean): void {
+  toggleValidacion(event: { item: ValidacionSeguridad, activa: boolean }): void {
     const curp = this.obtenerCurpNormalizado();
 
     if (!curp) {
@@ -389,15 +1076,14 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const estadoAnterior = item.estadoValidacion;
-    // Actualización optimista de la UI
-    item.estadoValidacion = activa ? 1 : 0;
+    const estadoAnterior = event.item.estadoValidacion;
+    event.item.estadoValidacion = event.activa ? 1 : 0;
 
     this.cedisService
       .actualizarValidacion({
         curp,
-        clave: item.lblClaveValidacion,
-        activa,
+        clave: event.item.lblClaveValidacion,
+        activa: event.activa,
         usuario: this.datosService.usuarioSignal()
       })
       .subscribe({
@@ -405,16 +1091,15 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
           this.mostrarToast(
             'success',
             'Validación actualizada',
-            `"${item.lblDescripcionValidacion}" se actualizó correctamente.`
+            `"${event.item.lblDescripcionValidacion}" se actualizó.`
           );
         },
         error: () => {
-          // Se revierte el cambio si la API falla
-          item.estadoValidacion = estadoAnterior;
+          event.item.estadoValidacion = estadoAnterior;
           this.mostrarToast(
             'error',
             'Error al actualizar',
-            `No se pudo actualizar "${item.lblDescripcionValidacion}".`
+            `No se pudo actualizar "${event.item.lblDescripcionValidacion}".`
           );
         }
       });
@@ -426,11 +1111,8 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
   catalogoTiposVeto: TipoVeto[] = [];
   tipoVetoOptions: ISelectOption[] = [];
 
-  /** null = sin veto registrado; se llena tras consultarVeto() */
   vetoExistente: VetoExistente | null = null;
-  /** indica si ya se realizó la consulta para el CURP actual */
   vetoConsultado = false;
-  /** true cuando el usuario presiona "Modificar" para reemplazar un veto existente */
   editandoVeto = false;
 
   private nuevoVetoInicial: NuevoVetoForm = {
@@ -442,6 +1124,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
   nuevoVeto: NuevoVetoForm = { ...this.nuevoVetoInicial };
 
   private cargarCatalogoTiposVeto(): void {
+
     this.cedisService.obtenerCatalogoTiposVeto().subscribe({
       next: (catalogo) => {
         this.catalogoTiposVeto = catalogo ?? [];
@@ -450,7 +1133,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
           value: t.lblTipoVeto
         }));
       },
-      error: () => {
+      error: (error) => {
         this.mostrarToast(
           'error',
           'Catálogo no disponible',
@@ -465,15 +1148,12 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
 
     this.cedisService.obtenerVetoPorCurp(curp).subscribe({
       next: (veto) => {
-        // Si el CURP no tiene veto, algunas APIs regresan un objeto vacío
-        // en lugar de un 404; por eso se valida que traiga tipo de veto.
         this.vetoExistente = veto && veto.lblTipoVeto ? veto : null;
         this.vetoConsultado = true;
         this.editandoVeto = false;
         this.cargando = false;
       },
-      error: () => {
-        // Sin veto registrado para este CURP
+      error: (error) => {
         this.vetoExistente = null;
         this.vetoConsultado = true;
         this.editandoVeto = false;
@@ -482,7 +1162,6 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** true si el tipo de veto seleccionado en el formulario es "Definitivo" */
   get tipoVetoSeleccionadoEsDefinitivo(): boolean {
     const tipo = this.catalogoTiposVeto.find(
       (t) => t.lblTipoVeto === this.nuevoVeto.tipoVeto
@@ -493,13 +1172,11 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
   onTipoVetoChange(valor: string): void {
     this.nuevoVeto.tipoVeto = valor;
 
-    // Si es Definitivo no se le pide fecha de término al usuario
     if (this.tipoVetoSeleccionadoEsDefinitivo) {
       this.nuevoVeto.fechaTermino = '';
     }
   }
 
-  /** Habilita el formulario para reemplazar el veto ya existente */
   iniciarEdicionVeto(): void {
     if (!this.vetoExistente) {
       return;
@@ -533,8 +1210,6 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     let fechaTermino = this.nuevoVeto.fechaTermino;
 
     if (this.tipoVetoSeleccionadoEsDefinitivo) {
-      // El endpoint exige fechaTermino aunque el veto sea Definitivo,
-      // así que se envía automáticamente fechaInicio + 1 día.
       fechaTermino = this.sumarUnDia(this.nuevoVeto.fechaInicio);
     } else if (!fechaTermino) {
       this.mostrarToast('error', 'Datos incompletos', 'Captura la fecha de término del veto.');
@@ -551,16 +1226,14 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
 
     this.cargando = true;
 
-    // El mismo endpoint POST se usa para crear o reemplazar el veto:
-    // si el CURP ya tenía uno, el backend simplemente lo sustituye.
     this.cedisService.aplicarVeto(payload).subscribe({
-      next: () => {
+      next: (respuesta) => {
         this.cargando = false;
-        this.mostrarToast('success', 'Veto aplicado', 'El veto se registró correctamente.');
+        this.mostrarToast('success', 'Veto aplicado', 'El veto se registró.');
         this.nuevoVeto = { ...this.nuevoVetoInicial };
-        this.consultarVeto(curp); // refresca el estado con el veto recién creado/reemplazado
+        this.consultarVeto(curp);
       },
-      error: () => {
+      error: (error) => {
         this.cargando = false;
         this.mostrarToast('error', 'Error al aplicar veto', 'No se pudo registrar el veto.');
       }
@@ -598,8 +1271,6 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     this.cedisService.obtenerCatalogoNiveles().subscribe({
       next: (catalogo) => {
         this.catalogoNiveles = catalogo ?? [];
-        // OJO: en este catálogo lblDescripcionNivel trae la clave ("1","2","3")
-        // y lblDescripcion trae la etiqueta ("Bajo","Medio","Alto").
         this.nivelOptions = this.catalogoNiveles.map((n) => ({
           label: n.lblDescripcion,
           value: n.lblDescripcionNivel
@@ -662,7 +1333,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.cargando = false;
-          this.mostrarToast('success', 'Incidencia registrada', 'La incidencia se agregó correctamente.');
+          this.mostrarToast('success', 'Incidencia registrada', 'La incidencia se agregó.');
           this.nuevaIncidencia = { ...this.nuevaIncidenciaInicial };
           this.consultarIncidencias(curp);
         },
@@ -730,7 +1401,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.cargando = false;
-          this.mostrarToast('success', 'Incidencia actualizada', 'Los cambios se guardaron correctamente.');
+          this.mostrarToast('success', 'Incidencia actualizada', 'Los cambios se guardaron.');
           this.cerrarEdicionIncidencia();
           this.consultarIncidencias(curp);
         },
@@ -803,7 +1474,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.cargando = false;
-          this.mostrarToast('success', 'Elemento registrado', 'El elemento se agregó correctamente.');
+          this.mostrarToast('success', 'Elemento registrado', 'El elemento se agregó.');
           this.nuevoElemento = { ...this.nuevoElementoInicial };
           this.consultarElementosAdicionales(curp);
         },
@@ -865,7 +1536,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.cargando = false;
-          this.mostrarToast('success', 'Elemento actualizado', 'Los cambios se guardaron correctamente.');
+          this.mostrarToast('success', 'Elemento actualizado', 'Los cambios se guardaron.');
           this.cerrarEdicionElemento();
           this.consultarElementosAdicionales(curp);
         },
@@ -880,6 +1551,15 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
   //          Navegacion entre apartados
   //////////////////////////////////////////
   seleccionarApartado(id: string): void {
+    if (id === 'curp') {
+      return;
+    }
+
+    if (!this.curpValidado) {
+      this.mostrarToast('error', 'CURP requerido', 'Debe validar el CURP antes de acceder a este apartado.');
+      return;
+    }
+
     this.apartadoActivo = id;
 
     const curp = this.obtenerCurpNormalizado();
@@ -897,11 +1577,23 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     }
   }
 
+
   //////////////////////////////////////////
   //      Reset global del componente
   //////////////////////////////////////////
   resetFormulario(): void {
+    this.curpValidado = false;
+    this.apartadoActivo = 'curp';
+    this.visitanteActual = null;
     this.datosForm = { ...this.datosFormInicial };
+    this.vehiculoForm = {
+      tipoUnidad: '',
+      placas: '',
+      marca: '',
+      modelo: ''
+    };
+    this.areas = [];
+    this.areaOptions = [];
 
     this.liberarImagenUrl();
     this.imagenInfo = null;
@@ -925,7 +1617,5 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     this.elementosAdicionalesCargados = false;
     this.nuevoElemento = { ...this.nuevoElementoInicial };
     this.cerrarEdicionElemento();
-
-    this.mostrarToast('success', 'Formulario reiniciado', 'Todos los campos fueron restablecidos.');
   }
 }

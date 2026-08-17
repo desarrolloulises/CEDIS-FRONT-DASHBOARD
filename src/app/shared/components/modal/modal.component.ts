@@ -42,6 +42,9 @@ export class ModalComponent {
   @Input()
   closeOnEscape: boolean = true;
 
+  @Input()
+  showCloseButton: boolean = true;
+
   cerrar(): void {
 
     this.close.emit();
