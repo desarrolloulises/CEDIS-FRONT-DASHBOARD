@@ -1,0 +1,25 @@
+<div class="apartado-validaciones">
+  <div *ngIf="!curp" class="aviso">
+    Captura el CURP en el apartado de Captura para consultar las validaciones.
+  </div>
+
+  <ng-container *ngIf="curp">
+    <div class="seccion-header">
+      <h4>Validaciones de seguridad</h4>
+    </div>
+
+    <div *ngIf="validacionesCargadas && validaciones.length === 0" class="aviso">
+      No se encontraron validaciones para este CURP.
+    </div>
+
+    <ul class="lista-validaciones" *ngIf="validaciones.length">
+      <li *ngFor="let item of validaciones" class="validacion-item">
+        <label class="validacion-check">
+          <input type="checkbox" [checked]="item.estadoValidacion === 1"
+            (change)="onToggleValidacion(item, $event)">
+          <span>{{ item.lblDescripcionValidacion }}</span>
+        </label>
+      </li>
+    </ul>
+  </ng-container>
+</div>

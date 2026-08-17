@@ -6,6 +6,7 @@ import { DatosService } from '../../../service/servicio.service';
 
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { url } from '../../../variables';
 
 interface RespuestaSimple {
   errId: number;
@@ -47,7 +48,7 @@ interface ToastState {
 })
 export class RegistroArribosComponent {
   private http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:5242/cedis/control-calidad';
+  private readonly baseUrl = `${url}/cedis/control-calidad`
 
   constructor(
     private datosService: DatosService
