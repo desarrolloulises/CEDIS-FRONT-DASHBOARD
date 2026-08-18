@@ -137,6 +137,9 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
 
   visitanteActual: Visitante | null = null;
 
+  colorBotonIncidencias: string = '';
+  hayIncidenciasNivelAlto: boolean = false;
+
   constructor(
     private cedisService: RegistroEntradaAlmacenService,
     private datosService: DatosService
@@ -149,8 +152,8 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     this.cargarCatalogos();
 
     this.proveedorSubject.pipe(
-      debounceTime(500), 
-      distinctUntilChanged() 
+      debounceTime(500),
+      distinctUntilChanged()
     ).subscribe(valor => {
       this.procesarCambioProveedor(valor);
     });
@@ -232,6 +235,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
   }
 
   private validarCurpEnListaVisitantes(curp: string): void {
+    console.log('Validando CURP en lista de visitantes:', curp);
     this.cargando = true;
 
     this.cedisService.consultarVisitantes({
@@ -240,14 +244,15 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       next: (visitantes) => {
         this.cargando = false;
 
-        const visitanteEncontrado = visitantes.find(v => v.CURP.toLowerCase() === curp.toLowerCase());
+        const visitanteEncontrado = visitantes.find(v =>
+          v.CURP.toUpperCase() === curp.toUpperCase()
+        );
 
         if (visitanteEncontrado) {
           this.visitanteActual = visitanteEncontrado;
           this.curpValidado = true;
           this.procesarVisitanteEncontrado(visitanteEncontrado);
           this.seleccionarApartado('datos');
-
         } else {
           this.mostrarToast(
             'error',
@@ -256,7 +261,8 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
           );
         }
       },
-      error: () => {
+      error: (error) => {
+        console.error('Error al consultar visitantes:', error);
         this.cargando = false;
         this.mostrarToast(
           'error',
@@ -268,28 +274,30 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
   }
 
   private procesarVisitanteEncontrado(visitante: Visitante): void {
+    console.log('Procesando visitante encontrado:', visitante);
 
-    // Llenar formulario con la información del visitante
     this.datosForm.curp = visitante.CURP;
     this.datosForm.motivo = visitante.idTipoIngreso.toString();
 
-    // Llenar formulario de vehículo
-    this.vehiculoForm.tipoUnidad = visitante.tipoUnidad?.toString() || '';
+    this.vehiculoForm.tipoUnidad = visitante.tipoUnidad && visitante.tipoUnidad > 0
+      ? visitante.tipoUnidad.toString()
+      : '';
     this.vehiculoForm.placas = visitante.placas || '';
     this.vehiculoForm.marca = visitante.marca || '';
     this.vehiculoForm.modelo = visitante.modelo || '';
 
-    // Consultar datos separados del visitante (nombre, apellidos)
     this.consultarDatosVisitante(visitante.CURP);
 
-    // Procesar según la opción del motivo
     this.procesarMotivoSeleccionado(visitante.idTipoIngreso);
 
-    // Consultar veto e imagen
     const curp = this.obtenerCurpNormalizado();
     if (curp) {
+      console.log('Consultando todos los datos para CURP:', curp);
       this.consultarVeto(curp);
       this.consultarImagen(curp);
+      this.consultarIncidencias(curp);
+      this.consultarValidaciones(curp);
+      this.consultarElementosAdicionales(curp);
     }
   }
 
@@ -462,7 +470,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     if (opcion > 1) {
       this.cargarAreas(opcion);
 
-    } 
+    }
   }
 
   onNoProveedorChange(valor: string): void {
@@ -1287,17 +1295,25 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
   }
 
   consultarIncidencias(curp: string): void {
+    console.log('Consultando incidencias para CURP:', curp);
     this.cargando = true;
 
     this.cedisService.obtenerIncidencias(curp).subscribe({
       next: (data) => {
+        console.log('Incidencias recibidas:', data);
         this.incidencias = data ?? [];
         this.incidenciasCargadas = true;
+
+        this.verificarIncidenciasNivelAlto();
+
         this.cargando = false;
       },
-      error: () => {
+      error: (error) => {
+        console.error('Error al consultar incidencias:', error);
         this.incidencias = [];
         this.incidenciasCargadas = true;
+        this.colorBotonIncidencias = '';
+        this.hayIncidenciasNivelAlto = false;
         this.cargando = false;
         this.mostrarToast(
           'error',
@@ -1306,6 +1322,48 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
         );
       }
     });
+  }
+
+  private verificarIncidenciasNivelAlto(): void {
+    console.log('Verificando incidencias de nivel alto...');
+
+    const incidenciaAlta = this.incidencias.find(incidencia =>
+      incidencia.lblClaveNivel === '3' ||
+      incidencia.lblDescripcionNivel?.toLowerCase() === 'alto'
+    );
+
+    if (incidenciaAlta) {
+      console.log('Se encontró incidencia de nivel alto:', incidenciaAlta);
+      this.hayIncidenciasNivelAlto = true;
+
+      const color = incidenciaAlta.lblColor?.trim() || '#ef4444';
+      this.colorBotonIncidencias = color;
+      console.log('Color del botón de incidencias:', this.colorBotonIncidencias);
+    } else {
+      console.log('No hay incidencias de nivel alto');
+      this.hayIncidenciasNivelAlto = false;
+      this.colorBotonIncidencias = '';
+    }
+  }
+
+  getColorBotonIncidencias(): string {
+    if (this.apartadoActivo === 'incidencias') {
+      return '';
+    }
+
+    if (this.hayIncidenciasNivelAlto && this.colorBotonIncidencias) {
+      return this.colorBotonIncidencias;
+    }
+
+    return '';
+  }
+
+  getTextColorBotonIncidencias(): string {
+    if (this.hayIncidenciasNivelAlto && this.apartadoActivo !== 'incidencias') {
+      return '#ffffff';
+    }
+
+    return '';
   }
 
   crearIncidencia(): void {
@@ -1333,9 +1391,10 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.cargando = false;
-          this.mostrarToast('success', 'Incidencia registrada', 'La incidencia se agregó.');
+          this.mostrarToast('success', 'Incidencia registrada', 'La incidencia se agregó correctamente.');
           this.nuevaIncidencia = { ...this.nuevaIncidenciaInicial };
-          this.consultarIncidencias(curp);
+
+          this.actualizarEstadoIncidencias();
         },
         error: () => {
           this.cargando = false;
@@ -1343,6 +1402,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
         }
       });
   }
+
 
   /** MM/DD/YYYY HH:mm:ss -> DD/MM/YYYY */
   formatearFechaIncidencia(fechaApi: string): string {
@@ -1401,9 +1461,10 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.cargando = false;
-          this.mostrarToast('success', 'Incidencia actualizada', 'Los cambios se guardaron.');
+          this.mostrarToast('success', 'Incidencia actualizada', 'Los cambios se guardaron correctamente.');
           this.cerrarEdicionIncidencia();
-          this.consultarIncidencias(curp);
+
+          this.actualizarEstadoIncidencias();
         },
         error: () => {
           this.cargando = false;
@@ -1411,6 +1472,14 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
         }
       });
   }
+
+  private actualizarEstadoIncidencias(): void {
+    const curp = this.obtenerCurpNormalizado();
+    if (curp) {
+      this.consultarIncidencias(curp);
+    }
+  }
+
 
   //////////////////////////////////////////
   //    Otros: elementos adicionales
@@ -1551,11 +1620,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
   //          Navegacion entre apartados
   //////////////////////////////////////////
   seleccionarApartado(id: string): void {
-    if (id === 'curp') {
-      return;
-    }
-
-    if (!this.curpValidado) {
+    if (id !== 'curp' && !this.curpValidado) {
       this.mostrarToast('error', 'CURP requerido', 'Debe validar el CURP antes de acceder a este apartado.');
       return;
     }
@@ -1576,7 +1641,6 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       this.consultarElementosAdicionales(curp);
     }
   }
-
 
   //////////////////////////////////////////
   //      Reset global del componente
@@ -1611,6 +1675,8 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     this.incidencias = [];
     this.incidenciasCargadas = false;
     this.nuevaIncidencia = { ...this.nuevaIncidenciaInicial };
+    this.colorBotonIncidencias = '';
+    this.hayIncidenciasNivelAlto = false;
     this.cerrarEdicionIncidencia();
 
     this.elementosAdicionales = [];

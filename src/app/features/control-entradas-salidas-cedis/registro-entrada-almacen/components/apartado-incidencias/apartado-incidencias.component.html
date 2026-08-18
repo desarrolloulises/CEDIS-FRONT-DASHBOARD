@@ -22,13 +22,13 @@
         </app-input>
       </div>
 
-      <app-button icon="ti ti-plus" label="" type="primary" size="md" title="Agregar incidencia"
+      <app-button label="+" type="primary" size="md" title="Agregar incidencia"
         (clicked)="crearIncidenciaEvent()">
       </app-button>
     </div>
 
     <div *ngIf="incidenciasCargadas && incidencias.length === 0" class="aviso">
-      No se encontraron incidencias para este CURP.
+      No se encontraron incidencias.
     </div>
 
     <!-- Tabla de incidencias -->

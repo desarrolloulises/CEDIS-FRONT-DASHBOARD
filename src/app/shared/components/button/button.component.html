@@ -5,6 +5,8 @@
     'btn-' + size,
     fullWidth ? 'btn-block' : ''
   ]"
+  [style.background-color]="backgroundColor"
+  [style.color]="textColor"
   [disabled]="disabled"
   (click)="onClick($event)"
 >

@@ -23,7 +23,7 @@ export class SidebarComponent {
   constructor(
     private datosService: DatosService,
     private service: ProcesosCedisService,
-  ) {}
+  ) { }
 
   ngOnInit() {
     const body: IMenuSidebar = {
@@ -47,11 +47,11 @@ export class SidebarComponent {
 
   // ── Íconos Tabler por módulo (requiere tabler-icons en index.html) ──
   public readonly ICONO_MODULO: Record<number, string> = {
-    1:  'ti-clipboard-check',
-    2:  'ti-package',
-    3:  'ti-truck-delivery',
-    4:  'ti-layout-dashboard',
-    5:  'ti-scan',
+    1: 'ti-clipboard-check',
+    2: 'ti-package',
+    3: 'ti-truck-delivery',
+    4: 'ti-layout-dashboard',
+    5: 'ti-scan',
     13: 'ti-chart-bar',
     14: 'ti-map-pin',
     15: 'ti-shield-check',
@@ -68,10 +68,10 @@ export class SidebarComponent {
   };
 
   public readonly MAPEO_RUTAS_HIJOS: Record<string, string> = {
-    '3-1':  'menu-embarque/inventario-por-ruta',
-    '3-2':  'menu-embarque/inventario-por-tienda',
-    '3-3':  'menu-embarque/programacion-embarque',
-    '5-1':  'menu-embarque/marbetes-mantenimiento',
+    '3-1': 'menu-embarque/inventario-por-ruta',
+    '3-2': 'menu-embarque/inventario-por-tienda',
+    '3-3': 'menu-embarque/programacion-embarque',
+    '5-1': 'menu-embarque/marbetes-mantenimiento',
     '13-1': 'reporte/reporte-primerReporte',
     '13-2': 'reporte/Recibo-sin-primer-o-segundo-escaneo',
     '13-3': 'reporte/Resumen-Recibo-por-Orden',
@@ -98,8 +98,8 @@ export class SidebarComponent {
     '20-4': 'accesos/Accesos-Usuarios',
     '30-1': 'camaraQr/camaraQr',
     '40-1': 'registro-ingreso-transportista-caseta',
-    '40-2': 'registro-personal',
-    '40-3': 'control-visita',
+    '40-2': 'control-visita',
+    '40-3': 'registro-personal',
     '44-1': 'ver-reporte/44-1',
     '50-1': 'registro-arribo-asn'
   };

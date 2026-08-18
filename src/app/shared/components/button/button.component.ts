@@ -44,7 +44,13 @@ export class ButtonComponent {
   /* Este es un atributo opcional, permite pasar como parametro un icono por ejemplo (ti ti-logout), 
      estos iconos se importan desde el index */
   @Input() icon?: string;
-  
+
+  /* Atributos opcionales para cambiar el color de la fuente y del fondo 
+  */
+  @Input() backgroundColor?: string;
+  @Input() textColor?: string;
+
+
   @Output()
   clicked = new EventEmitter<MouseEvent>();
 

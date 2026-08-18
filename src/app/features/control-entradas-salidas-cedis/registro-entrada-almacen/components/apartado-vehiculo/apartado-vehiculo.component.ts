@@ -1,4 +1,3 @@
-// apartado-vehiculo.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { InputComponent } from '../../../../../shared/components/input/input.component';
