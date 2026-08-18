@@ -27,13 +27,13 @@
         </app-input>
       </div>
 
-      <app-button icon="ti ti-plus" label="" type="primary" size="md" title="Agregar elemento"
+      <app-button label="+" type="primary" size="md" title="Agregar elemento"
         (clicked)="crearElementoEvent()">
       </app-button>
     </div>
 
     <div *ngIf="elementosAdicionalesCargados && elementosAdicionales.length === 0" class="aviso">
-      No se encontraron elementos adicionales para este CURP.
+      No se encontraron elementos adicionales.
     </div>
 
     <!-- Tabla de elementos adicionales -->

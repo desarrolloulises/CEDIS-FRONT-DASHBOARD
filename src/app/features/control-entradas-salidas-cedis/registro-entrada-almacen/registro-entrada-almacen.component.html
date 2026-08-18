@@ -12,9 +12,30 @@
   <!-- Solo mostrar si el CURP está validado -->
   <div class="barra-superior" *ngIf="curpValidado">
     <div class="botones-nav">
-      <app-button *ngFor="let apartado of apartados" [label]="apartado.titulo"
-        [type]="apartadoActivo === apartado.id ? 'primary' : 'ghost'" size="sm"
-        (clicked)="seleccionarApartado(apartado.id)">
+      <!-- Botón de Datos -->
+      <app-button [label]="apartados[0].titulo" [type]="apartadoActivo === 'datos' ? 'primary' : 'ghost'" size="sm"
+        (clicked)="seleccionarApartado('datos')">
+      </app-button>
+
+      <!-- Botón de Vehículo -->
+      <app-button [label]="apartados[1].titulo" [type]="apartadoActivo === 'vehiculo' ? 'primary' : 'ghost'" size="sm"
+        (clicked)="seleccionarApartado('vehiculo')">
+      </app-button>
+
+      <!-- Botón de Validaciones -->
+      <app-button [label]="apartados[2].titulo" [type]="apartadoActivo === 'validaciones' ? 'primary' : 'ghost'"
+        size="sm" (clicked)="seleccionarApartado('validaciones')">
+      </app-button>
+
+      <!-- Botón de Incidencias con color dinámico usando helper -->
+      <app-button [label]="apartados[3].titulo" [type]="apartadoActivo === 'incidencias' ? 'primary' : 'ghost'"
+        size="sm" [backgroundColor]="getColorBotonIncidencias()" [textColor]="getTextColorBotonIncidencias()"
+        (clicked)="seleccionarApartado('incidencias')">
+      </app-button>
+
+      <!-- Botón de Otros -->
+      <app-button [label]="apartados[4].titulo" [type]="apartadoActivo === 'otros' ? 'primary' : 'ghost'" size="sm"
+        (clicked)="seleccionarApartado('otros')">
       </app-button>
     </div>
 
@@ -26,75 +47,45 @@
   <div class="contenido-wrapper">
     <div class="contenido" [ngSwitch]="apartadoActivo">
       <!-- Apartado 1: Captura de CURP (solo al inicio o al reiniciar) -->
-      <app-captura-curp *ngSwitchCase="'curp'"
-        [curp]="datosForm.curp"
-        (curpChange)="onCurpChange($event)"
+      <app-captura-curp *ngSwitchCase="'curp'" [curp]="datosForm.curp" (curpChange)="onCurpChange($event)"
         (curpValidar)="onCurpValidar()">
       </app-captura-curp>
 
       <!-- Apartado 2: Datos -->
-      <app-apartado-datos *ngSwitchCase="'datos'"
-        [datosForm]="datosForm"
-        [motivoOptions]="motivoOptions"
-        [areaOptions]="areaOptions"
-        [opcionMotivoSeleccionado]="opcionMotivoSeleccionado"
-        [imagenUrl]="imagenUrl"
-        [imagenExiste]="imagenExiste"
-        [vetoExistente]="vetoExistente"
-        [editandoVeto]="editandoVeto"
-        [tipoVetoOptions]="tipoVetoOptions"
-        [nuevoVeto]="nuevoVeto"
-        [vetoConsultado]="vetoConsultado"
+      <app-apartado-datos *ngSwitchCase="'datos'" [datosForm]="datosForm" [motivoOptions]="motivoOptions"
+        [areaOptions]="areaOptions" [opcionMotivoSeleccionado]="opcionMotivoSeleccionado" [imagenUrl]="imagenUrl"
+        [imagenExiste]="imagenExiste" [vetoExistente]="vetoExistente" [editandoVeto]="editandoVeto"
+        [tipoVetoOptions]="tipoVetoOptions" [nuevoVeto]="nuevoVeto" [vetoConsultado]="vetoConsultado"
         [tipoVetoSeleccionadoEsDefinitivo]="tipoVetoSeleccionadoEsDefinitivo"
-        (datosFormChange)="onDatosFormChange($event)"
-        (onCurpBlur)="onCurpBlur()"
-        (verImagenAmpliada)="verImagenAmpliada()"
-        (abrirCapturaImagen)="abrirCapturaImagen($event)"
-        (eliminarImagen)="eliminarImagen()"
-        (onSeleccionarImagen)="onSeleccionarImagen($event)"
-        (iniciarEdicionVeto)="iniciarEdicionVeto()"
-        (cancelarEdicionVeto)="cancelarEdicionVeto()"
-        (onTipoVetoChange)="onTipoVetoChange($event)"
-        (aplicarVeto)="aplicarVeto()"
+        (datosFormChange)="onDatosFormChange($event)" (onCurpBlur)="onCurpBlur()"
+        (verImagenAmpliada)="verImagenAmpliada()" (abrirCapturaImagen)="abrirCapturaImagen($event)"
+        (eliminarImagen)="eliminarImagen()" (onSeleccionarImagen)="onSeleccionarImagen($event)"
+        (iniciarEdicionVeto)="iniciarEdicionVeto()" (cancelarEdicionVeto)="cancelarEdicionVeto()"
+        (onTipoVetoChange)="onTipoVetoChange($event)" (aplicarVeto)="aplicarVeto()"
         (actualizarVisitante)="actualizarVisitante()">
       </app-apartado-datos>
 
       <!-- Apartado 3: Vehículo -->
-      <app-apartado-vehiculo *ngSwitchCase="'vehiculo'"
-        [curp]="datosForm.curp"
-        [vehiculoForm]="vehiculoForm"
-        [tipoUnidadOptions]="tipoUnidadOptions"
-        (vehiculoFormChange)="onVehiculoFormChange($event)"
+      <app-apartado-vehiculo *ngSwitchCase="'vehiculo'" [curp]="datosForm.curp" [vehiculoForm]="vehiculoForm"
+        [tipoUnidadOptions]="tipoUnidadOptions" (vehiculoFormChange)="onVehiculoFormChange($event)"
         (actualizarVisitante)="actualizarVisitante()">
       </app-apartado-vehiculo>
 
       <!-- Apartado 4: Validaciones -->
-      <app-apartado-validaciones *ngSwitchCase="'validaciones'"
-        [curp]="datosForm.curp"
-        [validaciones]="validaciones"
-        [validacionesCargadas]="validacionesCargadas"
-        (toggleValidacion)="toggleValidacion($event)">
+      <app-apartado-validaciones *ngSwitchCase="'validaciones'" [curp]="datosForm.curp" [validaciones]="validaciones"
+        [validacionesCargadas]="validacionesCargadas" (toggleValidacion)="toggleValidacion($event)">
       </app-apartado-validaciones>
 
       <!-- Apartado 5: Incidencias -->
-      <app-apartado-incidencias *ngSwitchCase="'incidencias'"
-        [curp]="datosForm.curp"
-        [nivelOptions]="nivelOptions"
-        [nuevaIncidencia]="nuevaIncidencia"
-        [incidencias]="incidencias"
-        [incidenciasCargadas]="incidenciasCargadas"
-        (crearIncidencia)="crearIncidencia()"
-        (abrirEdicionIncidencia)="abrirEdicionIncidencia($event)">
+      <app-apartado-incidencias *ngSwitchCase="'incidencias'" [curp]="datosForm.curp" [nivelOptions]="nivelOptions"
+        [nuevaIncidencia]="nuevaIncidencia" [incidencias]="incidencias" [incidenciasCargadas]="incidenciasCargadas"
+        (crearIncidencia)="crearIncidencia()" (abrirEdicionIncidencia)="abrirEdicionIncidencia($event)">
       </app-apartado-incidencias>
 
       <!-- Apartado 6: Otros -->
-      <app-apartado-otros *ngSwitchCase="'otros'"
-        [curp]="datosForm.curp"
-        [nuevoElemento]="nuevoElemento"
-        [elementosAdicionales]="elementosAdicionales"
-        [elementosAdicionalesCargados]="elementosAdicionalesCargados"
-        (crearElementoAdicional)="crearElementoAdicional()"
-        (abrirEdicionElemento)="abrirEdicionElemento($event)">
+      <app-apartado-otros *ngSwitchCase="'otros'" [curp]="datosForm.curp" [nuevoElemento]="nuevoElemento"
+        [elementosAdicionales]="elementosAdicionales" [elementosAdicionalesCargados]="elementosAdicionalesCargados"
+        (crearElementoAdicional)="crearElementoAdicional()" (abrirEdicionElemento)="abrirEdicionElemento($event)">
       </app-apartado-otros>
     </div>
   </div>

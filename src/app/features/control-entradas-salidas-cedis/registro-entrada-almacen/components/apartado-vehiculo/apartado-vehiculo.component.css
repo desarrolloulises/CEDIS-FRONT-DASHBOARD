@@ -16,12 +16,6 @@
   color: #1e2533;
 }
 
-.vehiculo-header .subtitulo {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #6b7280;
-}
-
 .vehiculo-form {
   display: flex;
   flex-direction: column;
