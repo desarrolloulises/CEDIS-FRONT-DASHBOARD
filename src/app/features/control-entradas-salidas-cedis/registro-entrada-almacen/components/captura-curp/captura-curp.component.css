@@ -1,50 +1,41 @@
 /* captura-curp.component.css */
-.captura-curp-container {
+.tarjeta {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 40px 20px;
   min-height: 400px;
 }
 
-.captura-curp-header {
-  text-align: center;
-  margin-bottom: 32px;
+.encabezado {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
-.captura-curp-header h2 {
-  margin: 0 0 8px 0;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #1e2533;
-}
-
-.captura-curp-form {
-  width: 100%;
-  max-width: 500px;
-  background: #f8fafc;
-  border: 1px solid #e2e6ea;
-  border-radius: 10px;
-  padding: 24px;
+.encabezado h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .campo-curp {
+  width: 100%;
+  max-width: 500px;
+}
+
+.row {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.campo-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #6b7280;
-}
-
-.ev-req {
-  color: #ef4444;
+.campo-curp label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-secundario);
+  letter-spacing: 0.2px;
 }
 
 .curp-input-group {
@@ -60,17 +51,6 @@
 .curp-input-group app-button {
   flex-shrink: 0;
 }
-
-.error-mensaje {
-  margin: 8px 0 0;
-  font-size: 0.8rem;
-  color: #ef4444;
-  padding: 8px;
-  background: #fef2f2;
-  border-left: 3px solid #ef4444;
-  border-radius: 4px;
-}
-
 
 /* Responsive */
 @media (max-width: 768px) {

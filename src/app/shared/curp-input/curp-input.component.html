@@ -1,0 +1,22 @@
+<div class="input-wrapper" [class.full-width]="fullWidth">  
+  <input 
+    class="app-input curp-input" 
+    [ngClass]="[
+      'input-' + size,
+      mono ? 'mono-input' : '',
+      value && !hasValidCharacters() || !hasValidLength() ? 'input-invalid' : ''
+    ]"
+    type="text"
+    [placeholder]="placeholder"
+    [disabled]="disabled"
+    [readonly]="readonly"
+    [attr.maxlength]="maxLength"
+    [value]="value"
+    (input)="onInputChange($event)"
+    (blur)="onBlur()"
+    (keyup.enter)="onEnter()"
+    inputmode="text"
+    autocomplete="off"
+    spellcheck="false"
+  />
+</div>
