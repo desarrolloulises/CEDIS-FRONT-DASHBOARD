@@ -185,7 +185,7 @@
         </app-input>
       </div>
       <div class="etc-field">
-        <label class="etc-label">AP. MATERNO</label>
+        <label class="etc-label">AP. MATERNO <span class="etc-req">*</span></label>
         <app-input placeholder="Ap. Materno" [value]="form.materno" [disabled]="curpBloqueado"
           (valueChange)="form.materno = $event">
         </app-input>
@@ -194,14 +194,14 @@
 
     <!-- CURP -->
     <div class="etc-field etc-field--curp">
-      <label class="etc-label">CURP</label>
+      <label class="etc-label">CURP <span class="etc-req">*</span></label>
       <div class="etc-input-group">
-        <app-input placeholder="CURP" [value]="form.curp" [disabled]="curpBloqueado" [mono]="true"
-          (valueChange)="form.curp = $event">
-        </app-input>
-        <app-button *ngIf="curpBloqueado" label="Desbloquear" type="secondary" size="sm" (clicked)="desbloquearCURP()">
+        <app-curp-input placeholder="CURP" [value]="form.curp" [disabled]="curpBloqueado" [mono]="true" [size]="'md'"
+          (valueChange)="onCurpChange($event)">
+        </app-curp-input>
+        <app-button *ngIf="curpBloqueado" label="Desbloquear" type="secondary" size="md" (clicked)="desbloquearCURP()">
         </app-button>
-        <app-button *ngIf="!curpBloqueado" label="Consultar CURP" type="secondary" size="sm"
+        <app-button *ngIf="!curpBloqueado" label="Consultar CURP" type="secondary" size="md"
           (clicked)="abrirConsultaCURP()">
         </app-button>
       </div>
@@ -327,9 +327,9 @@
 
     <div class="etc-field etc-field--full">
       <label class="etc-label">CURP (18 caracteres)</label>
-      <app-input placeholder="CURP" [value]="consultaCURP" [mono]="true" (valueChange)="consultaCURP = $event"
-        (enter)="consultarCURP()">
-      </app-input>
+      <app-curp-input placeholder="CURP" [value]="consultaCURP" [mono]="true" [size]="'md'"
+        (valueChange)="consultaCURP = $event" (enter)="consultarCURP()">
+      </app-curp-input>
     </div>
   </div>
 
@@ -353,16 +353,16 @@
     <p class="etc-modal__hint">Escanea o ingresa la CURP del transportista.</p>
     <div class="etc-field etc-field--full">
       <label class="etc-label">CURP / QR</label>
-      <app-input placeholder="CURP del transportista" [value]="qrInput" [mono]="true" (valueChange)="qrInput = $event"
+      <app-curp-input placeholder="CURP" [value]="qrInput" [mono]="true" [size]="'md'" (valueChange)="qrInput = $event"
         (enter)="submitQR()">
-      </app-input>
+      </app-curp-input>
     </div>
   </div>
 
   <div class="etc-modal__footer">
     <app-button label="Cancelar" type="ghost" size="sm" (clicked)="showQR = false">
     </app-button>
-    <app-button label="Registrar" type="primary" size="sm" [disabled]="!qrInput.trim() || cargando"
+    <app-button label="Registrar" type="primary" size="sm" [disabled]="qrInput.trim().length < 18 || cargando"
       (clicked)="submitQR()">
     </app-button>
   </div>

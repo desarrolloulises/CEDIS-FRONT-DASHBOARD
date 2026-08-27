@@ -18,8 +18,6 @@ export class CapturaCurpComponent {
     @Output() curpChange = new EventEmitter<string>();
     @Output() curpValidar = new EventEmitter<void>();
 
-    errorValidacion: string = '';
-
     get curpCompleto(): boolean {
         return !!this.curp && this.curp.length === 18;
     }
@@ -27,15 +25,9 @@ export class CapturaCurpComponent {
     onCurpChange(valor: string): void {
         this.curp = valor.toUpperCase();
         this.curpChange.emit(this.curp);
-        this.errorValidacion = '';
     }
 
     validarCurp(): void {
-        if (!this.curpCompleto) {
-            this.errorValidacion = 'El CURP debe tener 18 caracteres';
-            return;
-        }
-
         this.curpValidar.emit();
     }
 }

@@ -12,6 +12,7 @@ import { SelectComponent, ISelectOption } from '../../../shared/components/selec
 import { InputComponent } from '../../../shared/components/input/input.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
+import { CurpInputComponent } from '../../../shared/curp-input/curp-input.component';
 
 import { TransportistaService } from './services/entrada-salida-transportista-caseta.service';
 import { DatosService } from '../../../service/servicio.service';
@@ -71,6 +72,7 @@ function emptyForm(): FormTransportista {
     SelectComponent,
     LoadingSpinnerComponent,
     ToastComponent,
+    CurpInputComponent,
   ],
   templateUrl: './entrada-salida-transportista-caseta.component.html',
   styleUrls: ['./entrada-salida-transportista-caseta.component.css'],
@@ -495,11 +497,19 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
     }
   }
 
+  // Reemplaza el getter formValido existente
   get formValido(): boolean {
     if (!this.form.tipoIngresoId) return false;
     if (!this.form.empresa.trim()) return false;
-    if (!this.form.nombre.trim() || !this.form.paterno.trim()) return false;
+    if (!this.form.nombre.trim() || !this.form.paterno.trim() || !this.form.materno) return false;
     if (!this.form.placas.trim() || !this.form.tipoUnidadId) return false;
+
+    // Validación específica de CURP (18 caracteres alfanuméricos)
+    const curpRegex = /^[A-Z0-9]{18}$/;
+    if (!this.form.curp.trim() || !curpRegex.test(this.form.curp.trim().toUpperCase())) {
+      return false;
+    }
+
     if (this.validaEmpresa && this.editandoId === null && !this.form.idProveedor.trim()) return false;
     return true;
   }
@@ -653,7 +663,12 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
   }
 
   consultarCURP(): void {
-    const curp = this.consultaCURP.trim().toUpperCase();
+    const curp = this.consultaCURP.trim();
+    if (curp.length !== 18) {
+      this.mostrarToast('error', 'CURP inválida', 'La CURP debe tener exactamente 18 caracteres.');
+      return;
+    }
+
     this.cargandoCURP = true;
 
     this.svc.getOperadorPorCurp(curp).subscribe({
@@ -691,10 +706,28 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
     this.form.curp = '';
   }
 
+  onCurpChange(curp: string): void {
+    this.form.curp = curp;
+
+    // Si la CURP está bloqueada (fue consultada), no permitir edición manual
+    if (this.curpBloqueado) {
+      return;
+    }
+
+    // Validación adicional si es necesario
+    if (curp.length === 18) {
+      // CURP completa, puedes agregar lógica adicional aquí si lo requieres
+      console.log('CURP completa:', curp);
+    }
+  }
   // ── QR ──────────────────────────────────────────────────────────────────
 
   submitQR(): void {
     if (!this.qrInput.trim()) return;
+    if (this.qrInput.length !== 18) {
+      this.mostrarToast('error', 'CURP inválida', 'La CURP debe tener exactamente 18 caracteres.');
+      return;
+    }
     this.cargando = true;
     this.svc.registrarQr({ curp: this.qrInput.trim().toUpperCase() }).subscribe({
       next: (res) => {

@@ -1,27 +1,26 @@
-<div class="captura-curp-container">
-  <div class="captura-curp-header">
-    <h2>Registro de ingreso al almacén</h2>
-  </div>
+<div class="tarjeta">
+    <div class="encabezado">
+        <h2>Registro de ingreso al almaén</h2>
+    </div>
 
-  <div class="captura-curp-form">
     <div class="campo-curp">
-      <label class="campo-label">CURP</label>
-      <div class="curp-input-group">
-        <app-input 
-          [value]="curp"
-          placeholder="Ingrese el CURP del visitante (18 caracteres)"
-          maxlength="18"
-          (valueChange)="onCurpChange($event)"
-          (enter)="validarCurp()">
-        </app-input>
-        <app-button 
-          label="Buscar" 
-          type="primary" 
-          size="md"
-          [disabled]="!curpCompleto"
-          (clicked)="validarCurp()">
-        </app-button>
-      </div>
-      <p *ngIf="errorValidacion" class="error-mensaje">{{ errorValidacion }}</p>
+        <label for="curp-label">CURP</label>
+        <div class="curp-input-group">
+            <app-input 
+                [value]="curp" 
+                placeholder="Ingrese el CURP del visitante (18 Caracteres)"
+                maxlength="18"
+                (valueChange)="onCurpChange($event)" 
+                (enter)=" validarCurp()">
+            </app-input>
+
+            <app-button 
+                label="Buscar" 
+                type="primary" 
+                size="md" 
+                [disabled]="!curpCompleto" 
+                (clicked)="validarCurp()">
+            </app-button>
+        </div>
     </div>
 </div>
