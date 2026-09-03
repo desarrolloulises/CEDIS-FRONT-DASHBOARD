@@ -980,7 +980,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       next: (info) => {
         this.imagenInfo = info;
         this.cargarImagenBinario(curp);
-        this.mostrarToast('success', 'Imagen subida', `Se subió "${file.name}".`);
+        // this.mostrarToast('success', 'Imagen subida', `Se subió "${file.name}".`);
       },
       error: (error) => {
         this.cargando = false;
@@ -996,7 +996,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       next: (info) => {
         this.imagenInfo = info;
         this.cargarImagenBinario(curp);
-        this.mostrarToast('success', 'Imagen actualizada', 'La imagen se reemplazó.');
+        // this.mostrarToast('success', 'Imagen actualizada', 'La imagen se reemplazó.');
       },
       error: (error) => {
         this.cargando = false;
@@ -1021,7 +1021,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
         this.imagenAmpliada = false;
         this.imagenInfo = null;
         this.cargando = false;
-        this.mostrarToast('success', 'Imagen eliminada', resp.mensaje || 'La imagen fue eliminada.');
+        // this.mostrarToast('success', 'Imagen eliminada', resp.mensaje || 'La imagen fue eliminada.');
       },
       error: (error) => {
         this.cargando = false;
@@ -1237,7 +1237,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     this.cedisService.aplicarVeto(payload).subscribe({
       next: (respuesta) => {
         this.cargando = false;
-        this.mostrarToast('success', 'Veto aplicado', 'El veto se registró.');
+        // this.mostrarToast('success', 'Veto aplicado', 'El veto se registró.');
         this.nuevoVeto = { ...this.nuevoVetoInicial };
         this.consultarVeto(curp);
       },
@@ -1358,14 +1358,6 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     return '';
   }
 
-  getTextColorBotonIncidencias(): string {
-    if (this.hayIncidenciasNivelAlto && this.apartadoActivo !== 'incidencias') {
-      return '#ffffff';
-    }
-
-    return '';
-  }
-
   crearIncidencia(): void {
     const curp = this.obtenerCurpNormalizado();
 
@@ -1391,7 +1383,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.cargando = false;
-          this.mostrarToast('success', 'Incidencia registrada', 'La incidencia se agregó correctamente.');
+          // this.mostrarToast('success', 'Incidencia registrada', 'La incidencia se agregó correctamente.');
           this.nuevaIncidencia = { ...this.nuevaIncidenciaInicial };
 
           this.actualizarEstadoIncidencias();
@@ -1461,7 +1453,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.cargando = false;
-          this.mostrarToast('success', 'Incidencia actualizada', 'Los cambios se guardaron correctamente.');
+          // this.mostrarToast('success', 'Incidencia actualizada', 'Los cambios se guardaron correctamente.');
           this.cerrarEdicionIncidencia();
 
           this.actualizarEstadoIncidencias();
@@ -1543,7 +1535,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.cargando = false;
-          this.mostrarToast('success', 'Elemento registrado', 'El elemento se agregó.');
+          // this.mostrarToast('success', 'Elemento registrado', 'El elemento se agregó.');
           this.nuevoElemento = { ...this.nuevoElementoInicial };
           this.consultarElementosAdicionales(curp);
         },
@@ -1605,7 +1597,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.cargando = false;
-          this.mostrarToast('success', 'Elemento actualizado', 'Los cambios se guardaron.');
+          // this.mostrarToast('success', 'Elemento actualizado', 'Los cambios se guardaron.');
           this.cerrarEdicionElemento();
           this.consultarElementosAdicionales(curp);
         },

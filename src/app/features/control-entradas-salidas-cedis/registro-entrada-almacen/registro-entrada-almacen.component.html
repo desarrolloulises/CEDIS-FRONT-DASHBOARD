@@ -29,10 +29,10 @@
 
       <!-- Botón de Incidencias con color dinámico usando helper -->
       <app-button [label]="apartados[3].titulo" [type]="apartadoActivo === 'incidencias' ? 'primary' : 'ghost'"
-        size="sm" [backgroundColor]="getColorBotonIncidencias()" [textColor]="getTextColorBotonIncidencias()"
+        size="sm" [textColor]="getColorBotonIncidencias()"
         (clicked)="seleccionarApartado('incidencias')">
       </app-button>
-
+ 
       <!-- Botón de Otros -->
       <app-button [label]="apartados[4].titulo" [type]="apartadoActivo === 'otros' ? 'primary' : 'ghost'" size="sm"
         (clicked)="seleccionarApartado('otros')">
