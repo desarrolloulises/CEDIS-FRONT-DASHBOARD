@@ -196,7 +196,7 @@
     <div class="etc-field etc-field--curp">
       <label class="etc-label">CURP <span class="etc-req">*</span></label>
       <div class="etc-input-group">
-        <app-curp-input placeholder="CURP" [value]="form.curp" [disabled]="curpBloqueado" [mono]="true" [size]="'md'"
+        <app-curp-input placeholder="CURP" [value]="form.curp" [disabled]="curpBloqueado || editandoId !== null" [mono]="true" [size]="'md'"
           (valueChange)="onCurpChange($event)">
         </app-curp-input>
         <app-button *ngIf="curpBloqueado" label="Desbloquear" type="secondary" size="md" (clicked)="desbloquearCURP()">

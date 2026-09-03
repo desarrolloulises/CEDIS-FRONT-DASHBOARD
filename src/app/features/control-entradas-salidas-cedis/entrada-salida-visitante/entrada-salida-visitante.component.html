@@ -158,9 +158,9 @@
     <div class="ev-field ev-field--curp">
       <label class="ev-label">CURP <span class="ev-req">*</span></label>
       <div class="ev-input-group">
-        <app-input placeholder="CURP" [value]="form.curp" [disabled]="curpBloqueado" [mono]="true"
+        <app-curp-input placeholder="CURP" [value]="form.curp" [disabled]="curpBloqueado" [mono]="true" [size]="'md'"
           (valueChange)="form.curp = $event">
-        </app-input>
+        </app-curp-input>
         <app-button *ngIf="curpBloqueado" label="Desbloquear" type="secondary" size="sm" (clicked)="desbloquearCURP()">
         </app-button>
         <app-button *ngIf="!curpBloqueado" label="Consultar por CURP" type="secondary" size="sm"
@@ -263,9 +263,9 @@
         CURP (18 caracteres)
       </label>
 
-      <app-input placeholder="CURP" [value]="consultaCURP" [mono]="true" (valueChange)="consultaCURP = $event"
+      <app-curp-input placeholder="CURP" [value]="consultaCURP" [mono]="true" (valueChange)="consultaCURP = $event"
         (enter)="consultarCURP()">
-      </app-input>
+      </app-curp-input>
 
       <p class="ev-error" *ngIf="errorCURP">
         {{ errorCURP }}
@@ -303,9 +303,9 @@
     <p class="ev-modal__hint">Escanea o ingresa la CURP del visitante.</p>
     <div class="ev-field ev-field--full">
       <label class="ev-label">CURP / QR</label>
-      <app-input placeholder="CURP del visitante" [value]="qrInput" [mono]="true" (valueChange)="qrInput = $event"
+      <app-curp-input placeholder="CURP del visitante" [value]="qrInput" [mono]="true" (valueChange)="qrInput = $event"
         (enter)="submitQR()">
-      </app-input>
+      </app-curp-input>
     </div>
   </div>
 

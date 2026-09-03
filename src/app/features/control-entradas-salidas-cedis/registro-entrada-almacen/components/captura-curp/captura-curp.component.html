@@ -6,20 +6,12 @@
     <div class="campo-curp">
         <label for="curp-label">CURP</label>
         <div class="curp-input-group">
-            <app-input 
-                [value]="curp" 
-                placeholder="Ingrese el CURP del visitante (18 Caracteres)"
-                maxlength="18"
-                (valueChange)="onCurpChange($event)" 
-                (enter)=" validarCurp()">
-            </app-input>
+            <app-curp-input class="campo-curp"
+                [value]=" curp" placeholder="CURP"
+                (valueChange)="onCurpChange($event)" (enter)=" validarCurp()">
+            </app-curp-input>
 
-            <app-button 
-                label="Buscar" 
-                type="primary" 
-                size="md" 
-                [disabled]="!curpCompleto" 
-                (clicked)="validarCurp()">
+            <app-button label="Buscar" type="primary" size="md" [disabled]="!curpCompleto" (clicked)="validarCurp()">
             </app-button>
         </div>
     </div>

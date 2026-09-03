@@ -3,11 +3,12 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { InputComponent } from '../../../../../shared/components/input/input.component';
 import { ButtonComponent } from '../../../../../shared/components/button/button.component';
+import { CurpInputComponent } from "../../../../../shared/curp-input/curp-input.component";
 
 @Component({
     selector: 'app-captura-curp',
     standalone: true,
-    imports: [CommonModule, InputComponent, ButtonComponent],
+    imports: [CommonModule, InputComponent, ButtonComponent, CurpInputComponent],
     templateUrl: './captura-curp.component.html',
     styleUrls: ['./captura-curp.component.css']
 })
