@@ -15,6 +15,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { url } from '../../../variables';
 import { DatosService } from '../../../service/servicio.service';
+import { CurpInputComponent } from "../../../shared/curp-input/curp-input.component";
 
 //////////////////////////////////////////////
 ///         MODELOS 
@@ -125,7 +126,6 @@ function formatFecha(fechaIso: string): string {
     CommonModule,
     FormsModule,
     HttpClientModule,
-
     ButtonComponent,
     IconButtonComponent,
     ModalComponent,
@@ -133,7 +133,8 @@ function formatFecha(fechaIso: string): string {
     SelectComponent,
     LoadingSpinnerComponent,
     ToastComponent,
-  ],
+    CurpInputComponent
+],
   templateUrl: './entrada-salida-visitante.component.html',
   styleUrls: ['./entrada-salida-visitante.component.css'],
 })
