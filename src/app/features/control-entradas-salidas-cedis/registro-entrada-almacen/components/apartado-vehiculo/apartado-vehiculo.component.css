@@ -8,6 +8,7 @@
 .vehiculo-header {
   padding-bottom: 16px;
   border-bottom: 2px solid #e2e6ea;
+  width: 100%;
 }
 
 .vehiculo-header h4 {

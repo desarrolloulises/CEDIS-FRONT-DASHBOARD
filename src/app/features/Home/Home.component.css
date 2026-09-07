@@ -23,11 +23,11 @@
 .hero-left {
   position: relative;
   z-index: 1;
-  max-width: 520px;
+  max-width: 756px;
 }
 
 .hero-fecha {
-  font-size: 11px;
+  font-size: 28px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.5);
   text-transform: capitalize;
@@ -36,7 +36,7 @@
 }
 
 .hero-titulo {
-  font-size: 28px;
+  font-size: 34px;
   font-weight: 700;
   color: #fff;
   margin: 0 0 10px;
@@ -48,7 +48,7 @@
 }
 
 .hero-sub {
-  font-size: 13px;
+  font-size: 26px;
   color: rgba(255, 255, 255, 0.55);
   margin: 0;
 }
@@ -62,6 +62,31 @@
   width: 220px;
   height: 220px;
   pointer-events: none;
+
+  will-change: transform;
+  animation: spand 4s infinite ease-in-out;
+}
+
+@keyframes spand {
+  0% {
+    transform: scale(1);
+  }
+
+  70% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+
+  170% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 .deco-ring {
@@ -73,16 +98,29 @@
   transform: translate(-50%, -50%);
 }
 
-.deco-ring--1 { width: 300px; height: 300px; }
-.deco-ring--2 { width: 200px; height: 200px; border-color: rgba(255,255,255,0.12); }
-.deco-ring--3 { width: 100px;  height: 100px;  border-color: rgba(255,255,255,0.16); }
+.deco-ring--1 {
+  width: 200px;
+  height: 200px;
+}
+
+.deco-ring--2 {
+  width: 150px;
+  height: 150px;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.deco-ring--3 {
+  width: 100px;
+  height: 100px;
+  border-color: rgba(255, 255, 255, 0.16);
+}
 
 .deco-icon {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 82px;
+  font-size: 50px;
   color: rgba(255, 255, 255, 0.12);
 }
 
@@ -91,5 +129,73 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+}
+
+
+@media (min-width: 768px) {
+  .hero-fecha{
+    font-size: 38px;
+  } 
+
+  .hero-titulo{
+    font-size: 54px;
+  }
+
+  .hero-sub{
+    font-size: 34px;
+  }
+
+  .deco-icon{
+    font-size: 80px;
+  }
+
+  .deco-ring--1{
+    height: 450px;
+    width: 450px;
+  }
+
+  .deco-ring--2{
+    height: 300px;
+    width: 300px;
+  }
+
+  .deco-ring--3{
+    height: 150px;
+    width: 150px;
+  }
+}
+
+
+@media (min-width: 992px) {
+  .hero-fecha{
+    font-size: 2.1rem;
+  } 
+
+  .hero-titulo{
+    font-size: 3.5rem;
+  }
+
+  .hero-sub{
+    font-size: 2rem;
+  }
+
+  .deco-icon{
+    font-size: 130px;
+  }
+
+  .deco-ring--1{
+    height: 600px;
+    width: 600px;
+  }
+
+  .deco-ring--2{
+    height: 400px;
+    width: 400px;
+  }
+
+  .deco-ring--3{
+    height: 200px;
+    width: 200px;
+  }
 }
 
