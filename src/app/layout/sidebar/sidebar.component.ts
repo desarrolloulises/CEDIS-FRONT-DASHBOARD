@@ -64,7 +64,8 @@ export class SidebarComponent {
     40: 'ti-id-badge',
     43: 'ti-inbox',
     44: 'ti-file-report',
-    50: 'ti ti-clipboard-check'
+    50: 'ti ti-clipboard-check',
+    60: 'ti ti-report-search'
   };
 
   public readonly MAPEO_RUTAS_HIJOS: Record<string, string> = {
@@ -101,7 +102,9 @@ export class SidebarComponent {
     '40-2': 'control-visita',
     '40-3': 'registro-personal',
     '44-1': 'ver-reporte/44-1',
-    '50-1': 'registro-arribo-asn'
+    '50-1': 'registro-arribo-asn',
+    '60-1': 'reasignacion/resumen-detalle-por-folio',
+    '60-2': 'reasignacion/detalle-por-pallet'
   };
 
   obtenerSubmenus(modulo: any) {
