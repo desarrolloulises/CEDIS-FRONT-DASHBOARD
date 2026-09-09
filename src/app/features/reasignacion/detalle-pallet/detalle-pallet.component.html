@@ -1,0 +1,118 @@
+<!-- //////////////////////////////////////////////
+     ///      SPINNER GLOBAL (overlay)
+     ////////////////////////////////////////////// -->
+<app-loading-spinner [visible]="cargando()" [overlay]="true" texto="Procesando...">
+</app-loading-spinner>
+
+<!-- //////////////////////////////////////////////
+     ///            TOAST
+     ////////////////////////////////////////////// -->
+<app-toast *ngIf="toastVisible()" [tipo]="toastTipo()" [titulo]="toastTitulo()" [mensaje]="toastMensaje()"
+    (cerrar)="toastVisible.set(false)">
+</app-toast>
+
+<!-- //////////////////////////////////////////////
+     ///            VISTA PRINCIPAL
+     ////////////////////////////////////////////// -->
+<div class="wrapper">
+    <div class="header">
+        <div class="header-top">
+            <div class="header-brand">
+                <h1 class="title">Detalle de pallets</h1>
+                <p class="subtitle">Consulta de pallets por lote y destino</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de búsqueda -->
+    <div class="search-form">
+        <div class="form-group">
+            <label for="numeroLote">Número de lote:</label>
+            <input id="numeroLote" type="number" [ngModel]="numeroLoteInput()"
+                (ngModelChange)="numeroLoteInput.set($event)" class="form-input" placeholder="Ingrese número de lote"
+                min="1">
+        </div>
+
+        <div class="form-group">
+            <label for="destinoAnterior">Tienda (Destino anterior):</label>
+            <input id="destinoAnterior" type="number" [ngModel]="destinoAnteriorInput()"
+                (ngModelChange)="destinoAnteriorInput.set($event)" class="form-input"
+                placeholder="Ingrese destino anterior" min="0">
+        </div>
+
+        <div class="form-actions">
+            <app-button label="Consultar" type="primary" size="sm" (clicked)="consultarDetallePallets()">
+            </app-button>
+            <app-button label="Limpiar" type="ghost" size="sm" (clicked)="limpiarFormulario()">
+            </app-button>
+        </div>
+    </div>
+    
+    @if (haConsultado()) {
+    <div class="header-bottom">
+        <div class="search-container">
+            <app-input placeholder="Filtrar por pallet, ubicación..." size="sm" [value]="filtro()"
+                (valueChange)="filtro.set($event)">
+            </app-input>
+        </div>
+
+        <div class="header-utils">
+            <p class="count">
+                {{ palletsFiltrados.length }} registro(s)
+            </p>
+            <app-button label="Exportar" type="ghost" size="sm" [disabled]="true">
+            </app-button>
+        </div>
+    </div>
+
+    <!-- TABLA DETALLE DE PALLETS -->
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Pallet</th>
+                    <th>Ubicación</th>
+                    <th>Cajas en pallet</th>
+                    <th>Cajas a reasignar</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (p of palletsFiltrados; track p.pallet) {
+                <tr>
+                    <td>
+                        {{ p.pallet }}
+                    </td>
+                    <td>
+                        {{ p.ubicacion }}
+                    </td>
+                    <td>
+                        {{ p.cajas_pallet }}
+                    </td>
+                    <td>{{ p.cajas_a_reasignar }}</td>
+                </tr>
+                }
+
+                @if (palletsFiltrados.length === 0) {
+                <tr>
+                    <td colspan="4" class="empty">Sin registros que coincidan.</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Ayuda atajos -->
+    <p class="shortcuts-hint">
+        <span><kbd>F2</kbd> Buscar</span>
+    </p>
+    } @else {
+    <!-- Mensaje inicial -->
+    <div class="initial-message">
+        <div class="message-icon">
+            <i class="ti ti-search"></i>
+        </div>
+        <h3>Ingrese los parámetros de búsqueda</h3>
+        <p>Proporcione el número de lote y tienda (destino anterior) para consultar el detalle de pallets</p>
+    </div>
+    }
+</div>

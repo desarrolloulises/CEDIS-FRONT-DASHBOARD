@@ -1,0 +1,178 @@
+<!-- //////////////////////////////////////////////
+     ///      SPINNER GLOBAL (overlay)
+     ////////////////////////////////////////////// -->
+<app-loading-spinner [visible]="cargando()" [overlay]="true" texto="Procesando...">
+</app-loading-spinner>
+
+<!-- //////////////////////////////////////////////
+     ///            TOAST
+     ////////////////////////////////////////////// -->
+<app-toast *ngIf="toastVisible()" [tipo]="toastTipo()" [titulo]="toastTitulo()" [mensaje]="toastMensaje()"
+    (cerrar)="toastVisible.set(false)">
+</app-toast>
+
+<!-- //////////////////////////////////////////////
+     ///            VISTA PRINCIPAL
+     ////////////////////////////////////////////// -->
+<div class="wrapper">
+    <div class="header">
+        <div class="header-top">
+            <div class="header-brand">
+                <h1 class="title">{{ vistaActual() === 'resumen' ? 'Resumen de reasignaciones' : 'Detalle de reasignaciones - Lote ' + loteSeleccionado() }}</h1>
+                <p class="subtitle">Consulta de reasignaciones</p>
+            </div>
+
+            <div class="header-actions">
+                @if (vistaActual() === 'detalle') {
+                    <app-button label="← Volver al resumen" type="ghost" size="sm" (clicked)="volverAlResumen()">
+                    </app-button>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (vistaActual() === 'resumen') {
+        <!-- Filtros avanzados para resumen -->
+        <div class="advanced-filters">
+            <div class="filter-group">
+                <label>Fecha inicio:</label>
+                <input type="date" [ngModel]="fechaInicio()" (ngModelChange)="fechaInicio.set($event)" class="date-input">
+            </div>
+            
+            <div class="filter-group">
+                <label>Fecha fin:</label>
+                <input type="date" [ngModel]="fechaFin()" (ngModelChange)="fechaFin.set($event)" class="date-input">
+            </div>
+            
+            <div class="filter-group">
+                <label>Número de lote:</label>
+                <input type="number" [ngModel]="numeroLote()" (ngModelChange)="numeroLote.set($event)" class="number-input" placeholder="Número de lote">
+            </div>
+            
+            <div class="filter-actions">
+                <app-button label="Aplicar filtros" type="primary" size="sm" (clicked)="aplicarFiltros()">
+                </app-button>
+                <app-button label="Limpiar" type="ghost" size="sm" (clicked)="limpiarFiltros()">
+                </app-button>
+            </div>
+        </div>
+    }
+
+    <div class="header-bottom">
+        <div class="search-container">
+            <app-input [placeholder]="vistaActual() === 'resumen' ? 'Filtrar por lote o fecha' : 'Filtrar por caja, transferencia, estatus...'" 
+                       size="sm" [value]="filtro()" (valueChange)="filtro.set($event)">
+            </app-input>
+
+            @if (vistaActual() === 'detalle') {
+                <div class="status-filter">
+                    <select [ngModel]="filtroEstatus()" (ngModelChange)="filtroEstatus.set($event)" class="status-select">
+                        <option value="">Todos los estatus</option>
+                        <option value="RA">Reasignada (RA)</option>
+                        <option value="PR">Por Reasignar (PR)</option>
+                    </select>
+                </div>
+            }
+
+        </div>
+
+
+        <div class="header-utils">
+            <p class="count">
+                {{ vistaActual() === 'resumen' ? reasignacionesFiltradas.length : detallesFiltrados.length }} registro(s)
+            </p>
+            <app-button label="Exportar" type="ghost" size="sm" [disabled]="true">
+            </app-button>
+        </div>
+    </div>
+
+    <!-- TABLA RESUMEN -->
+    @if (vistaActual() === 'resumen') {
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Número de lote</th>
+                        <th>Tiendas</th>
+                        <th>Cajas por reasignar</th>
+                        <th>Cajas reasignadas</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (r of reasignacionesFiltradas; track r.numero_lote) {
+                        <tr>
+                            <td>{{ formatearFecha(r.fecha) }}</td>
+                            <td>{{ r.numero_lote }}</td>
+                            <td>{{ r.tiendas }}</td>
+                            <td>{{ r.cajas_por_reasignar }}</td>
+                            <td>{{ r.cajas_reasignadas }}</td>
+                            <td class="actions">
+                                <app-button type="ghost" label="Ver detalles" size="sm" (clicked)="openDetalles(r.numero_lote)">
+                                </app-button>
+                            </td>
+                        </tr>
+                    }
+                    
+                    @if (reasignacionesFiltradas.length === 0) {
+                        <tr>
+                            <td colspan="6" class="empty">Sin registros que coincidan.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <!-- TABLA DETALLE -->
+    @if (vistaActual() === 'detalle') {
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Caja a reasignar</th>
+                        <th>Órdenes</th>
+                        <th>Caja nueva</th>
+                        <th>Transferencia</th>
+                        <th>Estatus</th>
+                        <th>Tienda origen</th>
+                        <th>Destino anterior</th>
+                        <th>Destino nuevo</th>
+                        <th>Fecha reasignación</th>
+                        <th>Usuario que reasignó</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (d of detallesFiltrados; track d.codigo_transferencia) {
+                        <tr>
+                            <td>{{ formatearFecha(d.fecha) }}</td>
+                            <td>{{ d.caja_a_reasignar }}</td>
+                            <td>{{ d.numero_de_ordenes }}</td>
+                            <td>{{ d.caja_nueva }}</td>
+                            <td>{{ d.codigo_transferencia }}</td>
+                            <td>{{ d.estatus }}</td>
+                            <td>{{ d.clave_tienda_origen }}</td>
+                            <td>{{ d.destino_anterior }}</td>
+                            <td>{{ d.destino_nuevo }}</td>
+                            <td>{{ formatearFechaHora(d.fecha_reasignacion) }}</td>
+                            <td>{{ d.usuario_que_reasigno || '—' }}</td>
+                        </tr>
+                    }
+                    
+                    @if (detallesFiltrados.length === 0) {
+                        <tr>
+                            <td colspan="11" class="empty">Sin registros que coincidan.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <!-- Ayuda atajos -->
+    <p class="shortcuts-hint">
+        <span><kbd>F2</kbd> Buscar</span>
+    </p>
+</div>

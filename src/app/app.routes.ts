@@ -28,7 +28,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'inicio',
-        loadComponent: () => import('./features/Home/Home.component').then(m => m.HomeComponent) 
+        loadComponent: () => import('./features/Home/Home.component').then(m => m.HomeComponent)
       },
       // --- NIVEL 1 (Módulos Principales) ---
 
@@ -100,7 +100,7 @@ export const routes: Routes = [
         path: 'registro-ingreso-transportista-caseta',
         loadComponent: () => import('./features/control-entradas-salidas-cedis/entrada-salida-transportista-caseta/entrada-salida-transportista-caseta.component').then(m => m.EntradaSalidaTransportistaCasetaComponent)
       },
-      
+
       {
         path: 'registro-personal',
         loadComponent: () => import('./features/control-entradas-salidas-cedis/registro-entrada-almacen/registro-entrada-almacen.component').then(m => m.RegistroEntradaAlmacenComponent)
@@ -115,13 +115,19 @@ export const routes: Routes = [
         path: 'registro-arribo-asn',
         loadComponent: () => import('./features/control-calidad/RegistroArribos/RegistroArribos.component').then(m => m.RegistroArribosComponent)
       },
-    
+
       {
         path: 'CambiaPass',
         loadComponent: () => import('./features/cambio-pass/cambio-pass.component').then(m => m.CambioPassComponent) // El login va SOLO, sin Layout
-      }
-      ,
-
+      },
+      {
+        path: 'reasignacion/resumen-detalle-por-folio',
+        loadComponent: () => import('./features/reasignacion/resumen-detalle-folio/resumen-detalle-folio.component').then(m => m.ResumenDetalleFolioComponent)
+      }, 
+      {
+        path: 'reasignacion/detalle-por-pallet',
+        loadComponent: () => import('./features/reasignacion/detalle-pallet/detalle-pallet.component').then(m => m.DetallePalletComponent)
+      },
       {
         path: 'ver-reporte/:id',
         component: ReportesComponent
