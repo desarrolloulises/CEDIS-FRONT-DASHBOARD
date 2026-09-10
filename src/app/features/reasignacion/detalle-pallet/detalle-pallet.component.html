@@ -19,7 +19,7 @@
         <div class="header-top">
             <div class="header-brand">
                 <h1 class="title">Detalle de pallets</h1>
-                <p class="subtitle">Consulta de pallets por lote y destino</p>
+                <p class="subtitle">Consulta de pallets por folio y tienda</p>
             </div>
         </div>
     </div>
@@ -27,17 +27,17 @@
     <!-- Formulario de búsqueda -->
     <div class="search-form">
         <div class="form-group">
-            <label for="numeroLote">Número de lote:</label>
+            <label for="numeroLote">Folio:</label>
             <input id="numeroLote" type="number" [ngModel]="numeroLoteInput()"
-                (ngModelChange)="numeroLoteInput.set($event)" class="form-input" placeholder="Ingrese número de lote"
+                (ngModelChange)="numeroLoteInput.set($event)" class="form-input" placeholder="Ingrese folio"
                 min="1">
         </div>
 
         <div class="form-group">
-            <label for="destinoAnterior">Tienda (Destino anterior):</label>
+            <label for="destinoAnterior">Tienda:</label>
             <input id="destinoAnterior" type="number" [ngModel]="destinoAnteriorInput()"
                 (ngModelChange)="destinoAnteriorInput.set($event)" class="form-input"
-                placeholder="Ingrese destino anterior" min="0">
+                placeholder="Ingrese Tienda" min="0">
         </div>
 
         <div class="form-actions">
@@ -60,8 +60,24 @@
             <p class="count">
                 {{ palletsFiltrados.length }} registro(s)
             </p>
-            <app-button label="Exportar" type="ghost" size="sm" [disabled]="true">
-            </app-button>
+            
+            <div class="export-button-container">
+                <app-button 
+                    [label]="exportando() ? 'Exportando...' : 'Exportar'" 
+                    type="ghost" 
+                    size="sm" 
+                    [disabled]="exportando() || palletsFiltrados.length === 0"
+                    (clicked)="exportarExcel()">
+                </app-button>
+                
+                @if (exportando()) {
+                    <app-loading-spinner 
+                        [visible]="true" 
+                        [compact]="true" 
+                        [showText]="false">
+                    </app-loading-spinner>
+                }
+            </div>
         </div>
     </div>
 
@@ -70,7 +86,7 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Pallet</th>
+                    <th>Pallet / Caja sin pallet</th>
                     <th>Ubicación</th>
                     <th>Cajas en pallet</th>
                     <th>Cajas a reasignar</th>
@@ -104,6 +120,7 @@
     <!-- Ayuda atajos -->
     <p class="shortcuts-hint">
         <span><kbd>F2</kbd> Buscar</span>
+        <span><kbd>Ctrl</kbd> + <kbd>E</kbd> Exportar</span>
     </p>
     } @else {
     <!-- Mensaje inicial -->
@@ -112,7 +129,7 @@
             <i class="ti ti-search"></i>
         </div>
         <h3>Ingrese los parámetros de búsqueda</h3>
-        <p>Proporcione el número de lote y tienda (destino anterior) para consultar el detalle de pallets</p>
+        <p>Proporcione el folio y tienda para consultar el detalle de pallets</p>
     </div>
     }
 </div>

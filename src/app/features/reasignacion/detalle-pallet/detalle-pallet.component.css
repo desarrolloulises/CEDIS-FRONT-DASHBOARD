@@ -286,7 +286,27 @@
   font-style: italic;
 }
 
+/* Load spinner button*/
+.export-button-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
 
+.export-button-container app-loading-spinner {
+  display: inline-flex;
+  align-items: center;
+}
+
+.export-button-container .spinner-wrapper--compact {
+  position: static;
+  display: inline-flex;
+  flex-direction: row;
+  gap: 8px;
+  background: transparent;
+  backdrop-filter: none;
+}
 
 /* ── Responsive ───────────────────────────────────────────────── */
 @media (max-width: 768px) {

@@ -18,7 +18,7 @@
     <div class="header">
         <div class="header-top">
             <div class="header-brand">
-                <h1 class="title">{{ vistaActual() === 'resumen' ? 'Resumen de reasignaciones' : 'Detalle de reasignaciones - Lote ' + loteSeleccionado() }}</h1>
+                <h1 class="title">{{ vistaActual() === 'resumen' ? 'Resumen de reasignaciones' : 'Detalle de reasignaciones - Folio ' + loteSeleccionado() }}</h1>
                 <p class="subtitle">Consulta de reasignaciones</p>
             </div>
 
@@ -45,8 +45,8 @@
             </div>
             
             <div class="filter-group">
-                <label>Número de lote:</label>
-                <input type="number" [ngModel]="numeroLote()" (ngModelChange)="numeroLote.set($event)" class="number-input" placeholder="Número de lote">
+                <label>Folio:</label>
+                <input type="number" [ngModel]="numeroLote()" (ngModelChange)="numeroLote.set($event)" class="number-input" placeholder="Folio">
             </div>
             
             <div class="filter-actions">
@@ -60,7 +60,7 @@
 
     <div class="header-bottom">
         <div class="search-container">
-            <app-input [placeholder]="vistaActual() === 'resumen' ? 'Filtrar por lote o fecha' : 'Filtrar por caja, transferencia, estatus...'" 
+            <app-input [placeholder]="vistaActual() === 'resumen' ? 'Filtrar por folio o fecha' : 'Filtrar por caja, transferencia, estatus...'" 
                        size="sm" [value]="filtro()" (valueChange)="filtro.set($event)">
             </app-input>
 
@@ -73,16 +73,31 @@
                     </select>
                 </div>
             }
-
         </div>
-
 
         <div class="header-utils">
             <p class="count">
                 {{ vistaActual() === 'resumen' ? reasignacionesFiltradas.length : detallesFiltrados.length }} registro(s)
             </p>
-            <app-button label="Exportar" type="ghost" size="sm" [disabled]="true">
-            </app-button>
+            
+            <!-- Botón de exportación con spinner compacto integrado -->
+            <div class="export-button-container">
+                <app-button 
+                    [label]="exportando() ? 'Exportando...' : 'Exportar'" 
+                    type="ghost" 
+                    size="sm" 
+                    [disabled]="exportando() || (vistaActual() === 'resumen' ? reasignacionesFiltradas.length === 0 : detallesFiltrados.length === 0)"
+                    (clicked)="exportarExcel()">
+                </app-button>
+                
+                @if (exportando()) {
+                    <app-loading-spinner 
+                        [visible]="true" 
+                        [compact]="true" 
+                        [showText]="false">
+                    </app-loading-spinner>
+                }
+            </div>
         </div>
     </div>
 
@@ -93,10 +108,11 @@
                 <thead>
                     <tr>
                         <th>Fecha</th>
-                        <th>Número de lote</th>
+                        <th>Folio</th>
                         <th>Tiendas</th>
                         <th>Cajas por reasignar</th>
                         <th>Cajas reasignadas</th>
+                        <th>Diferencia </th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -108,6 +124,7 @@
                             <td>{{ r.tiendas }}</td>
                             <td>{{ r.cajas_por_reasignar }}</td>
                             <td>{{ r.cajas_reasignadas }}</td>
+                            <td>{{ r.diferencia }}</td>
                             <td class="actions">
                                 <app-button type="ghost" label="Ver detalles" size="sm" (clicked)="openDetalles(r.numero_lote)">
                                 </app-button>
@@ -133,7 +150,7 @@
                     <tr>
                         <th>Fecha</th>
                         <th>Caja a reasignar</th>
-                        <th>Órdenes</th>
+                        <th>No. Transferencias</th>
                         <th>Caja nueva</th>
                         <th>Transferencia</th>
                         <th>Estatus</th>
@@ -174,5 +191,6 @@
     <!-- Ayuda atajos -->
     <p class="shortcuts-hint">
         <span><kbd>F2</kbd> Buscar</span>
+        <span><kbd>Ctrl</kbd> + <kbd>E</kbd> Exportar</span>
     </p>
 </div>
