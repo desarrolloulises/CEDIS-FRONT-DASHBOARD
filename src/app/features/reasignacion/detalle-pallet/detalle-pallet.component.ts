@@ -1,5 +1,3 @@
-// detalle-pallet.component.ts
-
 import { Component, signal, HostListener } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
@@ -75,7 +73,7 @@ export class DetallePalletComponent {
     consultarDetallePallets(): void {
         // Validar que los campos estén completos
         if (!this.numeroLoteInput() || !this.destinoAnteriorInput()) {
-            this.mostrarToast('error', 'Validación', 'Debe ingresar el número de lote y la tienda (destino anterior)');
+            this.mostrarToast('error', 'Validación', 'Debe ingresar el folio y la tienda');
             return;
         }
 
