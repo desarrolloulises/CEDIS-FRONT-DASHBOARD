@@ -352,3 +352,27 @@
 .status-select:hover {
     border-color: #cbd5e1;
 }
+
+/* Contenedor del botón de exportación con spinner integrado */
+.export-button-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Ajuste para el spinner compacto dentro del botón */
+.export-button-container app-loading-spinner {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Si el spinner compacto se muestra como posición estática */
+.export-button-container .spinner-wrapper--compact {
+  position: static;
+  display: inline-flex;
+  flex-direction: row;
+  gap: 8px;
+  background: transparent;
+  backdrop-filter: none;
+}

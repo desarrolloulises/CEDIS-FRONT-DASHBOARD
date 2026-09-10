@@ -1,27 +1,15 @@
-import { Component, signal, Output, EventEmitter, HostListener } from "@angular/core";
+import { Component, signal, HostListener } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { InputComponent } from "../../../shared/components/input/input.component";
 import { ButtonComponent } from "../../../shared/components/button/button.component";
 import { ToastComponent } from "../../../shared/components/toast/toast.component";
 import { LoadingSpinnerComponent } from "../../../shared/components/loading-spinner/loading-spinner.component";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { finalize } from "rxjs/operators";
-
-// Interface para tipar la respuesta
-interface DetallePallet {
-    pallet: string;
-    ubicacion: string;
-    cajas_pallet: number;
-    cajas_a_reasignar: number;
-}
-
-interface ApiResponse<T> {
-    success: boolean;
-    error: string;
-    code: string;
-    data: T[] | null;
-}
+import { DatosService } from "../../../service/servicio.service";
+import { DetallePalletService } from './services/detalle-pallet.service';
+import { DetallePallet, DetallePalletRequest } from './interfaces/detalle-pallet.interface';
+import { exportarDetallePalletsExcel } from './utils/excel-export';
 
 @Component({
     standalone: true,
@@ -38,12 +26,9 @@ interface ApiResponse<T> {
     ]
 })
 export class DetallePalletComponent {
-    // URL del endpoint
-    private readonly API_URL = 'http://192.168.102.81:5242/cedis/consulta-reasignacion/obtener-detalle-pallets';
-    private readonly USUARIO = '406991'; 
-
     // Estado de carga y toast
     cargando = signal<boolean>(false);
+    exportando = signal<boolean>(false); 
     toastVisible = signal<boolean>(false);
     toastTipo = signal<'success' | 'error'>('success');
     toastTitulo = signal<string>('');
@@ -62,7 +47,10 @@ export class DetallePalletComponent {
     // Estado para controlar si ya se ha consultado
     haConsultado = signal<boolean>(false);
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private detallePalletService: DetallePalletService,
+        private datosService: DatosService
+    ) { }
 
     // Computed para filtrar los datos
     get palletsFiltrados() {
@@ -85,7 +73,7 @@ export class DetallePalletComponent {
     consultarDetallePallets(): void {
         // Validar que los campos estén completos
         if (!this.numeroLoteInput() || !this.destinoAnteriorInput()) {
-            this.mostrarToast('error', 'Validación', 'Debe ingresar el número de lote y el destino anterior');
+            this.mostrarToast('error', 'Validación', 'Debe ingresar el folio y la tienda');
             return;
         }
 
@@ -100,18 +88,13 @@ export class DetallePalletComponent {
         this.cargando.set(true);
         this.toastVisible.set(false);
 
-        const body = {
+        const request: DetallePalletRequest = {
             numero_lote: numeroLote,
             destino_anterior: destinoAnterior,
-            usuario: this.USUARIO
+            usuario: this.datosService.usuarioSignal()
         };
 
-        const headers = new HttpHeaders({
-            'Content-Type': 'application/json',
-            'Accept': '*/*'
-        });
-
-        this.http.post<ApiResponse<DetallePallet>>(this.API_URL, body, { headers })
+        this.detallePalletService.obtenerDetallePallets(request)
             .pipe(
                 finalize(() => this.cargando.set(false))
             )
@@ -138,6 +121,42 @@ export class DetallePalletComponent {
                     this.mostrarToast('error', 'Error', 'No se pudo conectar con el servidor');
                 }
             });
+    }
+
+    async exportarExcel(): Promise<void> {
+        // Verificar si ya hay una exportación en progreso
+        if (this.exportando()) {
+            return; // Simplemente ignorar si ya está exportando
+        }
+
+        const datos = this.palletsFiltrados;
+        
+        if (datos.length === 0) {
+            this.mostrarToast('error', 'Error', 'No hay datos para exportar');
+            return;
+        }
+
+        // Activar el estado de exportación
+        this.exportando.set(true);
+
+        try {
+            // Dar tiempo al navegador para renderizar el spinner
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            // Exportar usando la utilidad
+            exportarDetallePalletsExcel(
+                datos, 
+                this.numeroLoteInput(), 
+                this.destinoAnteriorInput()
+            );
+            
+        } catch (error) {
+            console.error('Error al exportar:', error);
+            this.mostrarToast('error', 'Error', 'Ocurrió un error al exportar los datos');
+        } finally {
+            await new Promise(resolve => setTimeout(resolve, 200));
+            this.exportando.set(false);
+        }
     }
 
     // Método para limpiar el formulario
@@ -168,6 +187,12 @@ export class DetallePalletComponent {
         if (event.key === 'F2') {
             event.preventDefault();
             document.querySelector<HTMLInputElement>('.search-container input')?.focus();
+        }
+        
+        // Atajo Ctrl + E para exportar
+        if ((event.ctrlKey || event.metaKey) && event.key === 'e') {
+            event.preventDefault();
+            this.exportarExcel();
         }
     }
 }

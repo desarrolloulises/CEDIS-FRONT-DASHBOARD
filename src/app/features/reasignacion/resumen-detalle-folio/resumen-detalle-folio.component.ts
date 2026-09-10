@@ -1,43 +1,21 @@
-import { Component, signal, computed, OnInit, HostListener } from "@angular/core";
+import { Component, signal, OnInit, HostListener } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { InputComponent } from "../../../shared/components/input/input.component";
 import { ButtonComponent } from "../../../shared/components/button/button.component";
 import { ToastComponent } from "../../../shared/components/toast/toast.component";
 import { LoadingSpinnerComponent } from "../../../shared/components/loading-spinner/loading-spinner.component";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { finalize } from "rxjs/operators";
-
-// Interfaces para tipar las respuestas
-interface ResumenReasignacion {
-    fecha: string;
-    numero_lote: number;
-    tiendas: number;
-    cajas_por_reasignar: number;
-    cajas_reasignadas: number;
-}
-
-interface DetalleReasignacion {
-    fecha: string;
-    numero_lote: number;
-    caja_a_reasignar: string;
-    numero_de_ordenes: number;
-    caja_nueva: string;
-    codigo_transferencia: number;
-    estatus: string;
-    clave_tienda_origen: string;
-    destino_anterior: number;
-    destino_nuevo: number;
-    fecha_reasignacion: string | null;
-    usuario_que_reasigno: string;
-}
-
-interface ApiResponse<T> {
-    success: boolean;
-    error: string;
-    code: string;
-    data: T[];
-}
+import { DatosService } from "../../../service/servicio.service";
+import { ReasignacionService } from './services/resumen-detalle.interface';
+import { 
+    ResumenReasignacion, 
+    DetalleReasignacion, 
+    FiltrosReasignacion, 
+    DetalleLoteRequest 
+} from './interfaces/resumen-detalle.interface';
+import { exportarResumenExcel, exportarDetalleExcel } from './utils/excel-export';
+import { formatearFecha, formatearFechaHora, obtenerDescripcionEstatus } from './utils/formaters';
 
 @Component({
     standalone: true,
@@ -54,13 +32,9 @@ interface ApiResponse<T> {
     ]
 })
 export class ResumenDetalleFolioComponent implements OnInit {
-    // URLs de los endpoints
-    private readonly API_URL_RESUMEN = 'http://192.168.102.81:5242/cedis/consulta-reasignacion/obtener-resumen-reasignaciones';
-    private readonly API_URL_DETALLE = 'http://192.168.102.81:5242/cedis/consulta-reasignacion/obtener-detalle-reasignaciones';
-    private readonly USUARIO = '406991';
-
     // Estado de carga y toast
     cargando = signal<boolean>(false);
+    exportando = signal<boolean>(false);
     toastVisible = signal<boolean>(false);
     toastTipo = signal<'success' | 'error'>('success');
     toastTitulo = signal<string>('');
@@ -81,7 +55,10 @@ export class ResumenDetalleFolioComponent implements OnInit {
     vistaActual = signal<'resumen' | 'detalle'>('resumen');
     loteSeleccionado = signal<number | null>(null);
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private reasignacionService: ReasignacionService,
+        private datosService: DatosService
+    ) { }
 
     ngOnInit(): void {
         this.cargarResumen();
@@ -95,10 +72,10 @@ export class ResumenDetalleFolioComponent implements OnInit {
         if (!filtro) return datos;
 
         return datos.filter(item => {
-            const fechaStr = new Date(item.fecha).toLocaleDateString('es-MX');
+            const fechaStr = formatearFecha(item.fecha);
             return (
                 item.numero_lote.toString().includes(filtro) ||
-                fechaStr.includes(filtro) 
+                fechaStr.includes(filtro)
             );
         });
     }
@@ -138,24 +115,59 @@ export class ResumenDetalleFolioComponent implements OnInit {
         });
     }
 
+    // Método para exportar a Excel con control de concurrencia
+    async exportarExcel(): Promise<void> {
+        // Verificar si ya hay una exportación en progreso
+        if (this.exportando()) {
+            return; // Simplemente ignorar si ya está exportando
+        }
+
+        const datosResumen = this.reasignacionesFiltradas;
+        const datosDetalle = this.detallesFiltrados;
+        const datos = this.vistaActual() === 'resumen' ? datosResumen : datosDetalle;
+
+        if (datos.length === 0) {
+            this.mostrarToast('error', 'Error', 'No hay datos para exportar');
+            return;
+        }
+
+        // Activar el estado de exportación
+        this.exportando.set(true);
+
+        try {
+            // Dar tiempo al navegador para renderizar el spinner
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            // Exportar según la vista actual
+            if (this.vistaActual() === 'resumen') {
+                exportarResumenExcel(datosResumen);
+            } else {
+                exportarDetalleExcel(datosDetalle, this.loteSeleccionado());
+            }
+
+        } catch (error) {
+            console.error('Error al exportar:', error);
+            this.mostrarToast('error', 'Error', 'Ocurrió un error al exportar los datos');
+        } finally {
+            // Desactivar el estado de exportación después de un breve delay
+            await new Promise(resolve => setTimeout(resolve, 200));
+            this.exportando.set(false);
+        }
+    }
+
     // Método para cargar el resumen
     cargarResumen(): void {
         this.cargando.set(true);
         this.toastVisible.set(false);
 
-        const body = {
+        const filtros: FiltrosReasignacion = {
             numero_lote: this.numeroLote() ? parseInt(this.numeroLote()) : null,
             fecha_inicio: this.fechaInicio() || null,
             fecha_fin: this.fechaFin() || null,
-            usuario: this.USUARIO
+            usuario: this.datosService.usuarioSignal()
         };
 
-        const headers = new HttpHeaders({
-            'Content-Type': 'application/json',
-            'Accept': '*/*'
-        });
-
-        this.http.post<ApiResponse<ResumenReasignacion>>(this.API_URL_RESUMEN, body, { headers })
+        this.reasignacionService.obtenerResumen(filtros)
             .pipe(
                 finalize(() => this.cargando.set(false))
             )
@@ -187,17 +199,12 @@ export class ResumenDetalleFolioComponent implements OnInit {
         this.cargando.set(true);
         this.toastVisible.set(false);
 
-        const body = {
+        const request: DetalleLoteRequest = {
             numero_lote: numeroLote,
-            usuario: this.USUARIO
+            usuario: this.datosService.usuarioSignal()
         };
 
-        const headers = new HttpHeaders({
-            'Content-Type': 'application/json',
-            'Accept': '*/*'
-        });
-
-        this.http.post<ApiResponse<DetalleReasignacion>>(this.API_URL_DETALLE, body, { headers })
+        this.reasignacionService.obtenerDetalle(request)
             .pipe(
                 finalize(() => this.cargando.set(false))
             )
@@ -208,7 +215,7 @@ export class ResumenDetalleFolioComponent implements OnInit {
                         this.vistaActual.set('detalle');
                         this.loteSeleccionado.set(numeroLote);
                         this.filtro.set('');
-                        this.filtroEstatus.set(''); // Limpiar filtro de estatus al cargar nuevo lote
+                        this.filtroEstatus.set('');
 
                         if (response.data.length === 0) {
                             this.mostrarToast('info', 'Información', `No se encontraron detalles para el lote ${numeroLote}`);
@@ -235,7 +242,7 @@ export class ResumenDetalleFolioComponent implements OnInit {
     volverAlResumen(): void {
         this.vistaActual.set('resumen');
         this.filtro.set('');
-        this.filtroEstatus.set(''); // Limpiar filtro de estatus al volver
+        this.filtroEstatus.set('');
     }
 
     // Método para aplicar filtros avanzados
@@ -257,49 +264,25 @@ export class ResumenDetalleFolioComponent implements OnInit {
         this.filtroEstatus.set('');
     }
 
+    // Métodos de formateo (se mantienen como wrappers para el template)
+    formatearFecha(fecha: string): string {
+        return formatearFecha(fecha);
+    }
+
+    formatearFechaHora(fecha: string | null): string {
+        return formatearFechaHora(fecha);
+    }
+
+    obtenerDescripcionEstatus(estatus: string): string {
+        return obtenerDescripcionEstatus(estatus);
+    }
+
     // Método helper para mostrar toast
     private mostrarToast(tipo: 'success' | 'error' | 'info', titulo: string, mensaje: string): void {
         this.toastTipo.set(tipo === 'info' ? 'success' : tipo);
         this.toastTitulo.set(titulo);
         this.toastMensaje.set(mensaje);
         this.toastVisible.set(true);
-    }
-
-    // Método para formatear fecha
-    formatearFecha(fecha: string): string {
-        if (!fecha) return '';
-        const date = new Date(fecha);
-        return date.toLocaleDateString('es-MX', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        });
-    }
-
-    // Método para formatear fecha y hora
-    formatearFechaHora(fecha: string | null): string {
-        if (!fecha) return '—';
-        const date = new Date(fecha);
-        return date.toLocaleString('es-MX', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        });
-    }
-
-    // Método para obtener la descripción completa del estatus
-    obtenerDescripcionEstatus(estatus: string): string {
-        switch (estatus) {
-            case 'RA':
-                return 'Reasignada';
-            case 'PR':
-                return 'Por Reasignar';
-            default:
-                return estatus;
-        }
     }
 
     // ── Atajos de teclado ───────────────────────────────────────────────────
@@ -309,6 +292,12 @@ export class ResumenDetalleFolioComponent implements OnInit {
         if (event.key === 'F2') {
             event.preventDefault();
             document.querySelector<HTMLInputElement>('.search-container input')?.focus();
+        }
+
+        // Atajo Ctrl + E para exportar
+        if ((event.ctrlKey || event.metaKey) && event.key === 'e') {
+            event.preventDefault();
+            this.exportarExcel();
         }
     }
 }
