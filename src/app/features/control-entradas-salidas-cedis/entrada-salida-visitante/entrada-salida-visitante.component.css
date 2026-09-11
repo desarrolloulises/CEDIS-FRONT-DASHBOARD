@@ -24,6 +24,9 @@
 .ev-wrapper {
   background: var(--ev-bg, #f4f6f9);
   padding: var(--space-lg);
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 /* ── Header ────────────────────────────────────────────────────── */
@@ -120,6 +123,15 @@
   border-radius: var(--ev-radius-lg);
   overflow-x: auto;
   box-shadow: var(--ev-shadow-sm);
+}
+
+.ev-table-wrap:not(:has(thead th:nth-child(8))) {
+    display: inline-block;
+    max-width: 100%;
+}
+
+.ev-table-wrap:not(:has(thead th:nth-child(8))) .table {
+    width: auto;
 }
 
 .ev-table {

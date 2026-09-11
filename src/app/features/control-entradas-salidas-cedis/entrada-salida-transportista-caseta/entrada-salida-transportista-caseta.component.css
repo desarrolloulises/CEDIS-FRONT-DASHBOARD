@@ -22,6 +22,9 @@
 .etc-wrapper {
   background: var(--bg-body);
   padding: var(--space-lg);
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 /* ── Header ────────────────────────────────────────────────────── */
@@ -124,6 +127,15 @@
   width: 100%;
   border-collapse: collapse;
   font-size: .82rem;
+}
+
+.etc-table-wrap:not(:has(thead th:nth-child(8))) {
+    display: inline-block;
+    max-width: 100%;
+}
+
+.etc-table-wrap:not(:has(thead th:nth-child(8))) .table {
+    width: auto;
 }
 
 .etc-table thead th {
