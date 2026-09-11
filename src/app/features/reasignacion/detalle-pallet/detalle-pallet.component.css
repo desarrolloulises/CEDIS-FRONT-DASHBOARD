@@ -26,6 +26,10 @@
 .wrapper {
   background: var(--bg-body);
   padding: var(--space-lg);
+
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 .header {
@@ -228,6 +232,15 @@
   overflow-x: auto;
   box-shadow: var(--etc-shadow-sm);
   margin-top: 16px;
+}
+
+.table-wrap:not(:has(thead th:nth-child(8))) {
+  display: inline-block;
+  max-width: 100%;
+}
+
+.table-wrap:not(:has(thead th:nth-child(8))) .table {
+  width: auto;
 }
 
 .table {

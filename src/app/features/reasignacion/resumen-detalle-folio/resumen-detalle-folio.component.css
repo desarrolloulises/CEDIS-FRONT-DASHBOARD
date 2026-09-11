@@ -21,6 +21,9 @@
 .wrapper {
     background: var(--bg-body);
     padding: var(--space-lg);
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
 }
 
 .header {
@@ -121,6 +124,15 @@
     box-shadow: var(--etc-shadow-sm);
 }
 
+.table-wrap:not(:has(thead th:nth-child(8))) {
+    display: inline-block;
+    max-width: 100%;
+}
+
+.table-wrap:not(:has(thead th:nth-child(8))) .table {
+    width: auto;
+}
+
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -185,6 +197,14 @@
 @media (max-width: 768px) {
     .wrapper {
         padding: 12px;
+    }
+
+    .table-wrap--auto {
+        display: block;
+    }
+
+    .table--auto {
+        width: 100%;
     }
 
     .header-top {
@@ -355,24 +375,24 @@
 
 /* Contenedor del botón de exportación con spinner integrado */
 .export-button-container {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 /* Ajuste para el spinner compacto dentro del botón */
 .export-button-container app-loading-spinner {
-  display: inline-flex;
-  align-items: center;
+    display: inline-flex;
+    align-items: center;
 }
 
 /* Si el spinner compacto se muestra como posición estática */
 .export-button-container .spinner-wrapper--compact {
-  position: static;
-  display: inline-flex;
-  flex-direction: row;
-  gap: 8px;
-  background: transparent;
-  backdrop-filter: none;
+    position: static;
+    display: inline-flex;
+    flex-direction: row;
+    gap: 8px;
+    background: transparent;
+    backdrop-filter: none;
 }
