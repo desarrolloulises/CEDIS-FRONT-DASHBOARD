@@ -110,7 +110,10 @@ export const routes: Routes = [
         path: 'control-visita',
         loadComponent: () => import('./features/control-entradas-salidas-cedis/entrada-salida-visitante/entrada-salida-visitante.component').then(m => m.EntradaSalidaVisitanteComponent)
       },
-
+      {
+        path: 'consulta-entrega-devolucion',
+        loadComponent: () => import('./features/control-entradas-salidas-cedis/consulta-entrega-devolucion/consulta-entrega-devolucion.component').then(m => m.ConsultaEntregaDevolucionComponent)
+      },
       {
         path: 'registro-arribo-asn',
         loadComponent: () => import('./features/control-calidad/RegistroArribos/RegistroArribos.component').then(m => m.RegistroArribosComponent)
@@ -123,7 +126,7 @@ export const routes: Routes = [
       {
         path: 'reasignacion/resumen-detalle-por-folio',
         loadComponent: () => import('./features/reasignacion/resumen-detalle-folio/resumen-detalle-folio.component').then(m => m.ResumenDetalleFolioComponent)
-      }, 
+      },
       {
         path: 'reasignacion/detalle-por-pallet',
         loadComponent: () => import('./features/reasignacion/detalle-pallet/detalle-pallet.component').then(m => m.DetallePalletComponent)
