@@ -101,6 +101,7 @@ export class SidebarComponent {
     '40-1': 'registro-ingreso-transportista-caseta',
     '40-2': 'control-visita',
     '40-3': 'registro-personal',
+    '40-4': 'consulta-entrega-devolucion',
     '44-1': 'ver-reporte/44-1',
     '50-1': 'registro-arribo-asn',
     '60-1': 'reasignacion/resumen-detalle-por-folio',
