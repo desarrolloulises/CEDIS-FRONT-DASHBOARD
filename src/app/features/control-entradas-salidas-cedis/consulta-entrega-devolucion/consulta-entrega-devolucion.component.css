@@ -24,7 +24,6 @@
 }
 
 .wrapper {
-  background: var(--bg-body);
   padding: var(--space-lg);
 
   width: fit-content;
@@ -78,11 +77,12 @@
   align-items: end;
   margin-bottom: 20px;
   padding: 16px;
-  background: var(--etc-surface);
+  background: var(--bg-body);
   border: 1px solid var(--etc-border);
   border-radius: var(--etc-radius-lg);
   flex-wrap: wrap;
   box-shadow: var(--etc-shadow-sm);
+  max-width: 900px;
 }
 
 .form-group {
@@ -272,7 +272,7 @@
 }
 
 .table tbody tr:nth-child(even) {
-  background: #fafbfd;
+  background: #ededed;
 }
 
 .table tbody tr:nth-child(odd) {

@@ -115,10 +115,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/control-entradas-salidas-cedis/consulta-entrega-devolucion/consulta-entrega-devolucion.component').then(m => m.ConsultaEntregaDevolucionComponent)
       },
       {
+        path: 'consulta-registro-devolucion',
+        loadComponent: () => import('./features/control-entradas-salidas-cedis/consulta-registro-devolucion/consulta-registro-devolucion.component').then(m => m.ConsultaRegistroDevolucionComponent)
+      },
+      {
         path: 'registro-arribo-asn',
         loadComponent: () => import('./features/control-calidad/RegistroArribos/RegistroArribos.component').then(m => m.RegistroArribosComponent)
       },
-
       {
         path: 'CambiaPass',
         loadComponent: () => import('./features/cambio-pass/cambio-pass.component').then(m => m.CambioPassComponent) // El login va SOLO, sin Layout

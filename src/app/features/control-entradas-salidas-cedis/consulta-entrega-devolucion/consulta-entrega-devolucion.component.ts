@@ -1,5 +1,3 @@
-// consulta-entrega-devolucion.component.ts
-
 import {
     Component, signal, HostListener, OnInit, inject
 } from '@angular/core';
@@ -206,8 +204,8 @@ export class ConsultaEntregaDevolucionComponent implements OnInit {
                 filtrosAplicados: this.ultimosFiltros
             });
 
-            this.mostrarToast('success', 'Exportación',
-                'El archivo se descargó correctamente');
+            // this.mostrarToast('success', 'Exportación',
+            //     'El archivo se descargó correctamente');
         } catch (error) {
             console.error('Error al exportar:', error);
             this.mostrarToast('error', 'Error',
