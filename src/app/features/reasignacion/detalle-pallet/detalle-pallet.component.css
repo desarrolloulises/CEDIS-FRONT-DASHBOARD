@@ -24,7 +24,6 @@
 }
 
 .wrapper {
-  background: var(--bg-body);
   padding: var(--space-lg);
 
   width: fit-content;
@@ -78,11 +77,12 @@
   align-items: end;
   margin-bottom: 20px;
   padding: 16px;
-  background: var(--etc-surface);
+  background: var(--bg-body);
   border: 1px solid var(--etc-border);
   border-radius: var(--etc-radius-lg);
   flex-wrap: wrap;
   box-shadow: var(--etc-shadow-sm);
+  max-width: 500px;
 }
 
 .form-group {
@@ -90,7 +90,8 @@
   flex-direction: column;
   gap: 6px;
   flex: 1;
-  min-width: 200px;
+  min-width: 80px;
+  max-width: 140px;
 }
 
 .form-group label {
@@ -188,7 +189,7 @@
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
-  background: var(--etc-surface);
+  background: var(--bg-body);
   border: 1px dashed var(--etc-border);
   border-radius: var(--etc-radius-lg);
   min-height: 300px;

@@ -19,7 +19,6 @@
 }
 
 .wrapper {
-    background: var(--bg-body);
     padding: var(--space-lg);
     width: fit-content;
     max-width: 100%;
