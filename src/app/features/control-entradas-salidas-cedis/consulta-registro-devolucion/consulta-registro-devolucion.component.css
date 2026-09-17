@@ -96,7 +96,7 @@
   border-radius: var(--etc-radius-lg);
   flex-wrap: wrap;
   box-shadow: var(--etc-shadow-sm);
-  max-width: 750px;
+  max-width: 550px;
 }
 
 .form-group {
@@ -104,7 +104,7 @@
   flex-direction: column;
   gap: 6px;
   flex: 1;
-  min-width: 200px;
+  width: 100%;
 }
 
 .form-group label {
@@ -159,7 +159,7 @@
 
 .search-container {
   flex-grow: 1;
-  max-width: 360px;
+  max-width: 200px;
 }
 
 .header-utils {
@@ -399,10 +399,6 @@
     align-items: stretch;
   }
 
-  .form-group {
-    width: 100%;
-  }
-
   .form-actions {
     flex-direction: row;
     width: 100%;
@@ -415,8 +411,7 @@
   }
 
   .search-container {
-    width: 100%;
-    max-width: 100%;
+    min-width: 100px;
   }
 
   .header-utils {
