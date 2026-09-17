@@ -90,8 +90,7 @@
   flex-direction: column;
   gap: 6px;
   flex: 1;
-  min-width: 80px;
-  max-width: 140px;
+  width: 100%;
 }
 
 .form-group label {
@@ -143,7 +142,7 @@
 
 .search-container {
   flex-grow: 1;
-  max-width: 360px;
+  max-width: 200px;
 }
 
 .header-utils {
@@ -343,10 +342,6 @@
   .search-form {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .form-group {
-    width: 100%;
   }
 
   .form-actions {

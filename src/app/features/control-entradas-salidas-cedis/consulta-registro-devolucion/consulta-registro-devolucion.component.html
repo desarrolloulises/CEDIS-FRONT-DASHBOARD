@@ -79,7 +79,7 @@
                     [class.fila-amarilla]="colorDeFila(fila) === 'amarillo'">
                     @for (col of columnas(); track col.nombre) {
                     <td [attr.data-tipo]="col.tipo">
-                        {{ valorCelda(fila, col) }}
+                        {{ valorCelda(fila, col) || '—' }}
                     </td>
                     }
                 </tr>

@@ -115,6 +115,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/control-entradas-salidas-cedis/consulta-entrega-devolucion/consulta-entrega-devolucion.component').then(m => m.ConsultaEntregaDevolucionComponent)
       },
       {
+        path: 'consulta-seguridad',
+        loadComponent: () => import('./features/control-entradas-salidas-cedis/consulta-seguridad/consulta-seguridad.component').then(m => m.ConsultaSeguridadComponent)
+      },
+      {
         path: 'consulta-registro-devolucion',
         loadComponent: () => import('./features/control-entradas-salidas-cedis/consulta-registro-devolucion/consulta-registro-devolucion.component').then(m => m.ConsultaRegistroDevolucionComponent)
       },
