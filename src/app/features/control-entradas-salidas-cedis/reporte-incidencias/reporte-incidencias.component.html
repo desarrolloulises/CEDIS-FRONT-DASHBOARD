@@ -1,0 +1,111 @@
+<!-- Spinner global -->
+<app-loading-spinner [visible]="cargando()" [overlay]="true" texto="Procesando...">
+</app-loading-spinner>
+
+<!-- Toast -->
+<app-toast *ngIf="toastVisible()" [tipo]="toastTipo()" [titulo]="toastTitulo()" [mensaje]="toastMensaje()"
+    (cerrar)="toastVisible.set(false)">
+</app-toast>
+
+<div class="wrapper">
+    <div class="header">
+        <div class="header-top">
+            <div class="header-brand">
+                <h1 class="title">Reporte de incidencias</h1>
+                <p class="subtitle">Resumen de incidencias por intervalo de fecha</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de búsqueda -->
+    <div class="search-form">
+        <div class="form-group">
+            <label for="fechaInicio">Fecha inicio :</label>
+            <input id="fechaInicio" type="date" [ngModel]="fechaInicioInput()"
+                (ngModelChange)="fechaInicioInput.set($event)" class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label for="fechaFin">Fecha fin :</label>
+            <input id="fechaFin" type="date" [ngModel]="fechaFinInput()"
+                (ngModelChange)="fechaFinInput.set($event)" class="form-input">
+        </div>
+
+        <div class="form-actions">
+            <app-button label="Consultar" type="primary" size="sm" (clicked)="consultar()">
+            </app-button>
+            <app-button label="Limpiar" type="ghost" size="sm" (clicked)="limpiarFormulario()">
+            </app-button>
+        </div>
+    </div>
+
+    @if (cargadoInicialmente()) {
+    <div class="header-bottom">
+        <div class="search-container">
+            <app-input placeholder="Filtrar en cualquier columna..." size="sm" [value]="filtro()"
+                (valueChange)="filtro.set($event)">
+            </app-input>
+        </div>
+
+        <div class="header-utils">
+            <p class="count">{{ filasFiltradas.length }} registro(s)</p>
+
+            <div class="export-button-container">
+                <app-button [label]="exportando() ? 'Exportando...' : 'Exportar'" type="ghost" size="sm"
+                    [disabled]="exportando() || filasFiltradas.length === 0" (clicked)="exportarExcel()">
+                </app-button>
+
+                @if (exportando()) {
+                <app-loading-spinner [visible]="true" [compact]="true" [showText]="false">
+                </app-loading-spinner>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLA DINÁMICA -->
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    @for (col of columnas(); track col.nombre) {
+                    <th [attr.data-tipo]="col.tipo">{{ col.nombre }}</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @for (fila of filasFiltradas; track $index) {
+                <tr>
+                    @for (col of columnas(); track col.nombre) {
+                    <td [attr.data-tipo]="col.tipo">
+                        {{ valorCelda(fila, col) }}
+                    </td>
+                    }
+                </tr>
+                }
+
+                @if (filasFiltradas.length === 0) {
+                <tr>
+                    <td [attr.colspan]="columnas().length || 1" class="empty">
+                        Sin registros que coincidan.
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <p class="shortcuts-hint">
+        <span><kbd>F2</kbd> Buscar</span>
+        <span><kbd>Ctrl</kbd> + <kbd>E</kbd> Exportar</span>
+    </p>
+    } @else {
+    <div class="initial-message">
+        <div class="message-icon">
+            <i class="ti ti-search"></i>
+        </div>
+        <h3>Cargando información...</h3>
+        <p>Obteniendo el reporte de incidencias del usuario en sesión.</p>
+    </div>
+    }
+</div>

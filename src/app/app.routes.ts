@@ -123,6 +123,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/control-entradas-salidas-cedis/consulta-registro-devolucion/consulta-registro-devolucion.component').then(m => m.ConsultaRegistroDevolucionComponent)
       },
       {
+        path: 'reporte-incidencias',
+        loadComponent: () => import('./features/control-entradas-salidas-cedis/reporte-incidencias/reporte-incidencias.component').then(m => m.ReporteIncidenciasComponent)
+      },
+      {
         path: 'registro-arribo-asn',
         loadComponent: () => import('./features/control-calidad/RegistroArribos/RegistroArribos.component').then(m => m.RegistroArribosComponent)
       },

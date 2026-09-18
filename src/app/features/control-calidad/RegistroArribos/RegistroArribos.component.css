@@ -1,11 +1,11 @@
 .pagina {
   display: flex;
-  /* align-items: stretch es el valor por defecto si lo remueves */
-  align-items: stretch;
+  align-items: flex-start;
   justify-content: center;
   padding: 24px;
+  width: 100%;
   max-width: 1200px;
-  margin: auto;
+  margin: 0 auto;
   animation: fadeIn 0.3s ease-out;
 }
 
@@ -21,35 +21,41 @@
   }
 }
 
-
 .tarjeta {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  /* flex: 1 1 auto hace que ocupe todo el espacio vertical disponible */
-  flex: 1 1 auto;
+  align-items: stretch;
+  justify-content: flex-start;
+  flex: 0 1 auto;
   width: 100%;
-  min-height: 400px;
-
+  max-width: 500px;
   padding: 24px;
 
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   background: var(--bg-card);
   box-shadow: var(--shadow-sm);
-
   font-family: inherit;
   color: var(--texto-principal);
 }
 
+.encabezado {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+  min-height: 32px;
+}
+
 .encabezado h2 {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  margin: auto;
-  margin-bottom: 20px;
-
+  white-space: nowrap;
 }
 
 .btn-icono {
@@ -58,13 +64,14 @@
   justify-content: center;
   width: 32px;
   height: 32px;
+  flex-shrink: 0;
+  z-index: 1; 
 
   background: transparent;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--texto-secundario);
   cursor: pointer;
-
   transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
@@ -82,9 +89,8 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: 16px;
   width: 100%;
-  max-width: 500px;
+  margin-bottom: 16px;
 }
 
 .campo-asn label {
@@ -99,13 +105,11 @@
   height: 42px;
   padding: 0 12px;
   font-size: 14px;
-
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   background: var(--bg-card);
   color: var(--texto-principal);
   outline: none;
-
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
@@ -115,15 +119,16 @@
 }
 
 .datos-asn {
+  width: 100%;
   margin-top: 20px;
-  border-top: 1px solid var(--border-color);
   padding-top: 20px;
+  border-top: 1px solid var(--border-color);
 }
 
 .datos-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 14px 24px;
   margin-bottom: 20px;
 }
 
@@ -131,6 +136,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .etiqueta {
@@ -141,6 +147,7 @@
 .valor {
   font-size: 14px;
   font-weight: 500;
+  word-break: break-word;
 }
 
 .badge {
@@ -152,10 +159,10 @@
   background: transparent;
   border: none;
   padding: 0;
-  border-radius: 0;
 }
 
 .ordenes {
+  width: 100%;
   margin-bottom: 20px;
 }
 
@@ -165,7 +172,6 @@
   padding: 0;
   max-height: 160px;
   overflow-y: auto;
-
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
 }
@@ -183,21 +189,19 @@
 .acciones {
   display: flex;
   gap: 10px;
+  width: 100%;
 }
 
 .btn {
   flex: 1;
   min-height: 42px;
   padding: 0 18px;
-
   font-size: 14px;
   font-weight: 600;
   font-family: inherit;
-
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-
   transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 

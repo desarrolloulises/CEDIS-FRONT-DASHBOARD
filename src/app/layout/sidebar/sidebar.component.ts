@@ -104,6 +104,7 @@ export class SidebarComponent {
     '40-4': 'consulta-entrega-devolucion',
     '40-5': 'consulta-registro-devolucion',
     '40-6': 'consulta-seguridad',
+    '40-7': 'reporte-incidencias',
     '44-1': 'ver-reporte/44-1',
     '50-1': 'registro-arribo-asn',
     '60-1': 'reasignacion/resumen-detalle-por-folio',
