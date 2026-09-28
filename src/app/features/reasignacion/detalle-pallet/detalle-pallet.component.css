@@ -321,6 +321,12 @@
   backdrop-filter: none;
 }
 
+.optional {
+    font-weight: 400;
+    font-size: 0.8em;
+    color: #888;
+}
+
 /* ── Responsive ───────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .wrapper {
