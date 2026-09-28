@@ -15,7 +15,7 @@ export interface ApiResponse<T> {
 
 export interface DetallePalletRequest {
     numero_lote: number;
-    destino_anterior: number;
+    destino_anterior: number | null;
     usuario: string;
 }
 

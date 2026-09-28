@@ -28,7 +28,7 @@ import { exportarDetallePalletsExcel } from './utils/excel-export';
 export class DetallePalletComponent {
     // Estado de carga y toast
     cargando = signal<boolean>(false);
-    exportando = signal<boolean>(false); 
+    exportando = signal<boolean>(false);
     toastVisible = signal<boolean>(false);
     toastTipo = signal<'success' | 'error'>('success');
     toastTitulo = signal<string>('');
@@ -71,18 +71,27 @@ export class DetallePalletComponent {
 
     // Método para consultar el detalle de pallets
     consultarDetallePallets(): void {
-        // Validar que los campos estén completos
-        if (!this.numeroLoteInput() || !this.destinoAnteriorInput()) {
-            this.mostrarToast('error', 'Validación', 'Debe ingresar el folio y la tienda');
+        if (!this.numeroLoteInput()) {
+            this.mostrarToast('error', 'Validación', 'Debe ingresar el folio');
             return;
         }
 
         const numeroLote = parseInt(this.numeroLoteInput());
-        const destinoAnterior = parseInt(this.destinoAnteriorInput());
 
-        if (isNaN(numeroLote) || isNaN(destinoAnterior)) {
-            this.mostrarToast('error', 'Validación', 'Los valores ingresados deben ser numéricos');
+        if (isNaN(numeroLote)) {
+            this.mostrarToast('error', 'Validación', 'El folio debe ser numérico');
             return;
+        }
+
+        let destinoAnterior: number | null = null;
+        if (this.destinoAnteriorInput() !== null &&
+            this.destinoAnteriorInput() !== undefined &&
+            String(this.destinoAnteriorInput()).trim() !== '') {
+            destinoAnterior = parseInt(this.destinoAnteriorInput()!);
+            if (isNaN(destinoAnterior)) {
+                this.mostrarToast('error', 'Validación', 'La tienda debe ser numérica');
+                return;
+            }
         }
 
         this.cargando.set(true);
@@ -130,7 +139,7 @@ export class DetallePalletComponent {
         }
 
         const datos = this.palletsFiltrados;
-        
+
         if (datos.length === 0) {
             this.mostrarToast('error', 'Error', 'No hay datos para exportar');
             return;
@@ -145,11 +154,11 @@ export class DetallePalletComponent {
 
             // Exportar usando la utilidad
             exportarDetallePalletsExcel(
-                datos, 
-                this.numeroLoteInput(), 
-                this.destinoAnteriorInput()
+                datos,
+                this.numeroLoteInput(),
+                this.destinoAnteriorInput() || 'todas'
             );
-            
+
         } catch (error) {
             console.error('Error al exportar:', error);
             this.mostrarToast('error', 'Error', 'Ocurrió un error al exportar los datos');
@@ -188,7 +197,7 @@ export class DetallePalletComponent {
             event.preventDefault();
             document.querySelector<HTMLInputElement>('.search-container input')?.focus();
         }
-        
+
         // Atajo Ctrl + E para exportar
         if ((event.ctrlKey || event.metaKey) && event.key === 'e') {
             event.preventDefault();

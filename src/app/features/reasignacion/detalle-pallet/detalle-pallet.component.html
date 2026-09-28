@@ -29,15 +29,14 @@
         <div class="form-group">
             <label for="numeroLote">Folio:</label>
             <input id="numeroLote" type="number" [ngModel]="numeroLoteInput()"
-                (ngModelChange)="numeroLoteInput.set($event)" class="form-input" placeholder="Ingrese folio"
-                min="1">
+                (ngModelChange)="numeroLoteInput.set($event)" class="form-input" placeholder="Ingrese folio" min="1">
         </div>
 
         <div class="form-group">
-            <label for="destinoAnterior">Tienda:</label>
+            <label for="destinoAnterior">Tienda <span class="optional">(opcional)</span>:</label>
             <input id="destinoAnterior" type="number" [ngModel]="destinoAnteriorInput()"
-                (ngModelChange)="destinoAnteriorInput.set($event)" class="form-input"
-                placeholder="Ingrese Tienda" min="0">
+                (ngModelChange)="destinoAnteriorInput.set($event)" class="form-input" placeholder="Ingrese Tienda"
+                min="0">
         </div>
 
         <div class="form-actions">
@@ -47,7 +46,7 @@
             </app-button>
         </div>
     </div>
-    
+
     @if (haConsultado()) {
     <div class="header-bottom">
         <div class="search-container">
@@ -60,22 +59,15 @@
             <p class="count">
                 {{ palletsFiltrados.length }} registro(s)
             </p>
-            
+
             <div class="export-button-container">
-                <app-button 
-                    [label]="exportando() ? 'Exportando...' : 'Exportar'" 
-                    type="ghost" 
-                    size="sm" 
-                    [disabled]="exportando() || palletsFiltrados.length === 0"
-                    (clicked)="exportarExcel()">
+                <app-button [label]="exportando() ? 'Exportando...' : 'Exportar'" type="ghost" size="sm"
+                    [disabled]="exportando() || palletsFiltrados.length === 0" (clicked)="exportarExcel()">
                 </app-button>
-                
+
                 @if (exportando()) {
-                    <app-loading-spinner 
-                        [visible]="true" 
-                        [compact]="true" 
-                        [showText]="false">
-                    </app-loading-spinner>
+                <app-loading-spinner [visible]="true" [compact]="true" [showText]="false">
+                </app-loading-spinner>
                 }
             </div>
         </div>
@@ -90,6 +82,7 @@
                     <th>Ubicación</th>
                     <th>Cajas en pallet</th>
                     <th>Cajas a reasignar</th>
+                    <th>Tienda</th>
                 </tr>
             </thead>
             <tbody>
@@ -105,6 +98,7 @@
                         {{ p.cajas_pallet }}
                     </td>
                     <td>{{ p.cajas_a_reasignar }}</td>
+                    <td>{{ p.destino_anterior }}</td>
                 </tr>
                 }
 
@@ -129,7 +123,7 @@
             <i class="ti ti-search"></i>
         </div>
         <h3>Ingrese los parámetros de búsqueda</h3>
-        <p>Proporcione el folio y tienda para consultar el detalle de pallets</p>
+        <p>Proporcione el folio y, opcionalmente la tienda para consultar el detalle de pallets</p>
     </div>
     }
 </div>
