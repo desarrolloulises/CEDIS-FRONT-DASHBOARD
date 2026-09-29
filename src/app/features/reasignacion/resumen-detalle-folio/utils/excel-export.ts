@@ -45,6 +45,7 @@ export function exportarDetalleExcel(datos: DetalleReasignacion[], numeroLote: n
         'Fecha': formatearFecha(item.fecha),
         'Folio': item.numero_lote,
         'Caja a Reasignar': item.caja_a_reasignar,
+        'Proveedor': item.clave_proveedor,
         'Número de Trasnferencias': item.numero_de_ordenes,
         'Caja Nueva': item.caja_nueva,
         'Código Transferencia': item.codigo_transferencia,
@@ -53,7 +54,8 @@ export function exportarDetalleExcel(datos: DetalleReasignacion[], numeroLote: n
         'Destino Anterior': item.destino_anterior,
         'Destino Nuevo': item.destino_nuevo,
         'Fecha Reasignación': formatearFechaHora(item.fecha_reasignacion),
-        'Usuario que Reasignó': item.usuario_que_reasigno || '—'
+        'Usuario que Reasignó': item.usuario_que_reasigno,
+        'Pallet': item.pallet
     }));
 
     // Crear la hoja de cálculo
@@ -65,9 +67,10 @@ export function exportarDetalleExcel(datos: DetalleReasignacion[], numeroLote: n
     worksheet['!cols'] = [
         { wch: 12 },  // Fecha
         { wch: 10 },  // Folio
-        { wch: 15 },  // Caja a Reasignar
+        { wch: 25 },  // Caja a Reasignar
+        { wch: 10 },  // Proveedor
         { wch: 15 },  // Número de Órdenes
-        { wch: 15 },  // Caja Nueva
+        { wch: 25 },  // Caja Nueva
         { wch: 18 },  // Código Transferencia
         { wch: 15 },  // Estatus
         { wch: 18 },  // Clave Tienda Origen
@@ -75,6 +78,7 @@ export function exportarDetalleExcel(datos: DetalleReasignacion[], numeroLote: n
         { wch: 12 },  // Destino Nuevo
         { wch: 20 },  // Fecha Reasignación
         { wch: 20 },  // Usuario que Reasignó
+        { wch: 15 },  // Pallet
     ];
 
     // Generar nombre del archivo con número de lote

@@ -10,6 +10,7 @@ export interface ResumenReasignacion {
 export interface DetalleReasignacion {
     fecha: string;
     numero_lote: number;
+    clave_proveedor: number;
     caja_a_reasignar: string;
     numero_de_ordenes: number;
     caja_nueva: string;
@@ -20,6 +21,7 @@ export interface DetalleReasignacion {
     destino_nuevo: number;
     fecha_reasignacion: string | null;
     usuario_que_reasigno: string;
+    pallet: string;
 }
 
 export interface ApiResponse<T> {

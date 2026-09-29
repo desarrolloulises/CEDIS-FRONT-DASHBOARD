@@ -150,6 +150,7 @@
                     <tr>
                         <th>Fecha</th>
                         <th>Caja a reasignar</th>
+                        <th>Proveedor</th>
                         <th>No. Transferencias</th>
                         <th>Caja nueva</th>
                         <th>Transferencia</th>
@@ -159,6 +160,7 @@
                         <th>Destino nuevo</th>
                         <th>Fecha reasignación</th>
                         <th>Usuario que reasignó</th>
+                        <th>Pallet</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -166,6 +168,7 @@
                         <tr>
                             <td>{{ formatearFecha(d.fecha) }}</td>
                             <td>{{ d.caja_a_reasignar }}</td>
+                            <td>{{ d.clave_proveedor }}</td>
                             <td>{{ d.numero_de_ordenes }}</td>
                             <td>{{ d.caja_nueva }}</td>
                             <td>{{ d.codigo_transferencia }}</td>
@@ -175,6 +178,7 @@
                             <td>{{ d.destino_nuevo }}</td>
                             <td>{{ formatearFechaHora(d.fecha_reasignacion) }}</td>
                             <td>{{ d.usuario_que_reasigno || '—' }}</td>
+                            <td>{{ d.pallet || '—' }}</td>
                         </tr>
                     }
                     
