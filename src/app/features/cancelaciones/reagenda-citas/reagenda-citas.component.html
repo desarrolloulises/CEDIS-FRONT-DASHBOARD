@@ -1,0 +1,111 @@
+<!-- Spinner global -->
+<app-loading-spinner [visible]="cargando()" [overlay]="true" texto="Procesando...">
+</app-loading-spinner>
+
+<!-- Toast -->
+<app-toast *ngIf="toastVisible()" [tipo]="toastTipo()" [titulo]="toastTitulo()" [mensaje]="toastMensaje()"
+    (cerrar)="toastVisible.set(false)">
+</app-toast>
+
+<!-- Input file oculto -->
+<input #fileInput type="file" class="file-input-oculto"
+    accept=".xlsx,.xls,.csv" (change)="onArchivoSeleccionado($event)">
+
+<div class="wrapper">
+    <!-- Header -->
+    <div class="header">
+        <div class="header-top">
+            <div class="header-brand">
+                <h1 class="title">Reagenda masiva de citas</h1>
+                <p class="subtitle">Importa un archivo con ASN y fechas para reagendar</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de acciones -->
+    <div class="actions-bar">
+        <div class="actions-left">
+            <app-button label="Importar Excel" type="ghost" size="sm"
+                (clicked)="abrirSelectorArchivo()">
+            </app-button>
+
+            @if (nombreArchivo()) {
+            <span class="archivo-nombre" [title]="nombreArchivo()">
+                {{ nombreArchivo() }}
+            </span>
+            }
+        </div>
+
+        <div class="actions-right">
+            @if (haConsultado()) {
+            <span class="contador-validas">
+                {{ totalValidas() }} válida(s)
+            </span>
+            }
+
+            <app-button label="Limpiar" type="ghost" size="sm"
+                [disabled]="!puedeConsultar()" (clicked)="limpiar()">
+            </app-button>
+
+            <app-button label="Consultar" type="primary" size="sm"
+                [disabled]="!puedeConsultar()" (clicked)="consultar()">
+            </app-button>
+
+            <app-button label="Confirmar" type="primary" size="sm"
+                [disabled]="!puedeConfirmarGlobal()" (clicked)="confirmarGlobal()">
+            </app-button>
+        </div>
+    </div>
+
+    <!-- Tabla horizontal -->
+    @if (filasTabla().length > 0) {
+    <div class="table-wrap">
+        <table class="table table-horizontal">
+            <thead>
+                <tr>
+                    <th scope="col">ASN</th>
+                    <th scope="col">Fecha solicitada</th>
+
+                    @if (haConsultado()) {
+                    @for (col of columnas(); track col.nombre) {
+                    @if (col.nombre !== 'ASN' && col.nombre !== 'Fecha Solicitada') {
+                    <th scope="col">{{ col.nombre }}</th>
+                    }
+                    }
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @for (fila of filasTabla(); track fila.cita.folio) {
+                <tr [class.fila-confirmada]="fila.confirmada"
+                    [class.fila-invalida]="haConsultado() && fila.estatus && !fila.esValida">
+                    <td>{{ fila.cita.folio }}</td>
+                    <td class="col-fecha">{{ fechaCitaLocal(fila.cita) }}</td>
+
+                    @if (haConsultado()) {
+                    @for (col of columnas(); track col.nombre) {
+                    @if (col.nombre !== 'ASN' && col.nombre !== 'Fecha Solicitada') {
+                    <td [attr.data-tipo]="col.tipo">{{ fila.valores[col.nombre] || '—' }}</td>
+                    }
+                    }
+                    }
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <p class="shortcuts-hint">
+        <span><kbd>F2</kbd> Importar Excel</span>
+    </p>
+    } @else {
+    <div class="initial-message">
+        <div class="message-icon"><i class="ti ti-file-spreadsheet"></i></div>
+        <h3>Importa un archivo Excel</h3>
+        <p>El archivo debe tener en la primera columna el ASN de la cita y en la segunda la fecha deseada para reagendar.</p>
+        <app-button label="Importar Excel" type="primary" size="sm"
+            (clicked)="abrirSelectorArchivo()">
+        </app-button>
+    </div>
+    }
+</div>

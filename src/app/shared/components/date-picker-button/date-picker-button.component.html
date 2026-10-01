@@ -1,0 +1,85 @@
+<!-- 
+
+  EJEMPLO DE USO:
+
+  ( 1.- permite seleccionar cualquier fecha )
+  <app-date-picker-button
+    [(ngModel)]="fecha">
+  </app-date-picker-button>  
+
+  ( 2.- Bloquea finse de manana )
+  <app-date-picker-button
+    [config]="{ bloquearFinesDeSemana: true }"
+    [(ngModel)]="fecha">
+  </app-date-picker-button>
+  
+  ( 3.- Bloquea lunes y miercoles )
+  <app-date-picker-button
+    [config]="{ diasBloqueados: [1, 3] }"
+    [(ngModel)]="fecha">
+  </app-date-picker-button>   
+ 
+  ( 3.- Solo dias habiles especificados desde hoy )
+  <app-date-picker-button
+    [config]="{ diasPermitidosDesdeHoy: 5, contarSoloDiasValidos: false }"
+    [(ngModel)]="fecha">
+  </app-date-picker-button>   
+
+  ( 4.-Bloquea fines de semana y a demas solo permite 3 dias habiles desde hoy )
+  <app-date-picker-button
+    [config]="{
+      bloquearFinesDeSemana: true,
+      diasPermitidosDesdeHoy: 3,
+      contarSoloDiasValidos: true
+    }"
+    [(ngModel)]="fecha">
+  </app-date-picker-button>
+
+  ( 5.- Agregar un filtro propio adicional )
+  <app-date-picker-button
+    [config]="{ bloquearFinesDeSemana: true, diasPermitidosDesdeHoy: 10 }"
+    [dateFilter]="miFiltroPersonalizado"
+    [(ngModel)]="fecha">
+  </app-date-picker-button>   
+  
+-->
+
+<div class="datepicker-wrapper" [class.inactivo]="disabled">
+  <button
+    type="button"
+    class="icono-calendario"
+    [attr.aria-label]="placeholder"
+    [disabled]="disabled"
+    (click)="abrirCalendario()">
+
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+      viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      class="icono-svg">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+
+    <span
+      class="fecha-elegida"
+      [class.fecha-elegida--placeholder]="!value">
+      {{ textoFecha }}
+    </span>
+  </button>
+
+  <!-- Input ancla invisible que activa el mat-datepicker -->
+  <input
+    matInput
+    class="datepicker-anchor"
+    [matDatepicker]="picker"
+    [matDatepickerFilter]="filtroInterno"
+    [ngModel]="value"
+    (ngModelChange)="onFechaSeleccionada($event)"
+    readonly
+    tabindex="-1"
+    aria-hidden="true">
+
+  <mat-datepicker #picker></mat-datepicker>
+</div>

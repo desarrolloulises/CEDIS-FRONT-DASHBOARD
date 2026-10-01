@@ -1,0 +1,137 @@
+:host {
+  --etc-primary: var(--secundario, #2563eb);
+  --etc-primary-hover: var(--secundario-hover, #1d4ed8);
+  --etc-bg: #eff6ff;
+  --etc-bg-hover: #dbeafe;
+  --etc-border: #bfdbfe;
+  --etc-border-hover: #93c5fd;
+  --etc-radius: 6px;
+  --etc-height: 36px;
+
+  display: inline-block;
+  max-width: 100%;
+}
+
+/* ── Wrapper ───────────────────────────────────────────── */
+.datepicker-wrapper {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+}
+
+.datepicker-wrapper.inactivo {
+  opacity: 0.45;
+  pointer-events: none;
+  filter: grayscale(0.4);
+}
+
+/* ── Botón principal ───────────────────────────────────── */
+.icono-calendario {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--etc-height);
+  padding: 0 12px;
+  background: var(--etc-bg);
+  color: var(--etc-primary);
+  border: 1px solid var(--etc-border);
+  border-radius: var(--etc-radius);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: background 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.icono-calendario:hover:not(:disabled) {
+  background: var(--etc-bg-hover);
+  border-color: var(--etc-border-hover);
+}
+
+.icono-calendario:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+
+.icono-calendario:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ── Icono SVG ─────────────────────────────────────────── */
+.icono-calendario svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+/* ── Texto de la fecha ─────────────────────────────────── */
+.fecha-elegida {
+  color: var(--etc-primary-hover);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0; /* permite elipsis dentro de flex */
+}
+
+.fecha-elegida--placeholder {
+  color: var(--etc-primary);
+}
+
+/* ── Input ancla invisible ─────────────────────────────── */
+.datepicker-anchor {
+  position: absolute;
+  width: 0;
+  height: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────────────────
+   Responsive
+   ───────────────────────────────────────────────────────── */
+
+/* Móvil pequeño (≤360px): compacta y muestra solo icono + fecha corta */
+@media (max-width: 360px) {
+  :host { --etc-height: 32px; }
+
+  .icono-calendario {
+    padding: 0 8px;
+    gap: 4px;
+    font-size: 0.72rem;
+  }
+
+  .icono-calendario svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Pantallas táctiles: evita hover pegado */
+@media (hover: none) {
+  .icono-calendario:hover {
+    background: var(--etc-bg);
+    border-color: var(--etc-border);
+  }
+  .icono-calendario:active:not(:disabled) {
+    background: var(--etc-bg-hover);
+    border-color: var(--etc-border-hover);
+  }
+}
+
+/* Modo oscuro opcional (basado en preferencia del sistema) */
+@media (prefers-color-scheme: dark) {
+  :host {
+    --etc-bg: #1e3a8a22;
+    --etc-bg-hover: #1e3a8a44;
+    --etc-border: #1e40af;
+    --etc-border-hover: #2563eb;
+  }
+}

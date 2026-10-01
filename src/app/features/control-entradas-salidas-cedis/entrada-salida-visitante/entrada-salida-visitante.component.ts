@@ -15,7 +15,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { url } from '../../../variables';
 import { DatosService } from '../../../service/servicio.service';
-import { CurpInputComponent } from "../../../shared/curp-input/curp-input.component";
+import { CurpInputComponent } from "../../../shared/components/curp-input/curp-input.component";
 
 //////////////////////////////////////////////
 ///         MODELOS 

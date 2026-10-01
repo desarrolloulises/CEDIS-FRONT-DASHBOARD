@@ -143,6 +143,14 @@ export const routes: Routes = [
         loadComponent: () => import('./features/reasignacion/detalle-pallet/detalle-pallet.component').then(m => m.DetallePalletComponent)
       },
       {
+        path: 'cancelaciones/reagendar-cita',
+        loadComponent: () => import('./features/cancelaciones/reagenda-cita/reagenda-cita.component').then(m => m.ReagendaCitaComponent)
+      },
+      {
+        path: 'cancelaciones/reagendar-citas',
+        loadComponent: () => import('./features/cancelaciones/reagenda-citas/reagenda-citas.component').then(m => m.ReagendaCitasComponent)
+      },
+      {
         path: 'ver-reporte/:id',
         component: ReportesComponent
         // ❌ QUITA EL GUARD AQUÍ. Si esta ruta no tiene guard, 

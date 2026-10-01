@@ -1,0 +1,319 @@
+/* ═══════════════════════════════════════════════════════════════
+ *  REAGENDA CITA — estilos del componente
+ * ═══════════════════════════════════════════════════════════════ */
+
+:host {
+  --etc-surface: #ffffff;
+  --etc-border: #e2e6ea;
+
+  --etc-text: #1e2533;
+  --etc-text-muted: #6b7280;
+
+  --etc-primary: #2563eb;
+  --etc-primary-hover: #1d4ed8;
+  --etc-danger: #ef4444;
+
+  --etc-radius-lg: 10px;
+  --etc-shadow-sm: 0 1px 3px rgba(0, 0, 0, .08);
+
+  --etc-font: 'Segoe UI', system-ui, sans-serif;
+  --etc-font-mono: 'Consolas', monospace;
+
+  --bg-body: #f8fafc;
+  --space-lg: 24px;
+  --space-xs: 8px;
+  --space-md: 16px;
+
+  font-family: var(--etc-font);
+  color: var(--etc-text);
+}
+
+.wrapper {
+  padding: var(--space-lg);
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ *  HEADER
+ * ═══════════════════════════════════════════════════════════════ */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.header-brand { line-height: 1.2; }
+
+.title {
+  margin: 0 0 2px 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e2533;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: .8rem;
+  color: var(--etc-text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ *  FORMULARIO DE BÚSQUEDA
+ * ═══════════════════════════════════════════════════════════════ */
+.search-form {
+  display: flex;
+  gap: 16px;
+  align-items: end;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--bg-body);
+  border: 1px solid var(--etc-border);
+  border-radius: var(--etc-radius-lg);
+  flex-wrap: wrap;
+  box-shadow: var(--etc-shadow-sm);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.form-group label {
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--etc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.form-input {
+  padding: 8px 12px;
+  border: 1px solid var(--etc-border);
+  border-radius: 6px;
+  font-size: .82rem;
+  font-family: var(--etc-font);
+  color: var(--etc-text);
+  background: white;
+  transition: all .15s ease;
+  width: 100%;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--etc-primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.form-input:hover { border-color: #cbd5e1; }
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  align-items: end;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ *  BARRA "CONFIRMAR REAGENDA"
+ * ═══════════════════════════════════════════════════════════════ */
+.confirmar-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.sin-dias {
+  margin: 0;
+  padding: 8px 12px;
+  border-left: 4px solid var(--etc-danger);
+  border-radius: 6px;
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: .82rem;
+  flex: 1;
+  min-width: 220px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ *  TABLA VERTICAL
+ * ═══════════════════════════════════════════════════════════════ */
+.table-wrap {
+  background: var(--etc-surface);
+  border: 1px solid var(--etc-border);
+  border-radius: var(--etc-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--etc-shadow-sm);
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 720px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+}
+
+.table-vertical tbody tr {
+  border-bottom: 1px solid #eef2f7;
+}
+
+.table-vertical tbody tr:last-child { border-bottom: none; }
+.table-vertical tbody tr:nth-child(even) { background: #fafbfd; }
+.table-vertical tbody tr:nth-child(odd)  { background: #ffffff; }
+
+.table-vertical tbody th[scope="row"] {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--etc-text-muted);
+  background: #f8fafc;
+  border-right: 1px solid var(--etc-border);
+  white-space: nowrap;
+  vertical-align: top;
+  width: 40%;
+}
+
+.table-vertical tbody td {
+  padding: 10px 14px;
+  vertical-align: top;
+  font-size: .82rem;
+  color: var(--etc-text);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ *  MENSAJES
+ * ═══════════════════════════════════════════════════════════════ */
+.initial-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: var(--bg-body);
+  border: 1px dashed var(--etc-border);
+  border-radius: var(--etc-radius-lg);
+  min-height: 300px;
+  max-width: 720px;
+}
+
+.message-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff6ff;
+  border-radius: 50%;
+  margin-bottom: 16px;
+}
+
+.message-icon i {
+  font-size: 2rem;
+  color: var(--etc-primary);
+}
+
+.initial-message h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--etc-text);
+}
+
+.initial-message p {
+  margin: 0;
+  font-size: .85rem;
+  color: var(--etc-text-muted);
+  max-width: 400px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ *  ATAJOS
+ * ═══════════════════════════════════════════════════════════════ */
+.shortcuts-hint {
+  margin: 10px 0 0;
+  display: flex;
+  gap: 16px;
+  font-size: .72rem;
+  color: var(--etc-text-muted);
+}
+
+.shortcuts-hint kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  border: 1px solid var(--etc-border);
+  border-radius: 3px;
+  background: #f8fafc;
+  font-family: var(--etc-font-mono);
+  font-size: .7rem;
+  color: var(--etc-text-muted);
+  margin-right: 3px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ *  RESPONSIVE
+ * ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .wrapper { padding: 12px; }
+
+  .header-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .search-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-group { width: 100%; }
+
+  app-date-picker-button {
+    display: block;
+    width: 100%;
+  }
+
+  .form-actions {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .form-actions > * { flex: 1; }
+
+  .confirmar-bar {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .confirmar-bar .sin-dias { order: 2; }
+  .confirmar-bar app-button { order: 1; }
+
+  .table-vertical tbody th[scope="row"] { width: 50%; }
+
+  .shortcuts-hint { display: none; }
+}
