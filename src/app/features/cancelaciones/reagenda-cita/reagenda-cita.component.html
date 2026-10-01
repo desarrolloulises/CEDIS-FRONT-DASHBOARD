@@ -1,0 +1,92 @@
+<!-- Spinner global -->
+<app-loading-spinner [visible]="cargando()" [overlay]="true" texto="Procesando...">
+</app-loading-spinner>
+
+<!-- Toast -->
+<app-toast *ngIf="toastVisible()" [tipo]="toastTipo()" [titulo]="toastTitulo()" [mensaje]="toastMensaje()"
+    (cerrar)="toastVisible.set(false)">
+</app-toast>
+
+<div class="wrapper">
+    <div class="header">
+        <div class="header-top">
+            <div class="header-brand">
+                <h1 class="title">Reagenda de cita</h1>
+                <p class="subtitle">Consulta y reagenda una cita por ASN</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de búsqueda -->
+    <div class="search-form">
+        <div class="form-group">
+            <label for="asn">ASN:</label>
+            <input #asnInputRef id="asn" type="number" [ngModel]="asnInput()"
+                (ngModelChange)="asnInput.set($event)" class="form-input"
+                placeholder="Ingrese ASN" min="1">
+        </div>
+
+        <!-- Calendario reutilizable -->
+        <app-date-picker-button
+            [ngModel]="fechaSeleccionada()"
+            (ngModelChange)="fechaSeleccionada.set($event)"
+            [disabled]="!fila() || diasPermitidos() === 0"
+            [config]="configCalendario()"
+            [dateFilter]="filtrarDias"
+            placeholder="Seleccionar fecha"
+            formato="medium">
+        </app-date-picker-button>
+
+        <div class="form-actions">
+            <app-button label="Cancelar" type="ghost" size="sm" (clicked)="limpiarFormulario()">
+            </app-button>
+            <app-button label="Consultar" type="primary" size="sm"
+                [disabled]="!puedeConsultar()" (clicked)="consultar()">
+            </app-button>
+        </div>
+    </div>
+
+    <!-- Confirmar reagenda (solo si hay cita) -->
+    @if (fila()) {
+    <div class="confirmar-bar">
+        @if (diasPermitidos() === 0) {
+        <p class="sin-dias">No hay días hábiles disponibles para reagendar esta cita.</p>
+        }
+        <app-button label="Confirmar" type="primary" size="sm"
+            [disabled]="!fechaSeleccionada()" (clicked)="confirmarReagenda()">
+        </app-button>
+    </div>
+    }
+
+    <!-- Tabla vertical -->
+    @if (haConsultado() && fila()) {
+    <div class="table-wrap">
+        <table class="table table-vertical">
+            <tbody>
+                @for (col of columnasVisibles(); track col.nombre) {
+                <tr>
+                    <th scope="row">{{ col.nombre }}</th>
+                    <td [attr.data-tipo]="col.tipo">{{ col.valor }}</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <p class="shortcuts-hint">
+        <span><kbd>F2</kbd> Buscar</span>
+    </p>
+    } @else if (haConsultado() && !fila()) {
+    <div class="initial-message">
+        <div class="message-icon"><i class="ti ti-search"></i></div>
+        <h3>Sin resultados</h3>
+        <p>No se encontró ninguna cita con el ASN proporcionado.</p>
+    </div>
+    } @else {
+    <div class="initial-message">
+        <div class="message-icon"><i class="ti ti-search"></i></div>
+        <h3>Ingrese el ASN de la cita</h3>
+        <p>Proporcione un ASN numérico para consultar y reagendar la cita.</p>
+    </div>
+    }
+</div>

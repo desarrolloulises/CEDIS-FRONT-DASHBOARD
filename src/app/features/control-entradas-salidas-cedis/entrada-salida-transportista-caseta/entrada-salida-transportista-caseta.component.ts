@@ -12,7 +12,7 @@ import { SelectComponent, ISelectOption } from '../../../shared/components/selec
 import { InputComponent } from '../../../shared/components/input/input.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
-import { CurpInputComponent } from '../../../shared/curp-input/curp-input.component';
+import { CurpInputComponent } from '../../../shared/components/curp-input/curp-input.component';
 
 import { TransportistaService } from './services/entrada-salida-transportista-caseta.service';
 import { DatosService } from '../../../service/servicio.service';

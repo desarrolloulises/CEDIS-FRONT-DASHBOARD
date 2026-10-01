@@ -65,7 +65,8 @@ export class SidebarComponent {
     43: 'ti-inbox',
     44: 'ti-file-report',
     50: 'ti ti-clipboard-check',
-    60: 'ti ti-report-search'
+    60: 'ti ti-report-search',
+    70: 'tu ti-calendar-week'
   };
 
   public readonly MAPEO_RUTAS_HIJOS: Record<string, string> = {
@@ -108,7 +109,9 @@ export class SidebarComponent {
     '44-1': 'ver-reporte/44-1',
     '50-1': 'registro-arribo-asn',
     '60-1': 'reasignacion/resumen-detalle-por-folio',
-    '60-2': 'reasignacion/detalle-por-pallet'
+    '60-2': 'reasignacion/detalle-por-pallet',
+    '70-1': 'cancelaciones/reagendar-cita',
+    '70-2': 'cancelaciones/reagendar-citas'
   };
 
   obtenerSubmenus(modulo: any) {
