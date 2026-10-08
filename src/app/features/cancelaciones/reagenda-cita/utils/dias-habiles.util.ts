@@ -1,5 +1,3 @@
-// utils/dias-habiles.util.ts
-
 /**
  * A partir de una fecha base (hoy) y un número N de días hábiles,
  * devuelve un arreglo con las fechas resultantes, saltando

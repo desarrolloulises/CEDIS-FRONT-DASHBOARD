@@ -7,105 +7,137 @@
     (cerrar)="toastVisible.set(false)">
 </app-toast>
 
-<!-- Input file oculto -->
-<input #fileInput type="file" class="file-input-oculto"
-    accept=".xlsx,.xls,.csv" (change)="onArchivoSeleccionado($event)">
-
 <div class="wrapper">
-    <!-- Header -->
     <div class="header">
         <div class="header-top">
             <div class="header-brand">
-                <h1 class="title">Reagenda masiva de citas</h1>
-                <p class="subtitle">Importa un archivo con ASN y fechas para reagendar</p>
+                <h1 class="title">Reagenda de citas</h1>
+                <p class="subtitle">Genera o consulta un folio para gestionar cambios de fecha</p>
             </div>
-        </div>
-    </div>
-
-    <!-- Barra de acciones -->
-    <div class="actions-bar">
-        <div class="actions-left">
-            <app-button label="Importar Excel" type="ghost" size="sm"
-                (clicked)="abrirSelectorArchivo()">
-            </app-button>
 
             @if (nombreArchivo()) {
-            <span class="archivo-nombre" [title]="nombreArchivo()">
-                {{ nombreArchivo() }}
-            </span>
+            <div class="file-chip" [title]="nombreArchivo()">
+                <i class="ti ti-file-spreadsheet"></i>
+                <span class="file-chip-name">{{ nombreArchivo() }}</span>
+            </div>
             }
         </div>
+    </div>
 
-        <div class="actions-right">
-            @if (haConsultado()) {
-            <span class="contador-validas">
-                {{ totalValidas() }} válida(s)
-            </span>
+    <!-- Formulario folio -->
+    <div class="search-form">
+        <div class="form-group">
+            <label for="folioInput">Folio:</label>
+            <input id="folioInput" type="number" [ngModel]="folio()"
+                (ngModelChange)="onFolioInputChange($event)" class="form-input"
+                placeholder="Genera uno o ingrésalo manualmente" [disabled]="folioBloqueado()" min="1">
+        </div>
+
+        <div class="form-actions">
+            <!-- Generar folio: solo si no hay folio aún -->
+            @if (folio() === null) {
+            <app-button label="Generar nuevo folio" type="primary" size="sm"
+                [disabled]="generandoFolio()" (clicked)="generarFolio()">
+            </app-button>
             }
 
-            <app-button label="Limpiar" type="ghost" size="sm"
-                [disabled]="!puedeConsultar()" (clicked)="limpiar()">
+            <!-- Consultar: solo si el folio fue ingresado manualmente -->
+            @if (folio() !== null && !folioBloqueado()) {
+            <app-button label="Consultar datos" type="primary" size="sm" [disabled]="cargando()"
+                (clicked)="consultarFolio()">
             </app-button>
+            }
 
-            <app-button label="Consultar" type="primary" size="sm"
-                [disabled]="!puedeConsultar()" (clicked)="consultar()">
+            <!-- Importar: cuando hay folio y estatusEnc permite -->
+            @if (folio() !== null && puedeImportar) {
+            <app-button [label]="importando() ? 'Importando...' : 'Importar Excel'" type="primary" size="sm"
+                [disabled]="importando()" (clicked)="abrirSelectorArchivo()">
             </app-button>
+            }
 
-            <app-button label="Confirmar" type="primary" size="sm"
-                [disabled]="!puedeConfirmarGlobal()" (clicked)="confirmarGlobal()">
+            <!-- Validar: cuando estatusEnc es 0 y hay datos -->
+            @if (folio() !== null && puedeEditar && filas().length > 0) {
+            <app-button label="Validar solicitudes" type="primary" size="sm" [disabled]="cargando()"
+                (clicked)="validarSolicitudes()">
+            </app-button>
+            }
+
+            <!-- Confirmar: cuando estatusEnc es 0 y ya hay validación previa -->
+            @if (folio() !== null && puedeEditar && filas().length > 0 && filas()[0].EstatusValidacion > 0) {
+            <app-button label="Confirmar y aplicar" type="primary" size="sm" [disabled]="cargando()"
+                (clicked)="confirmarCambios()">
+            </app-button>
+            }
+
+            <app-button label="Limpiar" type="ghost" size="sm" (clicked)="limpiar()">
             </app-button>
         </div>
     </div>
 
-    <!-- Tabla horizontal -->
-    @if (filasTabla().length > 0) {
+    <!-- Tabla de resultados -->
+    @if (filas().length > 0) {
+    <div class="header-bottom">
+        <div class="search-container">
+            <app-input placeholder="Filtrar en cualquier columna..." size="sm" [value]="filtro()"
+                (valueChange)="filtro.set($event)">
+            </app-input>
+        </div>
+        <div class="header-utils">
+            <p class="count">{{ filasFiltradas.length }} registro(s)</p>
+
+            @if (puedeExportar) {
+            <div class="export-button-container">
+                <app-button [label]="exportando() ? 'Exportando...' : 'Exportar'" type="ghost" size="sm"
+                    [disabled]="exportando()" (clicked)="exportarExcel()">
+                </app-button>
+                @if (exportando()) {
+                <app-loading-spinner [visible]="true" [compact]="true" [showText]="false"></app-loading-spinner>
+                }
+            </div>
+            }
+        </div>
+    </div>
+
     <div class="table-wrap">
-        <table class="table table-horizontal">
+        <table class="table">
             <thead>
                 <tr>
-                    <th scope="col">ASN</th>
-                    <th scope="col">Fecha solicitada</th>
-
-                    @if (haConsultado()) {
-                    @for (col of columnas(); track col.nombre) {
-                    @if (col.nombre !== 'ASN' && col.nombre !== 'Fecha Solicitada') {
-                    <th scope="col">{{ col.nombre }}</th>
-                    }
-                    }
-                    }
+                    <th>ASN</th>
+                    <th>Fecha Cita</th>
+                    <th>Cita</th>
+                    <th>Fecha Subida</th>
+                    <th>Observaciones</th>
+                    <th>Estatus Validación</th>
                 </tr>
             </thead>
             <tbody>
-                @for (fila of filasTabla(); track fila.cita.folio) {
-                <tr [class.fila-confirmada]="fila.confirmada"
-                    [class.fila-invalida]="haConsultado() && fila.estatus && !fila.esValida">
-                    <td>{{ fila.cita.folio }}</td>
-                    <td class="col-fecha">{{ fechaCitaLocal(fila.cita) }}</td>
-
-                    @if (haConsultado()) {
-                    @for (col of columnas(); track col.nombre) {
-                    @if (col.nombre !== 'ASN' && col.nombre !== 'Fecha Solicitada') {
-                    <td [attr.data-tipo]="col.tipo">{{ fila.valores[col.nombre] || '—' }}</td>
-                    }
-                    }
-                    }
+                @for (fila of filasFiltradas; track $index) {
+                <tr>
+                    <td>{{ fila.ASN }}</td>
+                    <td>{{ fila.FechaCita }}</td>
+                    <td>{{ fila.Cita }}</td>
+                    <td>{{ fila.FechaSubida }}</td>
+                    <td>{{ fila.Observaciones || '—' }}</td>
+                    <td>{{ textoEstatus(fila.EstatusValidacion) || '—' }}</td>
                 </tr>
                 }
             </tbody>
         </table>
     </div>
-
-    <p class="shortcuts-hint">
-        <span><kbd>F2</kbd> Importar Excel</span>
-    </p>
     } @else {
     <div class="initial-message">
-        <div class="message-icon"><i class="ti ti-file-spreadsheet"></i></div>
-        <h3>Importa un archivo Excel</h3>
-        <p>El archivo debe tener en la primera columna el ASN de la cita y en la segunda la fecha deseada para reagendar.</p>
-        <app-button label="Importar Excel" type="primary" size="sm"
-            (clicked)="abrirSelectorArchivo()">
-        </app-button>
+        <div class="message-icon"><i class="ti ti-calendar-repeat"></i></div>
+        <h3>Sin datos para mostrar</h3>
+        <p>
+            Genera un folio nuevo o ingresa uno existente para comenzar.
+            Una vez tengas folio podrás importar el Excel con ASN y fecha solicitada.
+        </p>
     </div>
     }
+
+    <p class="shortcuts-hint">
+        <span><kbd>F2</kbd> Enfocar folio / Importar</span>
+        <span><kbd>Enter</kbd> Consultar folio</span>
+        <span><kbd>Ctrl</kbd> + <kbd>E</kbd> Exportar</span>
+    </p>
 </div>

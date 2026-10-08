@@ -21,27 +21,21 @@
     <div class="search-form">
         <div class="form-group">
             <label for="asn">ASN:</label>
-            <input #asnInputRef id="asn" type="number" [ngModel]="asnInput()"
-                (ngModelChange)="asnInput.set($event)" class="form-input"
-                placeholder="Ingrese ASN" min="1">
+            <input #asnInputRef id="asn" type="number" [ngModel]="asnInput()" (ngModelChange)="asnInput.set($event)"
+                class="form-input" placeholder="Ingrese ASN" min="1">
         </div>
 
         <!-- Calendario reutilizable -->
-        <app-date-picker-button
-            [ngModel]="fechaSeleccionada()"
-            (ngModelChange)="fechaSeleccionada.set($event)"
-            [disabled]="!fila() || diasPermitidos() === 0"
-            [config]="configCalendario()"
-            [dateFilter]="filtrarDias"
-            placeholder="Seleccionar fecha"
-            formato="medium">
+        <app-date-picker-button [ngModel]="fechaSeleccionada()" (ngModelChange)="fechaSeleccionada.set($event)"
+            [disabled]="!fila() || diasPermitidos() === 0" [config]="configCalendario()" [dateFilter]="filtrarDias"
+            placeholder="Seleccionar fecha" formato="medium">
         </app-date-picker-button>
 
         <div class="form-actions">
             <app-button label="Cancelar" type="ghost" size="sm" (clicked)="limpiarFormulario()">
             </app-button>
-            <app-button label="Consultar" type="primary" size="sm"
-                [disabled]="!puedeConsultar()" (clicked)="consultar()">
+            <app-button label="Consultar" type="primary" size="sm" [disabled]="!puedeConsultar()"
+                (clicked)="consultar()">
             </app-button>
         </div>
     </div>
@@ -52,8 +46,8 @@
         @if (diasPermitidos() === 0) {
         <p class="sin-dias">No hay días hábiles disponibles para reagendar esta cita.</p>
         }
-        <app-button label="Confirmar" type="primary" size="sm"
-            [disabled]="!fechaSeleccionada()" (clicked)="confirmarReagenda()">
+        <app-button label="Confirmar" type="primary" size="sm" [disabled]="!fechaSeleccionada()"
+            (clicked)="confirmarReagenda()">
         </app-button>
     </div>
     }
@@ -73,9 +67,6 @@
         </table>
     </div>
 
-    <p class="shortcuts-hint">
-        <span><kbd>F2</kbd> Buscar</span>
-    </p>
     } @else if (haConsultado() && !fila()) {
     <div class="initial-message">
         <div class="message-icon"><i class="ti ti-search"></i></div>
@@ -89,4 +80,8 @@
         <p>Proporcione un ASN numérico para consultar y reagendar la cita.</p>
     </div>
     }
+    <p class="shortcuts-hint">
+        <span><kbd>F2</kbd> Buscar</span>
+        <span><kbd>Enter</kbd> Enviar</span>
+    </p>
 </div>

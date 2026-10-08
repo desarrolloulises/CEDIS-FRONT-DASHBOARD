@@ -40,8 +40,15 @@ export interface FilaNormalizada {
 
 type ToastTipo = 'success' | 'error';
 
-/** Índices fijos según el contrato del backend */
-const COLUMNAS_IGNORADAS = 2; // err_id, err_msg
+/**
+ * Índices fijos según el contrato del backend:
+ *   0 → err_id       (oculta)
+ *   1 → err_msg      (oculta)
+ *   2 → diasCambio   (oculta en tabla, pero se usa para el calendario)
+ *   3..n → columnas visibles
+ */
+const COLUMNAS_IGNORADAS = 3;   // err_id, err_msg, diasCambio
+const INDICE_DIAS_CAMBIO = 2;   // diasCambio siempre en 3ra posición
 
 // ─────────────────────────────────────────────────────────────────
 // Componente
@@ -103,8 +110,8 @@ export class ReagendaCitaComponent implements OnInit {
   });
 
   /**
-   * Columnas "reales" (sin las primeras 2 que se ignoran).
-   * La última es la de días.
+   * Columnas "reales" que se muestran en la tabla.
+   * Se descartan las primeras 3 (err_id, err_msg, diasCambio).
    */
   readonly columnasReales = computed<ApiColumna[]>(() => {
     const cols = this.columnas();
@@ -112,14 +119,16 @@ export class ReagendaCitaComponent implements OnInit {
     return cols.slice(COLUMNAS_IGNORADAS);
   });
 
-  /** Días permitidos = valor de la ÚLTIMA columna de la fila */
+  /**
+   * Días permitidos = valor de la columna `diasCambio` (índice fijo 2).
+   */
   readonly diasPermitidos = computed<number>(() => {
     const f = this.fila();
     const cols = this.columnas();
-    if (!f || cols.length === 0) return 0;
+    if (!f || cols.length <= INDICE_DIAS_CAMBIO) return 0;
 
-    const ultima = cols[cols.length - 1];
-    const valor = f[ultima.nombre];
+    const colDias = cols[INDICE_DIAS_CAMBIO];
+    const valor = f[colDias.nombre];
     const n = typeof valor === 'number' ? valor : Number(valor);
     return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
   });
@@ -140,10 +149,8 @@ export class ReagendaCitaComponent implements OnInit {
   // ─────────────────────────────────────────────────────────────
   // Ciclo de vida
   // ─────────────────────────────────────────────────────────────
-    constructor(
-      public datosService: DatosService,
-    ) { }
-  
+  constructor(public datosService: DatosService) {}
+
   ngOnInit(): void {
     queueMicrotask(() => this.asnInputRef.nativeElement.focus());
   }
@@ -202,65 +209,67 @@ export class ReagendaCitaComponent implements OnInit {
     this.cargando.set(true);
     this.fechaSeleccionada.set(null);
 
-    this.service.validarAsn({ asn, usuario: this.datosService.usuarioSignal() }).subscribe({
-      next: (resp) => {
-        this.haConsultado.set(true);
-        this.cargando.set(false);
+    this.service
+      .validarAsn({ asn, usuario: this.datosService.usuarioSignal() })
+      .subscribe({
+        next: (resp) => {
+          this.haConsultado.set(true);
+          this.cargando.set(false);
 
-        if (!resp.success || !resp.data) {
+          if (!resp.success || !resp.data) {
+            this.fila.set(null);
+            this.columnas.set([]);
+            this.mostrarToast(
+              'error',
+              'Error',
+              resp.error || 'Ocurrió un error inesperado.'
+            );
+            return;
+          }
+
+          const { columnas, filas } = resp.data;
+
+          if (!filas || filas.length === 0) {
+            this.fila.set(null);
+            this.columnas.set([]);
+            this.mostrarToast(
+              'error',
+              'Sin resultados',
+              'No se encontró ninguna cita con ese ASN.'
+            );
+            return;
+          }
+
+          this.columnas.set(columnas);
+          this.fila.set(filas[0]);
+
+          const dias = this.diasPermitidos();
+          if (dias === 0) {
+            this.mostrarToast(
+              'error',
+              'Sin días disponibles',
+              'La cita no tiene días hábiles configurados para reagendar.'
+            );
+          } else {
+            // this.mostrarToast(
+            //   'success',
+            //   'Cita encontrada',
+            //   `Puede reagendar dentro de los próximos ${dias} día(s) hábil(es).`
+            // );
+          }
+        },
+        error: () => {
+          this.cargando.set(false);
+          this.haConsultado.set(true);
           this.fila.set(null);
           this.columnas.set([]);
           this.mostrarToast(
             'error',
-            'No se pudo consultar',
-            resp.error || 'Ocurrió un error inesperado.'
+            'Error inesperado',
+            'No fue posible conectar con el servidor.'
           );
-          return;
-        }
-
-        const { columnas, filas } = resp.data;
-
-        if (!filas || filas.length === 0) {
-          this.fila.set(null);
-          this.columnas.set([]);
-          this.mostrarToast(
-            'error',
-            'Sin resultados',
-            'No se encontró ninguna cita con ese ASN.'
-          );
-          return;
-        }
-
-        this.columnas.set(columnas);
-        this.fila.set(filas[0]);
-
-        const dias = this.diasPermitidos();
-        if (dias === 0) {
-          this.mostrarToast(
-            'error',
-            'Sin días disponibles',
-            'La cita no tiene días hábiles configurados para reagendar.'
-          );
-        } else {
-          this.mostrarToast(
-            'success',
-            'Cita encontrada',
-            `Puede reagendar dentro de los próximos ${dias} día(s) hábil(es).`
-          );
-        }
-      },
-      error: () => {
-        this.cargando.set(false);
-        this.haConsultado.set(true);
-        this.fila.set(null);
-        this.columnas.set([]);
-        this.mostrarToast(
-          'error',
-          'Error inesperado',
-          'No fue posible conectar con el servidor.'
-        );
-      },
-    });
+        },
+      });
   }
 
   confirmarReagenda(): void {

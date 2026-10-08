@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { ColumnaDinamica } from '../interfaces/consulta-entrega-devolucion.interface';
+import { ColumnaDinamica } from '../../../control-entradas-salidas-cedis/consulta-entrega-devolucion/interfaces/consulta-entrega-devolucion.interface';
 
 interface ExcelExportParams {
     columnas: ColumnaDinamica[];
