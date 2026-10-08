@@ -15,11 +15,11 @@ import {
     ColumnaDinamica,
     ConsultaEntregaDevolucionRequest
 } from './interfaces/consulta-entrega-devolucion.interface';
-import { formatearCelda } from './utils/formato-celda.util';
+import { formatearCelda } from '../../cancelaciones/reagenda-citas/utils/formato-celda.util';
 import {
     exportarConsultaEntregaDevolucionExcel,
     construirNombreArchivo
-} from './utils/excel-export';
+} from '../../cancelaciones/reagenda-citas/utils/excel-export';
 
 @Component({
     standalone: true,

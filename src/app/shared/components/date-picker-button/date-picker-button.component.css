@@ -1,10 +1,10 @@
 :host {
-  --etc-primary: var(--secundario, #2563eb);
-  --etc-primary-hover: var(--secundario-hover, #1d4ed8);
-  --etc-bg: #eff6ff;
-  --etc-bg-hover: #dbeafe;
-  --etc-border: #bfdbfe;
-  --etc-border-hover: #93c5fd;
+  --etc-primary: var(--texto-principal);
+  --etc-primary-hover: var(--texto-principal);
+  --etc-bg: rgb(231, 230, 230);
+  --etc-bg-hover: #c3c3c3;
+  --etc-border: #cbc9c9;
+  --etc-border-hover: #888888;
   --etc-radius: 6px;
   --etc-height: 36px;
 
@@ -123,15 +123,5 @@
   .icono-calendario:active:not(:disabled) {
     background: var(--etc-bg-hover);
     border-color: var(--etc-border-hover);
-  }
-}
-
-/* Modo oscuro opcional (basado en preferencia del sistema) */
-@media (prefers-color-scheme: dark) {
-  :host {
-    --etc-bg: #1e3a8a22;
-    --etc-bg-hover: #1e3a8a44;
-    --etc-border: #1e40af;
-    --etc-border-hover: #2563eb;
   }
 }

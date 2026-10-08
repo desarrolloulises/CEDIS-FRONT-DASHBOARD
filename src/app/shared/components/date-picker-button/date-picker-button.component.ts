@@ -169,10 +169,10 @@ export class DatePickerButtonComponent
         let encontrados = 0;
         const cursor = new Date(base);
         let guard = 0;
-        while (encontrados < diasPermitidosDesdeHoy && guard < 3650) {
+        while (encontrados < (diasPermitidosDesdeHoy+1) && guard < 3650) {
           if (esValido(cursor)) {
             encontrados++;
-            if (encontrados === diasPermitidosDesdeHoy) {
+            if (encontrados === (diasPermitidosDesdeHoy+1)) {
               maxDate = new Date(cursor);
               break;
             }
@@ -183,7 +183,7 @@ export class DatePickerButtonComponent
       } else {
         // Conteo de días naturales
         maxDate = new Date(base);
-        maxDate.setDate(maxDate.getDate() + diasPermitidosDesdeHoy);
+        maxDate.setDate(maxDate.getDate() + (diasPermitidosDesdeHoy + 1));
       }
     }
 
