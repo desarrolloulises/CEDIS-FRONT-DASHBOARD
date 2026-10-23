@@ -151,6 +151,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/cancelaciones/reagenda-citas/reagenda-citas.component').then(m => m.ReagendaCitasComponent)
       },
       {
+        path: 'devoluciones/asigna-nota-devolucion',
+        loadComponent: () => import('./features/devoluciones/nota-devolucion/nota-devolucion.component').then(m => m.AsignacionNotaDevolucionComponent)
+      },
+      {
         path: 'ver-reporte/:id',
         component: ReportesComponent
         // ❌ QUITA EL GUARD AQUÍ. Si esta ruta no tiene guard, 
