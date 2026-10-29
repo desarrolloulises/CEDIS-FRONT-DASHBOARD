@@ -109,6 +109,7 @@ export class SidebarComponent {
     '40-7': 'reporte-incidencias',
     '44-1': 'ver-reporte/44-1',
     '50-1': 'registro-arribo-asn',
+    '50-2': 'control-calidad/consultar-estatus-proveedores',
     '60-1': 'reasignacion/resumen-detalle-por-folio',
     '60-2': 'reasignacion/detalle-por-pallet',
     '70-1': 'cancelaciones/reagendar-cita',

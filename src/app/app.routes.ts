@@ -130,6 +130,10 @@ export const routes: Routes = [
         path: 'registro-arribo-asn',
         loadComponent: () => import('./features/control-calidad/RegistroArribos/RegistroArribos.component').then(m => m.RegistroArribosComponent)
       },
+       {
+        path: 'control-calidad/consultar-estatus-proveedores',
+        loadComponent: () => import('./features/control-calidad/Consultas/consulta-estatus-proveedores/consulta-estatus-proveedores.component').then(m => m.ConsultaEstatusProveedoresComponent)
+      },
       {
         path: 'CambiaPass',
         loadComponent: () => import('./features/cambio-pass/cambio-pass.component').then(m => m.CambioPassComponent) // El login va SOLO, sin Layout
