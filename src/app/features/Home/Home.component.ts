@@ -10,7 +10,7 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./Home.component.css']
 })
 export class HomeComponent {
-  readonly fecha = new Date().toLocaleDateString('es-MX', {
+  readonly currentDate = new Date().toLocaleDateString('es-MX', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
   

@@ -12,6 +12,24 @@
   z-index: 100;
 }
 
+/* ── Centro / Logo ── */
+.header-centro {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none; /* Evita que bloquee clics si llega a superponerse */
+}
+
+.header-logo {
+  height: 32px; 
+  width: auto;
+  object-fit: contain;
+  pointer-events: auto; 
+}
+
 /* ── Izquierda ── */
 .header-izquierda {
   display: flex;

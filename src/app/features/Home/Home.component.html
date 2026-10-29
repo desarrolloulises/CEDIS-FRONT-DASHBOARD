@@ -1,21 +1,38 @@
-<div class="home-wrapper">
+<section class="home-container">
+  <!-- Fondo con elementos gráficos animados-->
+  <div class="background-decorations">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
 
-  <header class="home-hero">
-    <div class="hero-left">
-      <p class="hero-fecha">{{ fecha }}</p>
-      <h1 class="hero-titulo">Bienvenido al<br><span>Sistema WMS del CEDIS de MILANO</span></h1>
-      <p class="hero-sub">Deseamos que estés teniendo un buen día :D</p>
+  <div class="home-card">
+    <div class="home-content-layout">
+      <!-- Columna principal: Título, Subtítulo y Fecha -->
+      <div class="home-header">
+        <div class="date-badge">
+          <span class="pulse-dot"></span>
+          <span class="date-text">{{ currentDate }}</span>
+        </div>
+
+        <h1 class="title">
+          Bienvenido al sistema <span class="highlight-primary">WMS</span> del CEDIS de Milano
+        </h1>
+        <p class="subtitle">
+          Esperamos que estes teniendo un buen día :D
+        </p>
+      </div>
+
+      <!-- Área de animación-->
+      <div class="hero-graphic-corner">
+        <div class="abstract-hero-graphic">
+          <div class="geometric-shape shape-back"></div>
+          <div class="geometric-shape shape-middle"></div>
+          <div class="geometric-shape shape-front">
+            <div class="radar-wave"></div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="hero-deco" aria-hidden="true">
-      <div class="deco-ring deco-ring--1"></div>
-      <div class="deco-ring deco-ring--2"></div>
-      <div class="deco-ring deco-ring--3"></div>
-      <i class="ti ti-building-warehouse deco-icon"></i>
-    </div>
-  </header>
-
-  <section class="section">
-
-  </section>
-
-</div>
+  </div>
+</section>
