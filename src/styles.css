@@ -221,7 +221,6 @@ body {
   TODO Recordatorio: Revisar estilos posteriores a este comentario.
 */
 .sidebar-izquierda {
-  width: 250px;
   background-color: var(--bg-sidebar);
   color: var(--texto-blanco);
   flex-shrink: 0;
