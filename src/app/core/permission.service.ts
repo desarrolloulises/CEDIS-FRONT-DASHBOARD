@@ -1,6 +1,7 @@
 import { Injectable, signal, PLATFORM_ID, inject, RendererFactory2 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -15,34 +16,69 @@ export class PermissionService {
   private timeoutId: any;
   private readonly MINUTOS_INACTIVIDAD = 10; // Configura el tiempo aquí
 
+  // Rutas que NO deben expirar por inactividad
+  private readonly RUTAS_EXCLUIDAS: string[] = [
+    '/control-calidad/consultar-estatus-proveedores'
+  ];
+
   public isLogged = signal<boolean>(false);
 
   constructor() {
-   if (isPlatformBrowser(this.platformId)) {
-  // 1. Usamos sessionStorage (se borra al cerrar la pestaña/navegador)
-  const token = sessionStorage.getItem('userToken');
-  
-  // 2. Recuperamos también el objeto usuario (si lo guardaste)
-  const userStr = sessionStorage.getItem('userData'); 
+    if (isPlatformBrowser(this.platformId)) {
+      // 1. Usamos sessionStorage (se borra al cerrar la pestaña/navegador)
+      const token = sessionStorage.getItem('userToken');
+      
+      // 2. Recuperamos también el objeto usuario (si lo guardaste)
+      const userStr = sessionStorage.getItem('userData'); 
 
-  // 3. Solo está logueado si hay token Y hay datos de usuario
-  const validSession = !!token && token !== 'undefined' && !!userStr;
-  
-  this.isLogged.set(validSession);
+      // 3. Solo está logueado si hay token Y hay datos de usuario
+      const validSession = !!token && token !== 'undefined' && !!userStr;
+      
+      this.isLogged.set(validSession);
 
-  if (validSession) {
-    this.iniciarVigilancia();
-  } else {
-    // Si falta algo, limpiamos por si acaso quedaron restos
-    this.logout(); 
+      if (validSession) {
+        // Evaluamos la ruta actual al cargar la app
+        this.verificarRutaYControlarVigilancia(this.router.url);
+      } else {
+        // Si falta algo, limpiamos por si acaso quedaron restos
+        this.logout(); 
+      }
+
+      // Escuchamos cada vez que el usuario cambia de página mediante el Router
+      this.router.events.pipe(
+        filter(event => event instanceof NavigationEnd)
+      ).subscribe((event: NavigationEnd) => {
+        this.verificarRutaYControlarVigilancia(event.urlAfterRedirects);
+      });
+    }
   }
-}
+
+  // --- Lógica de Vigilancia y Control de Rutas ---
+
+  private verificarRutaYControlarVigilancia(urlActual: string) {
+    // Comprobamos si la ruta actual incluye alguna de las excluidas
+    const estaExcluida = this.Rutas_Excluidas_Validar(urlActual);
+
+    if (estaExcluida) {
+      this.detenerVigilancia();
+      console.log('Inactividad pausada en la ruta exenta:', urlActual);
+    } else {
+      // Si salimos de una ruta exenta y hay sesión, reactivamos la vigilancia
+      if (this.isLogged()) {
+        this.iniciarVigilancia();
+      }
+    }
   }
 
-  // --- Lógica de Vigilancia ---
+  private Rutas_Excluidas_Validar(url: string): boolean {
+    return this.RUTAS_EXCLUIDAS.some(ruta => url.includes(ruta));
+  }
 
   iniciarVigilancia() {
     if (!isPlatformBrowser(this.platformId)) return;
+
+    // Si ya estamos en una ruta excluida, no iniciamos la vigilancia
+    if (this.Rutas_Excluidas_Validar(this.router.url)) return;
 
     // 1. Limpiamos cualquier cronómetro anterior
     this.reiniciarCronometro();
@@ -54,6 +90,9 @@ export class PermissionService {
   }
 
   private reiniciarCronometro() {
+    // Si estamos en una ruta excluida, ignoramos el reinicio/conteo
+    if (this.Rutas_Excluidas_Validar(this.router.url)) return;
+
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
     }
@@ -67,54 +106,56 @@ export class PermissionService {
     }, tiempoMs);
   }
 
+  detenerVigilancia() {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
+  }
+
   // --- Login y Logout ---
 
   login(token: string) {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('userToken', token);
       this.isLogged.set(true);
-      this.iniciarVigilancia(); // Empezamos a vigilar al entrar
+      
+      // Validamos la ruta al hacer login para decidir si vigilamos o no
+      this.verificarRutaYControlarVigilancia(this.router.url); 
     }
   }
 
- logout() {
-  // 1. Limpiamos el almacenamiento de la pestaña (sessionStorage)
-  // Usamos el nombre exacto de la llave que definimos antes
-  sessionStorage.removeItem('userToken');
-  sessionStorage.removeItem('userData');
-  
-  // Opcional: Limpia todo por si quedó algo de versiones anteriores
-  sessionStorage.clear();
-  localStorage.removeItem('userToken'); 
-
-  // 2. Actualizamos la señal (Signal) para que el Guard bloquee el paso
-  this.isLogged.set(false);
-
-  // 3. Detenemos la vigilancia (si tienes el método creado)
-  // this.detenerVigilancia(); 
-
-  // 4. Redirección inmediata al login
-  this.router.navigate(['/login'] , { replaceUrl: true });
-  //window.location.reload(); //recarga la pagina para perder el token y seccion
-  
-  //console.log("Sesión cerrada correctamente");
-}
-  // En tu PermissionService, añade esta lógica para mejorar la seguridad
-checkTokenValidity() {
-  if (isPlatformBrowser(this.platformId)) {
-    const token = localStorage.getItem('userToken');
+  logout() {
+    // 1. Limpiamos el almacenamiento de la pestaña (sessionStorage)
+    sessionStorage.removeItem('userToken');
+    sessionStorage.removeItem('userData');
     
-    // Aquí es donde en el futuro llamarás a tu API
-    // Si el servidor dice que el token ya no vale, hacemos logout
-    if (token && this.tokenExpirado(token)) { 
-      this.logout();
+    // Opcional: Limpia todo por si quedó algo de versiones anteriores
+    sessionStorage.clear();
+    localStorage.removeItem('userToken'); 
+
+    // 2. Actualizamos la señal (Signal) para que el Guard bloquee el paso
+    this.isLogged.set(false);
+
+    // 3. Detenemos la vigilancia
+    this.detenerVigilancia(); 
+
+    // 4. Redirección inmediata al login
+    this.router.navigate(['/login'] , { replaceUrl: true });
+  }
+
+  // Comprobación opcional de token
+  checkTokenValidity() {
+    if (isPlatformBrowser(this.platformId)) {
+      const token = localStorage.getItem('userToken');
+      
+      if (token && this.tokenExpirado(token)) { 
+        this.logout();
+      }
     }
   }
-}
 
-private tokenExpirado(token: string): boolean {
-  // Aquí iría la lógica para leer la fecha dentro de un JWT
-  // Por ahora, es un recordatorio de que el token debe tener fecha de caducidad
-  return false; 
-}
+  private tokenExpirado(token: string): boolean {
+    return false; 
+  }
 }

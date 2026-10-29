@@ -1,0 +1,125 @@
+<app-loading-spinner [visible]="cargando()" [overlay]="true" texto="Procesando...">
+</app-loading-spinner>
+
+<app-toast *ngIf="toastVisible()" [tipo]="toastTipo()" [titulo]="toastTitulo()" [mensaje]="toastMensaje()"
+  (cerrar)="toastVisible.set(false)">
+</app-toast>
+
+<div class="wrapper">
+  <div class="header">
+    <div class="header-top">
+      <div class="header-brand">
+        <h1 class="title">Estatus de Proveedores</h1>
+        <p class="subtitle">Control de calidad - estatus de proveedores</p>
+      </div>
+
+      <div class="header-actions">
+        <app-button label="Recargar" type="ghost" size="sm" [disabled]="cargando()"
+          (clicked)="recargarManual()">
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  @if (cargadoInicialmente()) {
+  <div class="header-bottom" >
+    <div class="search-container">
+      <input class="filter-input" type="text" placeholder="Filtrar en cualquier columna..." [value]="filtro()"
+        (input)="onFiltroInput($event)">
+    </div>
+
+    <div class="header-utils">
+      <p class="count">{{ filasFiltradas().length }} registro(s)</p>
+
+      <div class="export-button-container">
+        <app-button [label]="exportando() ? 'Exportando...' : 'Exportar'" type="ghost" size="sm"
+          [disabled]="exportando() || filasFiltradas().length === 0" (clicked)="exportarExcel()">
+        </app-button>
+
+        @if (exportando()) {
+        <app-loading-spinner [visible]="true" [compact]="true" [showText]="false">
+        </app-loading-spinner>
+        }
+      </div>
+    </div>
+  </div>
+
+  <ng-template #tablaTpl let-filas let-vacio="vacio">
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            @for (col of columnasVisibles(); track col.nombre) {
+            <th [attr.data-tipo]="col.tipo">{{ col.nombre }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (fila of filas; track $index) {
+          <tr [style.background-color]="colorFilaBg(fila)" [style.border-left]="colorFilaBorder(fila)">
+            @for (col of columnasVisibles(); track col.nombre) {
+            <td [attr.data-tipo]="col.tipo">
+              {{ valorCelda(fila, col) || '—' }}
+            </td>
+            }
+          </tr>
+          }
+
+          @if (filas.length === 0) {
+          <tr>
+            <td [attr.colspan]="columnasVisibles().length || 1" class="empty">
+              {{ vacio }}
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </ng-template>
+
+  <!-- TABLA 1: Tipo 1 (máx. 10 filas) -->
+  <section class="tabla-grupo">
+    <header class="tabla-grupo__header">
+      <h2 class="tabla-grupo__titulo">En proceso de calidad</h2>
+      <span class="tabla-grupo__count">
+        <!-- de {{ filasTipo1().length }} -->
+        {{ filasTipo1Visibles().length }}  registro(s)
+      </span>
+    </header>
+
+    @if (tipo1ExcedeLimite()) {
+    <p class="tabla-grupo__aviso">
+      Mostrando los primeros {{ filasTipo1Visibles().length }} de {{ filasTipo1().length }}.
+      Exporta para ver el listado completo.
+    </p>
+    }
+
+    <ng-container *ngTemplateOutlet="tablaTpl; context: { $implicit: filasTipo1Visibles(), vacio: 'Sin proveedores de Tipo 1.' }">
+    </ng-container>
+  </section>
+
+  <!-- TABLA 2: Otros tipos -->
+  <section class="tabla-grupo">
+    <header class="tabla-grupo__header">
+      <h2 class="tabla-grupo__titulo">En espera</h2>
+      <span class="tabla-grupo__count">{{ filasResto().length }} registro(s)</span>
+    </header>
+
+    <ng-container *ngTemplateOutlet="tablaTpl; context: { $implicit: filasResto(), vacio: 'Sin registros de otros tipos.' }">
+    </ng-container>
+  </section>
+
+  <p class="shortcuts-hint">
+    <span><kbd>F2</kbd> Buscar</span>
+    <span><kbd>Ctrl</kbd> + <kbd>E</kbd> Exportar</span>
+  </p>
+  } @else {
+  <div class="initial-message">
+    <div class="message-icon">
+      <i class="ti ti-search"></i>
+    </div>
+    <h3>Cargando información...</h3>
+    <p>Obteniendo el estatus de proveedores.</p>
+  </div>
+  }
+</div>
