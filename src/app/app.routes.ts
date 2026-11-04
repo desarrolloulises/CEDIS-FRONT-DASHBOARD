@@ -130,9 +130,45 @@ export const routes: Routes = [
         path: 'registro-arribo-asn',
         loadComponent: () => import('./features/control-calidad/RegistroArribos/RegistroArribos.component').then(m => m.RegistroArribosComponent)
       },
-       {
+      {
         path: 'control-calidad/consultar-estatus-proveedores',
         loadComponent: () => import('./features/control-calidad/Consultas/consulta-estatus-proveedores/consulta-estatus-proveedores.component').then(m => m.ConsultaEstatusProveedoresComponent)
+      },
+      {
+        path: 'control-calidad/consulta-productividad-general',
+        loadComponent: () => import('./features/control-calidad/Consultas/consulta-productividad-general/consulta-productividad-general.component').then(m => m.ConsultaProductividadGeneralComponent)
+      },
+      {
+        path: 'control-calidad/consulta-productividad-detalle',
+        loadComponent: () => import('./features/control-calidad/Consultas/consulta-productividad-detalle/consulta-productividad-detalle.component').then(m => m.ConsultaProductividadDetalleComponent)
+      },
+      {
+        path: 'control-calidad/consulta-rechazo-general',
+        loadComponent: () => import('./features/control-calidad/Consultas/consulta-rechazo-general/consulta-rechazo-general.component').then(m => m.ConsultaRechazoGeneralComponent)
+      },
+      {
+        path: 'control-calidad/consulta-rechazo-detalle',
+        loadComponent: () => import('./features/control-calidad/Consultas/consulta-rechazo-detalle/consulta-rechazo-detalle.component').then(m => m.ConsultaRechazoDetalleComponent)
+      },
+      {
+        path: 'control-calidad/consulta-motivos-rechazo',
+        loadComponent: () => import('./features/control-calidad/Consultas/consulta-motivos-rechazo-detalle/consulta-motivos-rechazo-detalle.component').then(m => m.ConsultaMotivosRechazoDetalleComponent)
+      },
+      {
+        path: 'control-calidad/consulta-inasistencias-proveedor',
+        loadComponent: () => import('./features/control-calidad/Consultas/consulta-inasistencias-proveedor/consulta-inasistencias-proveedor.component').then(m => m.ConsultaInasistenciasProveedorComponent)
+      },
+      {
+        path: 'control-calidad/consulta-cambios-fecha-cita',
+        loadComponent: () => import('./features/control-calidad/Consultas/consulta-cambios-fecha-cita/consulta-cambios-fecha-cita.component').then(m => m.ConsultaCambiosFechaCitaComponent)
+      },
+      {
+        path: 'control-calidad/consulta-productividad-por-asn',
+        loadComponent: () => import('./features/control-calidad/Consultas/consulta-productividad-por-asn/consulta-productividad-por-asn.component').then(m => m.ConsultaProductividadPorAsnComponent)
+      },
+      {
+        path: 'control-calidad/consulta-nivel-inspeccion',
+        loadComponent: () => import('./features/control-calidad/Consultas/consulta-nivel-inspeccion/consulta-nivel-inspeccion.component').then(m => m.ConsultaNivelInspeccionComponent)
       },
       {
         path: 'CambiaPass',
