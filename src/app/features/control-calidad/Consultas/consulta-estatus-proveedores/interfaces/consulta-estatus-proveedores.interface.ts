@@ -1,6 +1,7 @@
 export interface ColumnaDinamica {
   nombre: string;
   tipo: string;
+  etiqueta?: string;
 }
 
 export interface FilaEstatusProveedor {

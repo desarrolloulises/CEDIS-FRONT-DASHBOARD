@@ -17,6 +17,18 @@ import { LoadingSpinnerComponent } from '../../../../shared/components/loading-s
 import { ToastComponent } from '../../../../shared/components/toast/toast.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 
+const ETIQUETAS_POR_POSICION: string[] = [
+  'Tipo',
+  'Color',
+  'Proveedor',
+  'Razón social',
+  'ASN', 
+  'Nombre',
+  'Puerta',
+  'Hora',
+  'Estatus'
+];
+
 type ToastTipo = 'success' | 'error';
 type AutoRefreshEstado = 'inactivo' | 'activo' | 'fuera-horario' | 'no-disponible';
 
@@ -220,10 +232,9 @@ export class ConsultaEstatusProveedoresComponent implements OnInit, OnDestroy {
         this.cargadoInicialmente.set(true);
 
         if (res.success && res.data) {
-          this.columnas.set(res.data.columnas);
+          this.columnas.set(this.decorarColumnas(res.data.columnas));   // ← decorar
           this.filas.set(res.data.filas);
 
-          // Flash anti burn-in: solo tras actualizaciones (no en la carga inicial)
           if (yaHabiaDatos) {
             this.dispararFlash();
           }
@@ -271,7 +282,7 @@ export class ConsultaEstatusProveedoresComponent implements OnInit, OnDestroy {
       const data = filasOrdenadas.map(fila => {
         const obj: Record<string, any> = {};
         cols.forEach(col => {
-          obj[col.nombre] = this.valorCelda(fila, col);
+          obj[this.etiquetaColumna(col)] = this.valorCelda(fila, col);
         });
         return obj;
       });
@@ -279,6 +290,7 @@ export class ConsultaEstatusProveedoresComponent implements OnInit, OnDestroy {
       const ws = XLSX.utils.json_to_sheet(data);
 
       ws['!cols'] = cols.map(col => {
+        const etiqueta = this.etiquetaColumna(col);
         switch (col.tipo) {
           case 'DateTime':
           case 'Date':
@@ -287,11 +299,11 @@ export class ConsultaEstatusProveedoresComponent implements OnInit, OnDestroy {
             return { wch: 10 };
           case 'Int32':
           case 'Int16':
-            return { wch: 10 };
+            return { wch: Math.max(10, etiqueta.length + 2) };
           case 'String':
-            return { wch: 28 };
+            return { wch: Math.max(20, etiqueta.length + 4) };
           default:
-            return { wch: 14 };
+            return { wch: Math.max(14, etiqueta.length + 2) };
         }
       });
 
@@ -357,6 +369,19 @@ export class ConsultaEstatusProveedoresComponent implements OnInit, OnDestroy {
       return s;
     }
     return null;
+  }
+
+  /** Etiqueta amigable para una columna (por posición, con fallback al nombre técnico). */
+  etiquetaColumna(col: ColumnaDinamica): string {
+    return col.etiqueta || col.nombre;
+  }
+
+  /** Aplica etiquetas por posición sin tocar `nombre` (clave de las filas). */
+  private decorarColumnas(columnas: ColumnaDinamica[]): ColumnaDinamica[] {
+    return columnas.map((col, idx) => ({
+      ...col,
+      etiqueta: ETIQUETAS_POR_POSICION[idx] ?? col.nombre
+    }));
   }
 
   private esTipo1(fila: FilaEstatusProveedor): boolean {
