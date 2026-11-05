@@ -23,22 +23,25 @@
             <i class="ti ti-chevron-right chevron" [class.rotado]="modulo.abierto" aria-hidden="true"></i>
           }
         </div>
-
-        @if (modulo.abierto && modulo.sub?.length) {
-          <div class="nav-sub">
-            @for (sub of modulo.sub; track sub.Opcion) {
-              @if (sub.tipo === 'reporte') {
-                <a
-                  [routerLink]="['/ver-reporte', sub.URL]"
-                  routerLinkActive="activo"
-                  (click)="notificarReporte(sub.URL)"
-                >{{ sub.Descripcion }}</a>
-              } @else {
-                <a [routerLink]="[sub.URL]" routerLinkActive="activo">{{ sub.Descripcion }}</a>
+        
+        <div class="nav-sub-wrapper" [class.abierto]="modulo.abierto && modulo.sub?.length">
+          <div class="nav-sub-inner">
+            @if (modulo.sub?.length) {
+              @for (sub of modulo.sub; track sub.Opcion) {
+                @if (sub.tipo === 'reporte') {
+                  <a
+                    [routerLink]="['/ver-reporte', sub.URL]"
+                    routerLinkActive="activo"
+                    (click)="notificarReporte(sub.URL)"
+                  >{{ sub.Descripcion }}</a>
+                } @else {
+                  <a [routerLink]="[sub.URL]" routerLinkActive="activo">{{ sub.Descripcion }}</a>
+                }
               }
             }
           </div>
-        }
+        </div>
+
       </div>
     }
   </nav>
