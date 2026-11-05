@@ -14,15 +14,14 @@
       </div>
 
       <div class="header-actions">
-        <app-button label="Recargar" type="ghost" size="sm" [disabled]="cargando()"
-          (clicked)="recargarManual()">
+        <app-button label="Recargar" type="ghost" size="sm" [disabled]="cargando()" (clicked)="recargarManual()">
         </app-button>
       </div>
     </div>
   </div>
 
   @if (cargadoInicialmente()) {
-  <div class="header-bottom" >
+  <div class="header-bottom">
     <div class="search-container">
       <input class="filter-input" type="text" placeholder="Filtrar en cualquier columna..." [value]="filtro()"
         (input)="onFiltroInput($event)">
@@ -50,7 +49,7 @@
         <thead>
           <tr>
             @for (col of columnasVisibles(); track col.nombre) {
-            <th [attr.data-tipo]="col.tipo">{{ col.nombre }}</th>
+            <th [attr.data-tipo]="col.tipo">{{ etiquetaColumna(col) }}</th>
             }
           </tr>
         </thead>
@@ -83,7 +82,7 @@
       <h2 class="tabla-grupo__titulo">En proceso de calidad</h2>
       <span class="tabla-grupo__count">
         <!-- de {{ filasTipo1().length }} -->
-        {{ filasTipo1Visibles().length }}  registro(s)
+        {{ filasTipo1Visibles().length }} registro(s)
       </span>
     </header>
 
@@ -94,7 +93,8 @@
     </p>
     }
 
-    <ng-container *ngTemplateOutlet="tablaTpl; context: { $implicit: filasTipo1Visibles(), vacio: 'Sin proveedores de Tipo 1.' }">
+    <ng-container
+      *ngTemplateOutlet="tablaTpl; context: { $implicit: filasTipo1Visibles(), vacio: 'Sin registros que mostrar.' }">
     </ng-container>
   </section>
 
@@ -105,7 +105,8 @@
       <span class="tabla-grupo__count">{{ filasResto().length }} registro(s)</span>
     </header>
 
-    <ng-container *ngTemplateOutlet="tablaTpl; context: { $implicit: filasResto(), vacio: 'Sin registros de otros tipos.' }">
+    <ng-container
+      *ngTemplateOutlet="tablaTpl; context: { $implicit: filasResto(), vacio: 'Sin registros que mostrar.' }">
     </ng-container>
   </section>
 
