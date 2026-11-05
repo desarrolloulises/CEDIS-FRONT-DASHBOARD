@@ -11,12 +11,14 @@
   height: 100dvh;
   background-color: var(--primario);
   overflow: hidden;
-  transition: width var(--transition-normal);
-  
+  width: 260px; 
+  min-width: 260px;
+  transition: width var(--transition-normal), min-width var(--transition-normal);
 }
 
 .sidebar-izquierda.sidebar-oculta {
   width: 0 !important;
+  min-width: 0 !important;
 }
 
 /* ── Cuerpo derecho ── */

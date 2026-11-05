@@ -1,4 +1,10 @@
-/* ── Contenedor principal ── */
+/* ── Variables de transición globales ── */
+:root {
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Contenedor principal dentro de app-sidebar ── */
 .sidebar-container {
   display: flex;
   flex-direction: column;
@@ -6,10 +12,8 @@
   background-color: var(--primario);
   color: #fff;
   overflow: hidden;
-  min-width: 200px;
-  max-width: 300px;
-  width: max-content;
-
+  width: 100%; 
+  min-width: 260px; /* <--- Debe coincidir o ser igual al ancho de la sidebar izquierda para que no se deforme al abrir */
 }
 
 /* ── Header ── */
@@ -84,17 +88,28 @@
 
 .chevron.rotado { transform: rotate(90deg); color: rgba(255,255,255,0.5); }
 
-/* ── Submenú ── */
-.nav-sub {
+.nav-sub-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--transition-normal);
+}
+
+.nav-sub-wrapper.abierto {
+  grid-template-rows: 1fr;
+}
+
+.nav-sub-inner {
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  margin: 2px 0 4px 15px;
+  margin: 0 0 0 15px;
   padding-left: 10px;
   border-left: 1.5px solid rgba(255,255,255,0.08);
 }
 
-.nav-sub a {
+.nav-sub-inner a {
   padding: 5px 8px;
+  margin: 2px 0;
   font-size: 13px;
   color: rgba(255,255,255,0.45);
   text-decoration: none;
@@ -105,8 +120,8 @@
   text-overflow: ellipsis;
 }
 
-.nav-sub a:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.05); }
-.nav-sub a.activo { color: #6bb8f0; background: rgba(45,106,159,0.2); }
+.nav-sub-inner a:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.05); }
+.nav-sub-inner a.activo { color: #6bb8f0; background: rgba(45,106,159,0.2); }
 
 /* ── Spinner ── */
 .spinner-loader {
