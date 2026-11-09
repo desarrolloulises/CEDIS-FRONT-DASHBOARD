@@ -1,0 +1,136 @@
+<app-loading-spinner [visible]="cargandoUsuario() || cargandoCatalogos() || cargandoRegistros()" [overlay]="true"
+    texto="Procesando...">
+</app-loading-spinner>
+
+<app-toast *ngIf="toastVisible()" [tipo]="toastTipo()" [titulo]="toastTitulo()" [mensaje]="toastMensaje()"
+    (cerrar)="toastVisible.set(false)">
+</app-toast>
+
+<div class="wrapper">
+    <div class="header">
+        <div class="header-top">
+            <div class="header-brand">
+                <h1 class="title">Catálogos</h1>
+                <p class="subtitle">
+                    @if (usuario(); as u) {
+                    {{ u.nombre }} · {{ u.rol }}
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+
+    @if (usuario()) {
+    <div class="forms-row">
+        <div class="search-form">
+            <div class="form-group">
+                <label for="catalogo">Catálogo:</label>
+                <select id="catalogo" class="form-input" [ngModel]="catalogoSeleccionado()"
+                    (ngModelChange)="onCambiarCatalogo($event)" [disabled]="cargandoCatalogos()">
+                    @for (cat of catalogos(); track cat.id) {
+                    <option [value]="cat.id">{{ cat.nombre }}</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <app-button label="Agregar" size="sm" [disabled]="cargandoRegistros() || !puedeAgregar()"
+                    (clicked)="abrirModalAgregar()">
+                </app-button>
+
+                <app-button label="Eliminar seleccionado" type="ghost" size="sm"
+                    [disabled]="cargandoRegistros() || !puedeEliminar()" (clicked)="eliminarSeleccionado()">
+                </app-button>
+            </div>
+        </div>
+    </div>
+
+    @if (catalogos().length === 0) {
+    <div class="initial-message">
+        <div class="message-icon"><i class="ti ti-lock"></i></div>
+        <h3>Sin catálogos disponibles</h3>
+        <p>Tu rol no tiene acceso a ningún catálogo.</p>
+    </div>
+    } @else {
+    <div class="header-bottom">
+        <p class="count">{{ filas().length }} registro(s)</p>
+    </div>
+
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    @for (col of columnas(); track col.nombre) {
+                    <th [style.width]="anchoColumna(col)" [class.celda-bloqueada-header]="!esColumnaEditable(col)">
+                        {{ etiquetaColumna(col) }}
+                    </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @for (fila of filas(); track $index; let i = $index) {
+                <tr [class.selected]="esFilaSeleccionada(fila)" (click)="seleccionarFila(fila)">
+                    @for (col of columnas(); track col.nombre) {
+                    <td [attr.data-col]="col.nombre" [class.celda-bloqueada]="!esColumnaEditable(col)"
+                        [class.celda-editando]="estaEditando(i, col.nombre)" (dblclick)="iniciarEdicion(i, col)">
+
+                        @if (estaEditando(i, col.nombre)) {
+                        <input class="cell-input" type="text" autofocus [value]="fila[col.nombre] ?? ''"
+                            (blur)="confirmarEdicion(i, col, $any($event.target).value)"
+                            (keydown.enter)="confirmarEdicion(i, col, $any($event.target).value)"
+                            (keydown.escape)="cancelarEdicion()" (click)="$event.stopPropagation()">
+                        } @else {
+                        {{ valorCelda(fila[col.nombre], col) }}
+                        }
+                    </td>
+                    }
+                </tr>
+                } @empty {
+                <tr>
+                    <td class="empty-cell" [attr.colspan]="columnas().length">
+                        Sin registros en este catálogo.
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <p class="hint-edicion">
+        Doble clic en una celda editable para modificar el valor. Esc cancela.
+    </p>
+    }
+    } @else {
+    <div class="initial-message">
+        <div class="message-icon"><i class="ti ti-user"></i></div>
+        <h3>Cargando usuario...</h3>
+    </div>
+    }
+</div>
+
+<!-- Modal Agregar -->
+@if (modalAbierto()) {
+<div class="modal-backdrop" (click)="cerrarModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <header class="modal__header">
+            <h2>Agregar registro</h2>
+            <button type="button" class="modal__close" (click)="cerrarModal()">×</button>
+        </header>
+
+        <div class="modal__body">
+            @for (col of camposEditables(); track col.nombre) {
+            <div class="form-group">
+                <label [for]="'f_' + col.nombre">{{ etiquetaColumna(col) }}</label>
+                <input [id]="'f_' + col.nombre" class="form-input" [type]="col.tipo === 'Int32' ? 'number' : 'text'"
+                    [ngModel]="formModel()[col.nombre]" (ngModelChange)="actualizarCampo(col.nombre, $event)">
+            </div>
+            }
+        </div>
+
+        <footer class="modal__footer">
+            <app-button label="Cancelar" type="ghost" size="sm" (clicked)="cerrarModal()"></app-button>
+            <app-button label="Guardar" type="primary" size="sm" (clicked)="guardarModal()"></app-button>
+        </footer>
+    </div>
+</div>
+}

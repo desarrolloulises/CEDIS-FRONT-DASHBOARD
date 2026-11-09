@@ -67,7 +67,8 @@ export class SidebarComponent {
     50: 'ti ti-clipboard-check',
     60: 'ti ti-report-search',
     70: 'ti ti-calendar-week',
-    80: 'ti ti-truck-return'
+    80: 'ti ti-truck-return',
+    777: 'ti ti-code'
   };
 
   public readonly MAPEO_RUTAS_HIJOS: Record<string, string> = {
@@ -119,11 +120,13 @@ export class SidebarComponent {
     '50-9': 'control-calidad/consulta-inasistencias-proveedor',
     '50-10': 'control-calidad/consulta-cambios-fecha-cita',
     '50-11': 'control-calidad/consulta-nivel-inspeccion',
+    '50-12': 'control-calidad/deshacer-rechazo-asn',
     '60-1': 'reasignacion/resumen-detalle-por-folio',
     '60-2': 'reasignacion/detalle-por-pallet',
     '70-1': 'cancelaciones/reagendar-cita',
     '70-2': 'cancelaciones/reagendar-citas',
-    '80-1': 'devoluciones/asigna-nota-devolucion'
+    '80-1': 'devoluciones/asigna-nota-devolucion',
+    '777-1': 'develop/test-component'
   };
 
   obtenerSubmenus(modulo: any) {

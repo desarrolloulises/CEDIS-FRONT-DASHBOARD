@@ -171,6 +171,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/control-calidad/Consultas/consulta-nivel-inspeccion/consulta-nivel-inspeccion.component').then(m => m.ConsultaNivelInspeccionComponent)
       },
       {
+        path: 'control-calidad/deshacer-rechazo-asn',
+        loadComponent: () => import('./features/control-calidad/deshacer-rechazo/deshacer-rechazo.component').then(m => m.DeshacerRechazoComponent)
+      },
+      {
         path: 'CambiaPass',
         loadComponent: () => import('./features/cambio-pass/cambio-pass.component').then(m => m.CambioPassComponent) // El login va SOLO, sin Layout
       },
@@ -193,6 +197,10 @@ export const routes: Routes = [
       {
         path: 'devoluciones/asigna-nota-devolucion',
         loadComponent: () => import('./features/devoluciones/nota-devolucion/nota-devolucion.component').then(m => m.AsignacionNotaDevolucionComponent)
+      },
+      {
+        path: 'develop/test-component',
+        loadComponent: () => import('./features/test-component/test.component').then(m => m.TestComponent)
       },
       {
         path: 'ver-reporte/:id',
