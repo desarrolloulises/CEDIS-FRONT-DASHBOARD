@@ -1,0 +1,414 @@
+:host {
+  --etc-surface: #ffffff;
+  --etc-border: #e2e6ea;
+
+  --etc-text: #1e2533;
+  --etc-text-muted: #6b7280;
+
+  --etc-primary: #2563eb;
+  --etc-danger: #ef4444;
+
+  --etc-radius-lg: 10px;
+  --etc-shadow-sm: 0 1px 3px rgba(0, 0, 0, .08);
+
+  --etc-font: 'Segoe UI', system-ui, sans-serif;
+
+  --bg-body: #f8fafc;
+  --space-lg: 24px;
+
+  font-family: var(--etc-font);
+  color: var(--etc-text);
+}
+
+.wrapper {
+  padding: var(--space-lg);
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════════════════════ */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.header-brand { line-height: 1.2; }
+
+.title {
+  margin: 0 0 2px 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--etc-text);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: .8rem;
+  color: var(--etc-text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FORMULARIOS
+   ═══════════════════════════════════════════════════════════════ */
+.forms-row {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.search-form {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  padding: 16px;
+  background: var(--bg-body);
+  border: 1px solid var(--etc-border);
+  border-radius: var(--etc-radius-lg);
+  box-shadow: var(--etc-shadow-sm);
+  flex: 0 0 auto;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 1 220px;
+  min-width: 160px;
+}
+
+.form-group label {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--etc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  white-space: nowrap;
+}
+
+.form-input {
+  padding: 8px 10px;
+  border: 1px solid var(--etc-border);
+  border-radius: 6px;
+  font-size: .82rem;
+  font-family: var(--etc-font);
+  color: var(--etc-text);
+  background: white;
+  transition: all .15s ease;
+  width: 100%;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--etc-primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.form-input:hover { border-color: #cbd5e1; }
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  align-items: end;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BARRA INFERIOR
+   ═══════════════════════════════════════════════════════════════ */
+.header-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 4px;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.count {
+  margin: 0;
+  font-size: .8rem;
+  color: var(--etc-text-muted);
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MENSAJE INICIAL
+   ═══════════════════════════════════════════════════════════════ */
+.initial-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: var(--etc-surface);
+  border: 1px dashed var(--etc-border);
+  border-radius: var(--etc-radius-lg);
+  min-height: 300px;
+}
+
+.message-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff6ff;
+  border-radius: 50%;
+  margin-bottom: 16px;
+}
+
+.message-icon i {
+  font-size: 2rem;
+  color: var(--etc-primary);
+}
+
+.initial-message h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--etc-text);
+}
+
+.initial-message p {
+  margin: 0;
+  font-size: .85rem;
+  color: var(--etc-text-muted);
+  max-width: 400px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TABLA NATIVA
+   ═══════════════════════════════════════════════════════════════ */
+.table-wrap {
+  width: fit-content;
+  max-width: 100%;
+  max-height: 55vh;
+  overflow: auto;
+  background: var(--etc-surface);
+  border: 1px solid var(--etc-border);
+  border-radius: var(--etc-radius-lg);
+  box-shadow: var(--etc-shadow-sm);
+}
+
+.table {
+  border-collapse: collapse;
+  width: auto;
+  font-size: .82rem;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f8fafc;
+  color: var(--etc-text-muted);
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--etc-border);
+  white-space: nowrap;
+}
+
+/* ── Base con :where() → especificidad 0, permite override limpio ── */
+:where(.table) tbody td {
+  padding: 8px 16px;
+  font-size: .82rem;
+  line-height: 1.4;
+  color: var(--etc-text);
+  border-bottom: 1px solid #eef2f7;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Zebra striping */
+:where(.table) tbody tr:nth-child(odd) td { background-color: #ffffff; }
+:where(.table) tbody tr:nth-child(even) td { background-color: #ededed; }
+
+/* Hover de fila */
+:where(.table) tbody tr:hover td { background-color: #f1f5f9; }
+
+/* Fila seleccionada */
+:where(.table) tbody tr.selected td {
+  background-color: #eff6ff;
+  box-shadow: inset 0 0 0 1px #bfdbfe;
+}
+
+/* Alineación numérica para Id y Activo */
+.table tbody td[data-col="Id"],
+.table tbody td[data-col="Activo"] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Celda vacía (colspan) */
+.empty-cell {
+  text-align: center;
+  color: var(--etc-text-muted);
+  font-style: italic;
+  padding: 32px 16px !important;
+  background: #ffffff !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CELDAS NO EDITABLES — solo se atenúa el texto, fijo en todos
+   los estados (normal, zebra y hover)
+   ═══════════════════════════════════════════════════════════════ */
+.table tbody tr td.celda-bloqueada {
+  color: #9ca3af;
+}
+
+.table tbody tr:hover td.celda-bloqueada {
+  color: #6b7280;
+}
+
+.table thead th.celda-bloqueada-header {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CELDA EN EDICIÓN
+   ═══════════════════════════════════════════════════════════════ */
+.table td.celda-editando {
+  padding: 4px 8px;
+  background: #ffffff !important;
+}
+
+.cell-input {
+  width: 100%;
+  min-width: 80px;
+  padding: 4px 6px;
+  border: 1px solid var(--etc-primary);
+  border-radius: 4px;
+  font-size: .82rem;
+  font-family: var(--etc-font);
+  color: var(--etc-text);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.hint-edicion {
+  margin: 10px 0 0;
+  font-size: .75rem;
+  color: var(--etc-text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MODAL (Agregar)
+   ═══════════════════════════════════════════════════════════════ */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background: var(--etc-surface);
+  border-radius: var(--etc-radius-lg);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, .2);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--etc-border);
+}
+
+.modal__header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.modal__close {
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: var(--etc-text-muted);
+  line-height: 1;
+}
+.modal__close:hover { color: var(--etc-text); }
+
+.modal__body {
+  padding: 20px;
+  display: grid;
+  gap: 14px;
+}
+
+.modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--etc-border);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .wrapper { padding: 12px; }
+
+  .header-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .forms-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .search-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-group { flex: 1 1 auto; width: 100%; }
+
+  .form-actions {
+    flex-direction: row;
+    max-width: 100%;
+  }
+
+  .header-bottom {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .table-wrap { max-height: 60vh; }
+}

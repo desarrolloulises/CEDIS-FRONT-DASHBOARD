@@ -1,0 +1,146 @@
+<app-loading-spinner [visible]="cargando()" [overlay]="true" texto="Procesando...">
+</app-loading-spinner>
+
+<app-toast *ngIf="toastVisible()" [tipo]="toastTipo()" [titulo]="toastTitulo()" [mensaje]="toastMensaje()"
+    (cerrar)="toastVisible.set(false)">
+</app-toast>
+
+<div class="wrapper">
+    <div class="header">
+        <div class="header-top">
+            <div class="header-brand">
+                <h1 class="title">Deshacer Rechazo de ASN</h1>
+                <p class="subtitle">Consulta rechazos y revierte el rechazo de un ASN seleccionado</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de búsqueda (obligatorio: ambas fechas) -->
+    <div class="forms-row">
+        <div class="search-form">
+            <div class="form-group">
+                <label for="fechaInicial">Fecha inicial:</label>
+                <input id="fechaInicial" type="date" [ngModel]="fechaInicioInput()"
+                    (ngModelChange)="fechaInicioInput.set($event)" class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label for="fechaFinal">Fecha final:</label>
+                <input id="fechaFinal" type="date" [ngModel]="fechaFinInput()"
+                    (ngModelChange)="fechaFinInput.set($event)" class="form-input">
+            </div>
+
+            <div class="form-actions">
+                <app-button label="Consultar" type="primary" size="sm" [disabled]="cargando()" (clicked)="consultar()">
+                </app-button>
+                <app-button label="Limpiar" type="ghost" size="sm" (clicked)="limpiarFormulario()">
+                </app-button>
+            </div>
+        </div>
+    </div>
+
+    @if (consultado()) {
+    <div class="header-bottom">
+        <div class="search-container">
+            <input class="filter-input" type="text" placeholder="Filtrar en cualquier columna..." [value]="filtro()"
+                (input)="onFiltroInput($event)">
+        </div>
+
+        <div class="header-utils">
+            <p class="count">{{ filasFiltradas().length }} registro(s)</p>
+        </div>
+    </div>
+
+    <!-- TABLA DINÁMICA -->
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    @for (col of columnas(); track col.nombre) {
+                    <th [attr.data-tipo]="col.tipo">{{ etiquetaColumna(col) }}</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @for (fila of filasFiltradas(); track $index) {
+                <tr class="row-clickable" [class.row-selected]="esFilaSeleccionada(fila)" (click)="onRowClick(fila)">
+                    @for (col of columnas(); track col.nombre) {
+                    <td [attr.data-tipo]="col.tipo">{{ valorCelda(fila, col) || '—' }}</td>
+                    }
+                </tr>
+                }
+
+                @if (filasFiltradas().length === 0) {
+                <tr>
+                    <td [attr.colspan]="columnas().length || 1" class="empty">
+                        Sin registros que coincidan.
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <p class="shortcuts-hint">
+        <span><kbd>F2</kbd> Buscar</span>
+        <span><kbd>Esc</kbd> Cerrar modal</span>
+    </p>
+    } @else {
+    <div class="initial-message">
+        <div class="message-icon">
+            <i class="ti ti-search"></i>
+        </div>
+        <h3>Consulta rechazos de ASN</h3>
+        <p>Especifica la fecha inicial y final para consultar los rechazos de ASN.</p>
+    </div>
+    }
+</div>
+
+<!-- Modal deshacer rechazo -->
+<!-- Modal deshacer rechazo (usa ModalComponent compartido) -->
+<app-modal [visible]="modalVisible()" title="Deshacer rechazo" width="480px" [closeOnBackdrop]="false"
+    [closeOnEscape]="true" [showCloseButton]="true" (close)="onModalClose()">
+
+    <div class="modal-form">
+
+        <div class="modal-form__field">
+            <span class="modal-form__label">ASN seleccionado</span>
+            <span class="modal-form__value">{{ asnSeleccionado() ?? '—' }}</span>
+        </div>
+
+        <div class="modal-form__field">
+            <label class="modal-form__label" for="idAutorizacion">Autorización</label>
+            <select id="idAutorizacion" class="modal-form__select" [ngModel]="idAutorizacionSeleccionada()"
+                (ngModelChange)="idAutorizacionSeleccionada.set($event)" [disabled]="cargandoOpciones() || enviando()">
+                <option [ngValue]="null">Selecciona una autorización…</option>
+                @for (op of opcionesAutorizacion(); track op.idAutorizacion) {
+                <option [ngValue]="op.idAutorizacion">{{ op.descripcionAutorizacion }}</option>
+                }
+            </select>
+            @if (cargandoOpciones()) {
+            <small class="modal-form__hint">Cargando autorizaciones…</small>
+            }
+        </div>
+
+        <div class="modal-form__field">
+            <div class="modal-form__field">
+                <label class="modal-form__label" for="comentario">Comentario</label>
+                <textarea id="comentario" class="modal-form__textarea" rows="4" maxlength="255"
+                    placeholder="Describe el motivo del deshacer rechazo…" [ngModel]="comentario()"
+                    (ngModelChange)="onComentarioChange($event)" [disabled]="enviando()"></textarea>
+                <small class="modal-form__hint modal-form__hint--right">
+                    {{ comentario().length }} / 255
+                </small>
+            </div>
+        </div>
+
+        <div class="modal-form__actions">
+            <app-button label="Cancelar" type="ghost" size="sm" [disabled]="enviando()" (clicked)="cancelarModal()">
+            </app-button>
+            <app-button label="Deshacer rechazo" type="primary" size="sm" [disabled]="enviando()"
+                (clicked)="enviarDeshacerRechazo()">
+            </app-button>
+        </div>
+
+    </div>
+</app-modal>
