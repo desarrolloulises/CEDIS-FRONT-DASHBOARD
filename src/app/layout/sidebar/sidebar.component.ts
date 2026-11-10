@@ -68,6 +68,7 @@ export class SidebarComponent {
     60: 'ti ti-report-search',
     70: 'ti ti-calendar-week',
     80: 'ti ti-truck-return',
+    90: 'ti ti-category-2',
     777: 'ti ti-code'
   };
 
@@ -126,6 +127,7 @@ export class SidebarComponent {
     '70-1': 'cancelaciones/reagendar-cita',
     '70-2': 'cancelaciones/reagendar-citas',
     '80-1': 'devoluciones/asigna-nota-devolucion',
+    '90-1': 'catalogos/gestion-catalogo-validaciones-entrada',
     '777-1': 'develop/test-component'
   };
 
