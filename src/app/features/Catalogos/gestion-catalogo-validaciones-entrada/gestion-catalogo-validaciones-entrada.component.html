@@ -1,0 +1,170 @@
+<app-loading-spinner [visible]="cargando()" [overlay]="true" texto="Procesando...">
+</app-loading-spinner>
+
+<app-toast *ngIf="toastVisible()" [tipo]="toastTipo()" [titulo]="toastTitulo()" [mensaje]="toastMensaje()"
+    (cerrar)="toastVisible.set(false)">
+</app-toast>
+
+<div class="wrapper">
+    <div class="header">
+        <div class="header-top">
+            <div class="header-brand">
+                <h1 class="title">Gestión de los Catálogos de Validaciones de Entrada</h1>
+                <p class="subtitle">Configura motivos de ingreso y sus validaciones</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selector de tipo de entrada -->
+    <div class="selector-row">
+        <div class="form-group">
+            <label for="tipoEntrada">Tipo de entrada:</label>
+            <select id="tipoEntrada" class="form-select" [value]="idTipoSeleccionado() ?? ''"
+                (change)="onCambioTipo($event)">
+                <option value="">Selecciona un tipo de entrada…</option>
+                @for (t of tiposEntrada(); track t.idTipoEntrada) {
+                <option [value]="t.idTipoEntrada">{{ t.descripcionTipoEntrada }}</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    @if (!seleccionTipo()) {
+    <div class="empty-state">
+        <div class="message-icon">
+            <i class="ti ti-list"></i>
+        </div>
+        <h3>Selecciona un tipo de entrada</h3>
+        <p>Elige un tipo de entrada del listado superior para ver y gestionar sus motivos de ingreso y validaciones.</p>
+    </div>
+    } @else {
+
+    <!-- ═══════════════ NIVEL 2: Motivos de ingreso ═══════════════ -->
+    <section class="panel">
+        <header class="panel__header">
+            <h2 class="panel__title">
+                Motivos de ingreso
+                <span class="panel__subtitle">· {{ seleccionTipo()!.descripcionTipoEntrada }}</span>
+            </h2>
+
+            @if (esEditable()) {
+            <app-button label="Agregar motivo de ingreso" type="primary" size="sm" (clicked)="abrirModalCrear()">
+            </app-button>
+            }
+        </header>
+
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="col-num">Clave</th>
+                        <th>Descripción</th>
+                        <th class="col-center">Estatus</th>
+                        @if (esEditable()) {
+                        <th class="col-center">Acciones</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (ti of tiposIngreso(); track ti.clave) {
+                    <tr class="row-clickable" [class.row-selected]="esTipoIngresoSeleccionado(ti)"
+                        (click)="seleccionarTipoIngreso(ti)">
+                        <td class="col-num">{{ ti.clave }}</td>
+                        <td>{{ ti.descripcion }}</td>
+                        <td class="col-center">
+                            <label class="check-estatus" (click)="$event.stopPropagation()">
+                                <input type="checkbox" [checked]="ti.estatus" [disabled]="!esEditable()"
+                                    (change)="toggleEstatusTipoIngreso(ti, $event)">
+                                <span class="check-label">{{ ti.estatus ? 'Activo' : 'Inactivo' }}</span>
+                            </label>
+                        </td>
+                        @if (esEditable()) {
+                        <td class="col-center">
+                            <button type="button" class="link-btn"
+                                (click)="$event.stopPropagation(); abrirModalEditar(ti)">
+                                Editar
+                            </button>
+                        </td>
+                        }
+                    </tr>
+                    }
+
+                    @if (tiposIngreso().length === 0) {
+                    <tr>
+                        <td [attr.colspan]="esEditable() ? 4 : 3" class="empty">
+                            Sin Motivos de ingreso registrados para este tipo de entrada.
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ═══════════════ NIVEL 3: Validaciones (lista) ═══════════════ -->
+        @if (seleccionTipoIngreso(); as ti) {
+        <div class="sub-panel">
+            <header class="panel__header">
+                <h2 class="panel__title panel__title--sm">
+                    Validaciones ·
+                    <span class="panel__subtitle">· {{ ti.descripcion }}</span>
+
+                </h2>
+
+            </header>
+
+            @if (validaciones().length === 0) {
+            <p class="empty-small">Sin validaciones registradas.</p>
+            } @else {
+            <ul class="validation-list">
+                @for (v of validaciones(); track v.clave) {
+                <li class="validation-item">
+                    <!-- <span class="validation-item__clave">#{{ v.clave }}</span> -->
+                    <span class="validation-item__desc">{{ v.descripcion }}</span>
+                    <label class="check-estatus">
+                        <input type="checkbox" [checked]="v.estatus" (change)="toggleEstatusValidacion(v, $event)">
+                        <!-- <span class="check-label">{{ v.estatus ? '  Activo' : 'Inactivo' }}</span> -->
+                    </label>
+                </li>
+                }
+            </ul>
+            }
+        </div>
+        }
+    </section>
+    }
+</div>
+
+<!-- ═══════════════ MODAL: Crear / Editar tipo de ingreso ═══════════════ -->
+<<app-modal [visible]="modalVisible()"
+    [title]="modoModal() === 'crear' ? 'Agregar motivo de ingreso' : 'Editar tipo de ingreso'" width="480px"
+    [closeOnBackdrop]="false" [closeOnEscape]="true" [showCloseButton]="true" (close)="cerrarModal()">
+
+    <div class="modal-form">
+        <div class="modal-form__field">
+            <label class="modal-form__label" for="descTipoIngreso">Descripción</label>
+            <input id="descTipoIngreso" class="modal-form__input" type="text" maxlength="150"
+                placeholder="Describe el tipo de ingreso…" [value]="formDescripcion()"
+                (input)="onDescripcionChange($any($event.target).value)" [disabled]="guardando()">
+            <small class="modal-form__hint">{{ formDescripcion().length }} / 150</small>
+        </div>
+
+        <!-- Estatus: solo en modo 'crear' -->
+        @if (modoModal() === 'crear') {
+        <div class="modal-form__field">
+            <label class="modal-form__check">
+                <input type="checkbox" [checked]="formEstatus()" (change)="formEstatus.set($any($event.target).checked)"
+                    [disabled]="guardando()">
+                <span>Activo</span>
+            </label>
+        </div>
+        }
+
+        <div class="modal-form__actions">
+            <app-button label="Cancelar" type="ghost" size="sm" [disabled]="guardando()" (clicked)="cerrarModal()">
+            </app-button>
+            <app-button [label]="modoModal() === 'crear' ? 'Guardar' : 'Actualizar'" type="primary" size="sm"
+                [disabled]="guardando()" (clicked)="guardarTipoIngreso()">
+            </app-button>
+        </div>
+    </div>
+    </app-modal>

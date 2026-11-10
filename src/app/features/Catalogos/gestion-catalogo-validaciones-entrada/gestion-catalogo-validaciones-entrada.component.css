@@ -1,0 +1,488 @@
+:host {
+  --etc-surface: #ffffff;
+  --etc-border: #e2e6ea;
+
+  --etc-text: #1e2533;
+  --etc-text-muted: #6b7280;
+
+  --etc-primary: #2563eb;
+  --etc-danger: #ef4444;
+
+  --etc-radius-lg: 10px;
+  --etc-shadow-sm: 0 1px 3px rgba(0, 0, 0, .08);
+
+  --etc-font: 'Segoe UI', system-ui, sans-serif;
+  --etc-font-mono: 'Consolas', monospace;
+
+  --bg-body: #f8fafc;
+  --space-lg: 24px;
+  --space-xs: 8px;
+  --space-md: 16px;
+
+  font-family: var(--etc-font);
+  color: var(--etc-text);
+}
+
+.wrapper {
+  padding: var(--space-lg);
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* ── Header ──────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.header-brand {
+  line-height: 1.2;
+}
+
+.title {
+  margin: 0 0 2px 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e2533;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: .8rem;
+  color: var(--etc-text-muted);
+}
+
+/* ── Fila del selector de tipo ───────────────────────────────── */
+.selector-row {
+  display: flex;
+  align-items: end;
+  gap: 16px;
+  padding: 16px;
+  background: var(--bg-body);
+  border: 1px solid var(--etc-border);
+  border-radius: var(--etc-radius-lg);
+  box-shadow: var(--etc-shadow-sm);
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 260px;
+  flex: 1 1 320px;
+}
+
+.form-group label {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--etc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  white-space: nowrap;
+}
+
+.form-select {
+  padding: 8px 10px;
+  border: 1px solid var(--etc-border);
+  border-radius: 6px;
+  font-size: .85rem;
+  font-family: var(--etc-font);
+  color: var(--etc-text);
+  background: white;
+  transition: all .15s ease;
+  width: 100%;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--etc-primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+/* ── Paneles ─────────────────────────────────────────────────── */
+.panel {
+  background: var(--etc-surface);
+  border: 1px solid var(--etc-border);
+  border-radius: var(--etc-radius-lg);
+  box-shadow: var(--etc-shadow-sm);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.panel__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--etc-text);
+}
+
+.panel__title--sm {
+  font-size: .9rem;
+}
+
+.panel__subtitle {
+  font-size: .8rem;
+  font-weight: 500;
+  color: var(--etc-text-muted);
+  margin-left: 6px;
+}
+
+/* ── Tabla ────────────────────────────────────────────────────── */
+.table-wrap {
+  background: var(--etc-surface);
+  border: 1px solid var(--etc-border);
+  border-radius: var(--etc-radius-lg);
+  overflow-x: auto;
+  width: 100%;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+}
+
+.table thead th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--etc-text-muted);
+  background: #f8fafc;
+  border-bottom: 1px solid var(--etc-border);
+  white-space: nowrap;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid #eef2f7;
+  transition: background .15s ease;
+}
+
+.table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.table tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.table tbody tr:nth-child(odd) {
+  background: #ffffff;
+}
+
+.table tbody tr:hover {
+  background: #f1f5f9;
+}
+
+.table tbody td {
+  padding: var(--space-xs) var(--space-md);
+  vertical-align: middle;
+  font-size: .82rem;
+  color: var(--etc-text);
+  line-height: 1.4;
+}
+
+.col-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--etc-text-muted);
+  width: 1%;
+  white-space: nowrap;
+}
+
+.col-center {
+  text-align: center;
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* ── Filas clicables ─────────────────────────────────────────── */
+.row-clickable {
+  cursor: pointer;
+}
+
+.row-selected {
+  background: #dbeafe !important;
+  box-shadow: inset 3px 0 0 var(--etc-primary);
+}
+
+/* ── Checkbox estatus ────────────────────────────────────────── */
+.check-estatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.check-estatus input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--etc-primary);
+}
+
+.check-estatus input[type='checkbox']:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}
+
+.check-label {
+  font-size: .78rem;
+  color: var(--etc-text-muted);
+  font-weight: 600;
+}
+
+/* ── Botón "Editar" en tabla ─────────────────────────────────── */
+.link-btn {
+  background: transparent;
+  border: none;
+  color: var(--etc-primary);
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background .12s ease;
+}
+
+.link-btn:hover {
+  background: #eff6ff;
+}
+
+/* ── Sub-panel (nivel 3) ─────────────────────────────────────── */
+.sub-panel {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--etc-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Lista de validaciones (nivel 3) ─────────────────────────── */
+.validation-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.validation-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+
+  padding: 4px 12px;
+
+  background: var(--bg-body);
+  border: 1px solid var(--etc-border);
+  border-radius: 8px;
+
+  font-size: .85rem;
+  color: var(--etc-text);
+}
+
+.validation-item__clave {
+  font-family: var(--etc-font-mono);
+  font-size: .78rem;
+  color: var(--etc-text-muted);
+  text-align: right;
+}
+
+.validation-item__desc {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Empty states ────────────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: var(--etc-surface);
+  border: 1px dashed var(--etc-border);
+  border-radius: var(--etc-radius-lg);
+  min-height: 300px;
+}
+
+.message-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff6ff;
+  border-radius: 50%;
+  margin-bottom: 16px;
+}
+
+.message-icon i {
+  font-size: 2rem;
+  color: var(--etc-primary);
+}
+
+.empty-state h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--etc-text);
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: .85rem;
+  color: var(--etc-text-muted);
+  max-width: 400px;
+}
+
+.empty {
+  text-align: center;
+  padding: 24px !important;
+  color: var(--etc-text-muted);
+  font-style: italic;
+}
+
+.empty-small {
+  margin: 8px 0;
+  padding: 12px;
+  text-align: center;
+  font-size: .8rem;
+  color: var(--etc-text-muted);
+  font-style: italic;
+}
+
+/* ── Contenido del modal (proyectado en <app-modal>) ─────────── */
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-form__label {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--etc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.modal-form__input {
+  padding: 8px 10px;
+  border: 1px solid var(--etc-border);
+  border-radius: 6px;
+  font-size: .85rem;
+  font-family: var(--etc-font);
+  color: var(--etc-text);
+  background: white;
+  width: 100%;
+}
+
+.modal-form__input:focus {
+  outline: none;
+  border-color: var(--etc-primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.modal-form__input:disabled {
+  background: #f1f5f9;
+  color: var(--etc-text-muted);
+  cursor: not-allowed;
+}
+
+.modal-form__hint {
+  font-size: .72rem;
+  color: var(--etc-text-muted);
+  text-align: right;
+}
+
+.modal-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.modal-form__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: .85rem;
+  color: var(--etc-text);
+  user-select: none;
+}
+
+.modal-form__check input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--etc-primary);
+  cursor: pointer;
+}
+
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 12px;
+  }
+
+  .selector-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-group {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .validation-item {
+    grid-template-columns: 1fr auto;
+    row-gap: 4px;
+  }
+
+  .validation-item__clave {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+}

@@ -199,6 +199,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/devoluciones/nota-devolucion/nota-devolucion.component').then(m => m.AsignacionNotaDevolucionComponent)
       },
       {
+        path: 'catalogos/gestion-catalogo-validaciones-entrada',
+        loadComponent: () => import('./features/Catalogos/gestion-catalogo-validaciones-entrada/gestion-catalogo-validaciones-entrada.component').then(m => m.GestionCatalogoValidacionesEntradaComponent)
+      },
+      {
         path: 'develop/test-component',
         loadComponent: () => import('./features/test-component/test.component').then(m => m.TestComponent)
       },
