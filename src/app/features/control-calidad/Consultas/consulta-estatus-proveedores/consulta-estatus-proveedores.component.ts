@@ -313,7 +313,7 @@ export class ConsultaEstatusProveedoresComponent implements OnInit, OnDestroy {
       const fecha = new Date().toISOString().slice(0, 10);
       XLSX.writeFile(wb, `estatus_proveedores_${fecha}.xlsx`);
 
-      this.mostrarToast('success', 'Exportación', 'Archivo generado correctamente');
+      // this.mostrarToast('success', 'Exportación', 'Archivo generado correctamente');
     } catch {
       this.mostrarToast('error', 'Exportación', 'No se pudo generar el archivo');
     } finally {

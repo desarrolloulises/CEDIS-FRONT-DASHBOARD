@@ -246,7 +246,7 @@ export class DeshacerRechazoComponent implements OnInit {
                     this.filaSeleccionada.set(null);
                     this.idAutorizacionSeleccionada.set(null);
                     this.comentario.set('');
-                    this.mostrarToast('success', 'Deshacer rechazo', `ASN ${asn} actualizado correctamente`);
+                    // this.mostrarToast('success', 'Deshacer rechazo', `ASN ${asn} actualizado correctamente`);
                     this.consultar();
                 } else {
                     this.mostrarToast('error', 'Deshacer rechazo', res.error || 'No se pudo aplicar');

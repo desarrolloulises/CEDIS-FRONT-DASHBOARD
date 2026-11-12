@@ -80,10 +80,9 @@
                         </td>
                         @if (esEditable()) {
                         <td class="col-center">
-                            <button type="button" class="link-btn"
+                            <app-icon-button type="secondary" icon="ti ti-pencil" size="xs" title="Editar"
                                 (click)="$event.stopPropagation(); abrirModalEditar(ti)">
-                                Editar
-                            </button>
+                            </app-icon-button>
                         </td>
                         }
                     </tr>

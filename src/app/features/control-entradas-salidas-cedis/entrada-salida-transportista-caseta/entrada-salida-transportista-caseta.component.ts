@@ -211,7 +211,7 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
       return false;
     }
     const msgExito = respuesta.error_msg?.trim() ? respuesta.error_msg : mensajeExito;
-    this.mostrarToast('success', 'Éxito', msgExito);
+    // this.mostrarToast('success', 'Éxito', msgExito);
     return true;
   }
 
@@ -688,7 +688,7 @@ export class EntradaSalidaTransportistaCasetaComponent implements OnInit, OnDest
         this.curpBloqueado = true;
         this.showCURP = false;
         this.consultaCURP = '';
-        this.mostrarToast('success', 'CURP encontrada', `Datos cargados para ${res.nombre} ${res.paterno}.`);
+        // this.mostrarToast('success', 'CURP encontrada', `Datos cargados para ${res.nombre} ${res.paterno}.`);
       },
       error: (err) => {
         this.cargandoCURP = false;

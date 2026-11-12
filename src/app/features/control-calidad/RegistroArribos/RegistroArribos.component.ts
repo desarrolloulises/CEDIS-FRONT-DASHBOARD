@@ -115,7 +115,7 @@ export class RegistroArribosComponent {
             this.mostrarToast('error', 'No se pudo registrar', res.errMsg);
             return;
           }
-          this.mostrarToast('success', 'Arribo registrado', 'El arribo se registró correctamente');
+          // this.mostrarToast('success', 'Arribo registrado', 'El arribo se registró correctamente');
           this.cargarDatosAsn(asn);
         },
         error: () => {
@@ -149,7 +149,7 @@ export class RegistroArribosComponent {
             this.mostrarToast('error', 'No se pudo imprimir', res.errMsg);
             return;
           }
-          this.mostrarToast('success', 'Ticket generado', 'El ticket de recepción se generó correctamente');
+          // this.mostrarToast('success', 'Ticket generado', 'El ticket de recepción se generó correctamente');
           this.volverInicio();
         },
         error: () => {
