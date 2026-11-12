@@ -258,23 +258,6 @@
   font-weight: 600;
 }
 
-/* ── Botón "Editar" en tabla ─────────────────────────────────── */
-.link-btn {
-  background: transparent;
-  border: none;
-  color: var(--etc-primary);
-  font-size: .78rem;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: background .12s ease;
-}
-
-.link-btn:hover {
-  background: #eff6ff;
-}
-
 /* ── Sub-panel (nivel 3) ─────────────────────────────────────── */
 .sub-panel {
   margin-top: 8px;

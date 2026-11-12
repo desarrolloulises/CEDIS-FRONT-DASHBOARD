@@ -368,7 +368,7 @@ export class AsignacionNotaDevolucionComponent implements OnInit {
             const fecha = new Date().toISOString().slice(0, 10);
             XLSX.writeFile(wb, `notas_devolucion_${fecha}.xlsx`);
 
-            this.mostrarToast('success', 'Exportación', 'Archivo generado');
+            // this.mostrarToast('success', 'Exportación', 'Archivo generado');
         } catch {
             this.mostrarToast('error', 'Exportación', 'No se pudo generar el archivo');
         } finally {

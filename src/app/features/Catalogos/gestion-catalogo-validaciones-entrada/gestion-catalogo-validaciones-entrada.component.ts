@@ -15,6 +15,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { IconButtonComponent } from '../../../shared/components/icon-button/icon-button.component';
 
 type ToastTipo = 'success' | 'error';
 
@@ -22,10 +23,11 @@ type ToastTipo = 'success' | 'error';
     selector: 'app-gestion-catalogo-validaciones-entrada',
     standalone: true,
     imports: [
-        CommonModule, FormsModule,
-        LoadingSpinnerComponent, ToastComponent, ButtonComponent,
-        ModalComponent
-    ],
+    CommonModule, FormsModule,
+    LoadingSpinnerComponent, ToastComponent, ButtonComponent,
+    ModalComponent,
+    IconButtonComponent
+],
     templateUrl: './gestion-catalogo-validaciones-entrada.component.html',
     styleUrls: ['./gestion-catalogo-validaciones-entrada.component.scss']
 })

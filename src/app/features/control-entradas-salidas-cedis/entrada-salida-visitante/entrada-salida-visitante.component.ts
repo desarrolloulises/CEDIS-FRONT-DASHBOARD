@@ -273,7 +273,7 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
       .subscribe({
         next: resp => {
           if (this.esExito(resp)) {
-            this.mostrarToast('success', 'Éxito', 'Entrada registrada correctamente.');
+            // this.mostrarToast('success', 'Éxito', 'Entrada registrada correctamente.');
             this.recargarVisitas();
           } else {
             this.mostrarToast('error', `Error ${resp.errId}`, resp.errMsg || 'No se pudo registrar la entrada.');
@@ -291,7 +291,7 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
       .subscribe({
         next: resp => {
           if (this.esExito(resp)) {
-            this.mostrarToast('success', 'Éxito', 'Salida registrada correctamente.');
+            // this.mostrarToast('success', 'Éxito', 'Salida registrada correctamente.');
             this.recargarVisitas();
           } else {
             this.mostrarToast('error', `Error ${resp.errId}`, resp.errMsg || 'No se pudo registrar la salida.');
@@ -701,7 +701,7 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
 
   private finalizarRegistro(resp: ApiResult, mensajeExito: string): void {
     if (this.esExito(resp)) {
-      this.mostrarToast('success', 'Éxito', mensajeExito);
+      // this.mostrarToast('success', 'Éxito', mensajeExito);
 
       // Imprimir etiqueta si el checkbox está activado
       if (this.imprimirAlGuardar && this.editandoRegistro === null) {
@@ -747,7 +747,7 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
             this.showCURP = false;
             this.consultaCURP = '';
             this.errorCURP = '';
-            this.mostrarToast('success', 'CURP encontrada', `Datos cargados para ${datos.nombre} ${datos.paterno}.`);
+            // this.mostrarToast('success', 'CURP encontrada', `Datos cargados para ${datos.nombre} ${datos.paterno}.`);
           } else {
             this.errorCURP = 'No se encontró ningún registro con esa CURP.';
           }
@@ -777,7 +777,7 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
       .subscribe({
         next: resp => {
           if (this.esExito(resp)) {
-            this.mostrarToast('success', 'Éxito', 'Registro por QR completado.');
+            // this.mostrarToast('success', 'Éxito', 'Registro por QR completado.');
             this.qrInput = '';
             this.showQR = false;
             this.recargarVisitas();
