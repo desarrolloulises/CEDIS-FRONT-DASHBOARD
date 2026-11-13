@@ -316,10 +316,10 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
           <head>
             <title>Etiqueta visitante</title>
             <style>
-              @page { size: 75mm 100mm; margin: 0; }
+              @page { size: 75mm 102mm; margin: 0; }
               html, body {
                 margin: 0; padding: 0;
-                width: 75mm; height: 100mm;
+                width: 75mm; height: 102mm;
                 overflow: hidden;
                 font-family: Arial, sans-serif;
                 background: #fff;
@@ -329,7 +329,7 @@ export class EntradaSalidaVisitanteComponent implements OnInit {
               body { display: flex; flex-direction: column; }
               .card-side {
                 position: relative;
-                width: 75mm; height: 50mm;
+                width: 75mm; height: 51mm;
                 display: flex; overflow: hidden;
                 box-sizing: border-box;
               }
