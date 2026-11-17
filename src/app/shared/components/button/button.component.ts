@@ -34,7 +34,7 @@ export class ButtonComponent {
     | 'error' = 'primary';
 
   /* Se configuraron 4 medidas en la hoja de estilos (consultar button.component.css)*/
-  @Input() size: 'sm' | 'md' | 'lg' = 'md';
+  @Input() size: 'xs' | 'sm' | 'md' | 'lg' = 'md';
 
   /* Este atributo permite habilidar o deshabilitar el botón*/
   @Input() disabled = false;

@@ -1096,11 +1096,11 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       })
       .subscribe({
         next: () => {
-          this.mostrarToast(
-            'success',
-            'Validación actualizada',
-            `"${event.item.lblDescripcionValidacion}" se actualizó.`
-          );
+          // this.mostrarToast(
+          //   'success',
+          //   'Validación actualizada',
+          //   `"${event.item.lblDescripcionValidacion}" se actualizó.`
+          // );
         },
         error: () => {
           event.item.estadoValidacion = estadoAnterior;
