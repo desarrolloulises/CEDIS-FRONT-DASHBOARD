@@ -16,7 +16,7 @@
 
   --bg-body: #f8fafc;
   --space-lg: 24px;
-  --space-xs: 8px;
+  --space-xs: 4px;
   --space-md: 16px;
 
   font-family: var(--etc-font);
@@ -200,7 +200,7 @@
 }
 
 .table tbody td {
-  padding: var(--space-xs) var(--space-md);
+  padding: var(--space-xs) var(--space-xs);
   vertical-align: middle;
   font-size: .82rem;
   color: var(--etc-text);

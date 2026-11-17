@@ -9,8 +9,8 @@
     <div class="header">
         <div class="header-top">
             <div class="header-brand">
-                <h1 class="title">Gestión de los Catálogos de Validaciones de Entrada</h1>
-                <p class="subtitle">Configura motivos de ingreso y sus validaciones</p>
+                <h1 class="title">Gestión de Catálogo de Validaciones de Entrada</h1>
+                <p class="subtitle">Configura tipos de ingreso y validaciones por tipo de entrada</p>
             </div>
         </div>
     </div>
@@ -39,7 +39,7 @@
     </div>
     } @else {
 
-    <!-- ═══════════════ NIVEL 2: Motivos de ingreso ═══════════════ -->
+    <!-- ═══════════════ NIVEL 2: Tipos de ingreso ═══════════════ -->
     <section class="panel">
         <header class="panel__header">
             <h2 class="panel__title">
@@ -48,7 +48,7 @@
             </h2>
 
             @if (esEditable()) {
-            <app-button label="Agregar motivo de ingreso" type="primary" size="sm" (clicked)="abrirModalCrear()">
+            <app-button label="Agregar" type="primary" size="xs" (clicked)="abrirModalCrear()">
             </app-button>
             }
         </header>
@@ -80,9 +80,8 @@
                         </td>
                         @if (esEditable()) {
                         <td class="col-center">
-                            <app-icon-button type="secondary" icon="ti ti-pencil" size="xs" title="Editar"
-                                (click)="$event.stopPropagation(); abrirModalEditar(ti)">
-                            </app-icon-button>
+                            <app-icon-button [type]="'secondary'" size="xs" icon="ti ti-pencil"
+                                (click)="$event.stopPropagation(); abrirModalEditar(ti)"></app-icon-button>
                         </td>
                         }
                     </tr>
@@ -91,7 +90,7 @@
                     @if (tiposIngreso().length === 0) {
                     <tr>
                         <td [attr.colspan]="esEditable() ? 4 : 3" class="empty">
-                            Sin Motivos de ingreso registrados para este tipo de entrada.
+                            Sin motivos de ingreso registrados para este tipo de entrada.
                         </td>
                     </tr>
                     }
@@ -103,12 +102,10 @@
         @if (seleccionTipoIngreso(); as ti) {
         <div class="sub-panel">
             <header class="panel__header">
-                <h2 class="panel__title panel__title--sm">
-                    Validaciones ·
+                <h2 class="panel__title">
+                    Validaciones
                     <span class="panel__subtitle">· {{ ti.descripcion }}</span>
-
                 </h2>
-
             </header>
 
             @if (validaciones().length === 0) {
@@ -117,11 +114,10 @@
             <ul class="validation-list">
                 @for (v of validaciones(); track v.clave) {
                 <li class="validation-item">
-                    <!-- <span class="validation-item__clave">#{{ v.clave }}</span> -->
                     <span class="validation-item__desc">{{ v.descripcion }}</span>
                     <label class="check-estatus">
                         <input type="checkbox" [checked]="v.estatus" (change)="toggleEstatusValidacion(v, $event)">
-                        <!-- <span class="check-label">{{ v.estatus ? '  Activo' : 'Inactivo' }}</span> -->
+                        <!-- <span class="check-label">{{ v.estatus ? 'Activo' : 'Inactivo' }}</span> -->
                     </label>
                 </li>
                 }
@@ -133,30 +129,19 @@
     }
 </div>
 
-<!-- ═══════════════ MODAL: Crear / Editar tipo de ingreso ═══════════════ -->
-<<app-modal [visible]="modalVisible()"
-    [title]="modoModal() === 'crear' ? 'Agregar motivo de ingreso' : 'Editar tipo de ingreso'" width="480px"
+<!-- ═══════════════ MODAL: Crear / Editar motivo de ingreso ═══════════════ -->
+<app-modal [visible]="modalVisible()"
+    [title]="modoModal() === 'crear' ? 'Agregar motivo de ingreso' : 'Editar motivo de ingreso'" width="480px"
     [closeOnBackdrop]="false" [closeOnEscape]="true" [showCloseButton]="true" (close)="cerrarModal()">
 
     <div class="modal-form">
         <div class="modal-form__field">
             <label class="modal-form__label" for="descTipoIngreso">Descripción</label>
             <input id="descTipoIngreso" class="modal-form__input" type="text" maxlength="150"
-                placeholder="Describe el tipo de ingreso…" [value]="formDescripcion()"
+                placeholder="Motivo de ingreso…" [value]="formDescripcion()"
                 (input)="onDescripcionChange($any($event.target).value)" [disabled]="guardando()">
             <small class="modal-form__hint">{{ formDescripcion().length }} / 150</small>
         </div>
-
-        <!-- Estatus: solo en modo 'crear' -->
-        @if (modoModal() === 'crear') {
-        <div class="modal-form__field">
-            <label class="modal-form__check">
-                <input type="checkbox" [checked]="formEstatus()" (change)="formEstatus.set($any($event.target).checked)"
-                    [disabled]="guardando()">
-                <span>Activo</span>
-            </label>
-        </div>
-        }
 
         <div class="modal-form__actions">
             <app-button label="Cancelar" type="ghost" size="sm" [disabled]="guardando()" (clicked)="cerrarModal()">
@@ -166,4 +151,4 @@
             </app-button>
         </div>
     </div>
-    </app-modal>
+</app-modal>
