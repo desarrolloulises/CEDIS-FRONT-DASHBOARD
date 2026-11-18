@@ -88,7 +88,7 @@
   background: var(--bg-body);
   border: 1px solid var(--etc-border);
   border-radius: var(--etc-radius-lg);
-  flex-wrap: wrap;
+  /* flex-wrap: wrap; */
   box-shadow: var(--etc-shadow-sm);
   flex: 0 0 auto;
 }
