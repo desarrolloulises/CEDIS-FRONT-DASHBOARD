@@ -106,6 +106,29 @@
   border-top: 1px solid #e2e6ea;
 }
 
+/* ── Cámara ──────────────────────────────────── */
+
+.modal-camara {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.video-camara {
+  width: 100%;
+  max-width: 460px;
+  border-radius: 8px;
+  background: #000;
+}
+
+.modal-camara-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  width: 100%;
+}
+
 /* ── Modal de imagen ampliada ──────────────────────────────────── */
 .imagen-modal {
   position: fixed;

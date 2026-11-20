@@ -19,6 +19,8 @@ import { ApartadoValidacionesComponent } from './components/apartado-validacione
 import { ApartadoIncidenciasComponent } from './components/apartado-incidencias/apartado-incidencias.component';
 import { ApartadoOtrosComponent } from './components/apartado-otros/apartado-otros.component';
 
+import { ViewChild, ElementRef } from '@angular/core';
+
 import {
   AplicarVetoPayload,
   ElementoAdicional,
@@ -119,6 +121,13 @@ interface VehiculoForm {
   styleUrls: ['./registro-entrada-almacen.component.css']
 })
 export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
+
+
+  @ViewChild('videoElement') videoElement!: ElementRef<HTMLVideoElement>;
+  @ViewChild('canvasElement') canvasElement!: ElementRef<HTMLCanvasElement>;
+
+  private streamActual: MediaStream | null = null;
+  private inputImagenFallback: HTMLInputElement | null = null;
 
   // Lista de apartados
   apartados: Apartado[] = [
@@ -401,6 +410,7 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
   areaOptions: ISelectOption[] = [];
   tiposUnidad: TipoUnidad[] = [];
   tipoUnidadOptions: ISelectOption[] = [];
+  modalCamaraVisible = false;
 
   private cargarMotivosVisita(): void {
     this.cedisService.obtenerMotivosVisita({
@@ -586,7 +596,89 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
     }
   }
 
+  //////////////////////////////////////////
+  // Cámara
+  //////////////////////////////////////////
 
+  async abrirCamara(): Promise<void> {
+    setTimeout(async () => {
+      try {
+        this.streamActual = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user' },
+          audio: false
+        });
+        if (this.videoElement?.nativeElement) {
+          this.videoElement.nativeElement.srcObject = this.streamActual;
+        }
+      } catch (error) {
+        console.error('Error al acceder a la cámara:', error);
+        this.cerrarModalCamara();
+
+        this.mostrarToast(
+          'error',
+          'Cámara no disponible',
+          'No se pudo acceder a la cámara. Se abrirá el selector de archivos.'
+        );
+        this.abrirSelectorArchivos();
+      }
+    }, 100);
+  }
+
+  private abrirSelectorArchivos(): void {
+    if (this.inputImagenFallback) {
+      this.inputImagenFallback.value = '';
+      this.inputImagenFallback.click();
+    } else {
+      this.mostrarToast(
+        'error',
+        'Sin cámara ni selector',
+        'No se pudo abrir la cámara ni el selector de archivos. Verifica los permisos.'
+      );
+    }
+  }
+
+  capturarFoto(): void {
+    const video = this.videoElement.nativeElement;
+    const canvas = this.canvasElement.nativeElement;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const file = new File([blob], `foto_${Date.now()}.jpg`, { type: 'image/jpeg' });
+
+      this.cerrarModalCamara(); 
+
+      const curp = this.obtenerCurpNormalizado();
+      if (curp) {
+        if (this.imagenExiste) {
+          this.actualizarImagenApi(curp, file);
+        } else {
+          this.subirImagenApi(curp, file);
+        }
+      }
+    }, 'image/jpeg', 0.9);
+  }
+
+  detenerCamara(): void {
+    if (this.streamActual) {
+      this.streamActual.getTracks().forEach(track => track.stop());
+      this.streamActual = null;
+    }
+    if (this.videoElement?.nativeElement) {
+      this.videoElement.nativeElement.srcObject = null;
+    }
+  }
+
+  cerrarModalCamara(): void {
+    this.detenerCamara();
+    this.modalCamaraVisible = false;
+  }
 
   //////////////////////////////////////////
   // Vehículo
@@ -924,7 +1016,16 @@ export class RegistroEntradaAlmacenComponent implements OnInit, OnDestroy {
       this.mostrarToast('error', 'CURP requerido', 'Captura el CURP en el apartado de Datos antes de subir una imagen.');
       return;
     }
-    inputImagen.click();
+
+    this.inputImagenFallback = inputImagen;
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      this.abrirSelectorArchivos();
+      return;
+    }
+
+    this.abrirCamara();
+    this.modalCamaraVisible = true;
   }
 
   private cargarImagenBinario(curp: string): void {
