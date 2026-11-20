@@ -31,7 +31,7 @@
         size="sm" [textColor]="getColorBotonIncidencias()"
         (clicked)="seleccionarApartado('incidencias')">
       </app-button>
- 
+
       <!-- Botón de Otros -->
       <app-button [label]="apartados[4].titulo" [type]="apartadoActivo === 'otros' ? 'primary' : 'ghost'" size="sm"
         (clicked)="seleccionarApartado('otros')">
@@ -137,4 +137,23 @@
   <div *ngIf="imagenAmpliada" class="imagen-modal" (click)="cerrarImagenAmpliada()">
     <img [src]="imagenUrl" alt="Imagen">
   </div>
+
+  <!-- MODAL DE CÁMARA -->
+  <app-modal [visible]="modalCamaraVisible" title="Tomar foto" width="520px" (close)="cerrarModalCamara()">
+    <div class="modal-camara">
+      <!-- Vista previa del video -->
+      <video #videoElement autoplay playsinline class="video-camara"></video>
+
+      <!-- Canvas oculto para capturar el fotograma -->
+      <canvas #canvasElement style="display: none;"></canvas>
+
+      <!-- Acciones del modal -->
+      <div class="modal-camara-acciones">
+        <app-button label="Cancelar" type="ghost" size="sm" (clicked)="cerrarModalCamara()">
+        </app-button>
+        <app-button label="Capturar foto" type="primary" size="sm" (clicked)="capturarFoto()">
+        </app-button>
+      </div>
+    </div>
+  </app-modal>
 </div>

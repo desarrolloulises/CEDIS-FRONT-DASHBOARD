@@ -2,12 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { RespuestaApi, GenerarFolioResponse, DatosFolioResponse, CambioSolicitud, GuardarSolicitudResponse, ValidarSolicitudResponse, ConfirmarSolicitudResponse } from '../interface/reagenda-citas.interface';
+import { url } from '../../../../variables';
 
 
 @Injectable({ providedIn: 'root' })
 export class ReagendaCitasService {
 
-    private readonly baseUrl = 'http://192.168.102.81:5242/cedis/cancelaciones';
+    private readonly baseUrl = `${url}/cedis/cancelaciones`;
     private http = inject(HttpClient);
 
     // 1. Generar folio

@@ -43,7 +43,7 @@ import {
 export class RegistroEntradaAlmacenService {
 
   private readonly baseUrl = `${url}/cedis`;
-  private readonly timeoutMs = 5000;
+  private readonly timeoutMs = 9000;
 
   constructor(private http: HttpClient) { }
 
